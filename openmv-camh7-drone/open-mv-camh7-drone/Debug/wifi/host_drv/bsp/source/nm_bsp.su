@@ -1,0 +1,7 @@
+nm_bsp.c:75:13:init_chip_pins	8	static
+nm_bsp.c:102:7:nm_bsp_init	8	static
+nm_bsp.c:143:6:nm_bsp_reset	8	static
+nm_bsp.c:166:6:nm_bsp_sleep	16	static
+nm_bsp.c:177:6:nm_bsp_register_isr	32	static
+nm_bsp.c:217:6:nm_bsp_wifi_int_n_handler	8	static
+nm_bsp.c:231:6:nm_bsp_interrupt_ctrl	16	static
