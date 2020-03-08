@@ -49,11 +49,6 @@
 
 #include "stm32h7xx_hal.h"
 #include "gpio.h"
-//
-
-
-
-
 
 static 	tpfNmBspIsr gpfIsr;
 static 	EXTI_HandleTypeDef g_hexti = {NULL};
@@ -61,12 +56,12 @@ static 	EXTI_ConfigTypeDef g_ExtiConfig = {NULL};
 
 
 
-//static void chip_isr(void)
-//{
-//	if (gpfIsr) {
-//		gpfIsr();
-//	}
-//}
+void chip_isr(void)
+{
+	if (gpfIsr) {
+		gpfIsr();
+	}
+}
 
 /*
  *	@fn		init_chip_pins
@@ -88,8 +83,9 @@ static void init_chip_pins(void)
 
 // ================= SO: =================
 	// WAKE PIN IN IRRELEVANT HERE SINCE ITS NOT CONNECTED TO MCU
-HAL_GPIO_WritePin(WIFI_RESET_N_GPIO_Port, WIFI_RESET_N_Pin, GPIO_PIN_RESET);
-HAL_GPIO_WritePin(WIFI_CHIP_EN_GPIO_Port, WIFI_CHIP_EN_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(WIFI_CHIP_EN_GPIO_Port, WIFI_CHIP_EN_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(WIFI_RESET_N_GPIO_Port, WIFI_RESET_N_Pin, GPIO_PIN_RESET);
+
 
 
 }
@@ -193,31 +189,31 @@ void nm_bsp_register_isr(tpfNmBspIsr pfIsr)
 //			EXTINT_CALLBACK_TYPE_DETECT);
 
 	gpfIsr = pfIsr;
-	EXTI_HandleTypeDef* phexti = &g_hexti;
-	phexti->Line = EXTI_LINE_13;
-	phexti->PendingCallback = pfIsr;
-
-
-	EXTI_ConfigTypeDef* pExtiConfig = &g_ExtiConfig;
-	pExtiConfig->GPIOSel 	= EXTI_GPIOD;
-	pExtiConfig->Line 		= phexti->Line;
-	pExtiConfig->Mode 		= EXTI_MODE_INTERRUPT;
-	pExtiConfig->Trigger	= EXTI_TRIGGER_FALLING;
-	pExtiConfig->PendClearSource	= EXTI_D3_PENDCLR_SRC_NONE;
-
-	HAL_StatusTypeDef result =  HAL_EXTI_SetConfigLine(phexti, pExtiConfig);
-	assert_param(result != HAL_OK);
-
-	result = HAL_EXTI_RegisterCallback(phexti, HAL_EXTI_COMMON_CB_ID ,phexti->PendingCallback);
-	assert_param(result != HAL_OK);
+//	EXTI_HandleTypeDef* phexti = &g_hexti;
+//	phexti->Line = EXTI_LINE_13;
+//	phexti->PendingCallback = pfIsr;
+//
+//
+//	EXTI_ConfigTypeDef* pExtiConfig = &g_ExtiConfig;
+//	pExtiConfig->GPIOSel 	= EXTI_GPIOD;
+//	pExtiConfig->Line 		= phexti->Line;
+//	pExtiConfig->Mode 		= EXTI_MODE_INTERRUPT;
+//	pExtiConfig->Trigger	= EXTI_TRIGGER_FALLING;
+//	pExtiConfig->PendClearSource	= EXTI_D3_PENDCLR_SRC_NONE;
+//
+//	HAL_StatusTypeDef result =  HAL_EXTI_SetConfigLine(phexti, pExtiConfig);
+//	assert_param(result != HAL_OK);
+//
+//	result = HAL_EXTI_RegisterCallback(phexti, HAL_EXTI_COMMON_CB_ID ,phexti->PendingCallback);
+//	assert_param(result != HAL_OK);
 
 }
 
 
-void nm_bsp_wifi_int_n_handler(void)
-{
-	HAL_EXTI_IRQHandler(&g_hexti);
-}
+//void nm_bsp_wifi_int_n_handler(void)
+//{
+//	HAL_EXTI_IRQHandler(&g_hexti);
+//}
 
 
 

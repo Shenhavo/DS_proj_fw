@@ -39,6 +39,7 @@
 #define _NM_BSP_INTERNAL_H_
 
 
+
 #ifdef WIN32
 #include "nm_bsp_win32.h"
 #endif

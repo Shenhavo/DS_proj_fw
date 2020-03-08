@@ -42,11 +42,11 @@ open-mv-camh7-drone.bin \
 all: open-mv-camh7-drone.elf secondary-outputs
 
 dependents:
-	-cd C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/Release && $(MAKE) all
+	-cd C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Release && $(MAKE) all
 
 # Tool invocations
-open-mv-camh7-drone.elf: $(OBJS) $(USER_OBJS) C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/Release/open-mv-camh7-drone.elf C:\Shenhav\proyecto_final\firmware\openmv-camh7-drone\open-mv-camh7-drone\STM32H743VITX_FLASH.ld
-	arm-none-eabi-gcc -o "open-mv-camh7-drone.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Shenhav\proyecto_final\firmware\openmv-camh7-drone\open-mv-camh7-drone\STM32H743VITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="open-mv-camh7-drone.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+open-mv-camh7-drone.elf: $(OBJS) $(USER_OBJS) C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Release/open-mv-camh7-drone.elf C:\Shenhav\proyecto_final\firmware\DS_proj_fw\openmv-camh7-drone\open-mv-camh7-drone\STM32H743VITX_FLASH.ld
+	arm-none-eabi-gcc -o "open-mv-camh7-drone.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Shenhav\proyecto_final\firmware\DS_proj_fw\openmv-camh7-drone\open-mv-camh7-drone\STM32H743VITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="open-mv-camh7-drone.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -74,6 +74,6 @@ secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
 
 .PHONY: all clean dependents
 .SECONDARY:
-C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/Release/open-mv-camh7-drone.elf:
+C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Release/open-mv-camh7-drone.elf:
 
 -include ../makefile.targets

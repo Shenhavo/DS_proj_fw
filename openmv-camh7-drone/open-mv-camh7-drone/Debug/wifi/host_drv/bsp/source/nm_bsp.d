@@ -1,8 +1,8 @@
 wifi/host_drv/bsp/source/nm_bsp.o: ../wifi/host_drv/bsp/source/nm_bsp.c \
- C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp.h \
- C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp_internal.h \
- C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/common/include/nm_common.h \
- C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/common/include/nm_debug.h \
+ C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp.h \
+ C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp_internal.h \
+ C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/common/include/nm_common.h \
+ C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/common/include/nm_debug.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h \
  ../Core/Inc/stm32h7xx_hal_conf.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h \
@@ -39,13 +39,13 @@ wifi/host_drv/bsp/source/nm_bsp.o: ../wifi/host_drv/bsp/source/nm_bsp.c \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h \
  ../Core/Inc/gpio.h ../Core/Inc/main.h
 
-C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp.h:
+C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp.h:
 
-C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp_internal.h:
+C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp_internal.h:
 
-C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/common/include/nm_common.h:
+C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/common/include/nm_common.h:
 
-C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/common/include/nm_debug.h:
+C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/common/include/nm_debug.h:
 
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h:
 

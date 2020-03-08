@@ -99,10 +99,12 @@ int main(void)
   MX_SPI2_Init();
   MX_USART2_UART_Init();
   MX_DMA_Init();
+
   /* USER CODE BEGIN 2 */
   nm_bsp_init();
   nm_bsp_reset();
-  nm_bsp_register_isr(my_int); // TODO: SO: not working properly :(
+  nm_bsp_register_isr(my_int);
+
   /* USER CODE END 2 */
   /* USER CODE BEGIN 3 */
   /* Infinite loop */
@@ -121,7 +123,7 @@ int main(void)
 //	  {
 //		  HAL_GPIO_TogglePin(LED_G_GPIO_Port, LED_G_Pin);
 //	  }
-//	  nm_bsp_wifi_int_n_handler();
+
 	  HAL_Delay(250);
 	  result = HAL_SPI_Receive(&hspi2, buff, 256, 250);
 
@@ -199,7 +201,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if( GPIO_Pin == GPIO_PIN_13)
 	{
-		HAL_GPIO_TogglePin(LED_G_GPIO_Port, LED_G_Pin);
+		chip_isr(); // SO: in case of WIFI event go to internal pFunction
 	}
 }
 

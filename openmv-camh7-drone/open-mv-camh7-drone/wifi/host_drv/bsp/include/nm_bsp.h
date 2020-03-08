@@ -291,7 +291,9 @@ void nm_bsp_register_isr(tpfNmBspIsr pfIsr);
 void nm_bsp_interrupt_ctrl(uint8 u8Enable);
 /**@}*/     //NmBspInterruptCtrl
 
-void nm_bsp_wifi_int_n_handler(void);
+//void nm_bsp_wifi_int_n_handler(void);
+
+void chip_isr(void);
 
 
 #ifdef __cplusplus

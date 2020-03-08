@@ -36,7 +36,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Core/Inc/dcmi.h ../Core/Inc/main.h ../Core/Inc/dma.h \
  ../Core/Inc/i2c.h ../Core/Inc/jpeg.h ../Core/Inc/spi.h \
  ../Core/Inc/usart.h ../Core/Inc/gpio.h \
- C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp.h
+ C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp.h
 
 ../Core/Inc/main.h:
 
@@ -124,4 +124,4 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Core/Inc/gpio.h:
 
-C:/Shenhav/proyecto_final/firmware/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp.h:
+C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp.h:

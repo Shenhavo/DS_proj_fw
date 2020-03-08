@@ -36,7 +36,25 @@
 #define _NM_BSP_SAMD21_H_
 
 #include "math.h"
-#include "../../module_config/samd21/conf_winc.h"
+
+//#include "../../module_config/samd21/conf_winc.h"
+// ============   SO:conf_winc.h relevant new section ===================
+
+#define CONF_WINC_USE_SPI				(1)
+
+/** SPI clock. */
+#define CONF_WINC_SPI_CLOCK				(12000000)
+
+/*
+   ---------------------------------
+   --------- Debug Options ---------
+   ---------------------------------
+*/
+
+#define CONF_WINC_DEBUG					(1)
+#define CONF_WINC_PRINTF				printf
+
+// ============  End of conf_winc.h relevant new section ===================
 
 #define NM_EDGE_INTERRUPT		(1)
 
