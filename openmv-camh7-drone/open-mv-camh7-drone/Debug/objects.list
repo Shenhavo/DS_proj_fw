@@ -39,4 +39,5 @@
 "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.o"
 "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.o"
 "wifi/host_drv/bsp/source/nm_bsp.o"
+"wifi/host_drv/bus_wrapper/source/nm_bus_wrapper.o"
 "wifi/host_drv/common/source/nm_common.o"

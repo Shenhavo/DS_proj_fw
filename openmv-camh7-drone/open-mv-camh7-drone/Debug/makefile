@@ -9,6 +9,7 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include wifi/host_drv/common/source/subdir.mk
+-include wifi/host_drv/bus_wrapper/source/subdir.mk
 -include wifi/host_drv/bsp/source/subdir.mk
 -include Drivers/STM32H7xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk

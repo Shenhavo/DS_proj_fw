@@ -51,8 +51,8 @@
 #include "gpio.h"
 
 static 	tpfNmBspIsr gpfIsr;
-static 	EXTI_HandleTypeDef g_hexti = {NULL};
-static 	EXTI_ConfigTypeDef g_ExtiConfig = {NULL};
+//static 	EXTI_HandleTypeDef g_hexti = {NULL};
+//static 	EXTI_ConfigTypeDef g_ExtiConfig = {NULL};
 
 
 

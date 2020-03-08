@@ -21,5 +21,6 @@ Core/Src \
 Core/Startup \
 Drivers/STM32H7xx_HAL_Driver/Src \
 wifi/host_drv/bsp/source \
+wifi/host_drv/bus_wrapper/source \
 wifi/host_drv/common/source \
 

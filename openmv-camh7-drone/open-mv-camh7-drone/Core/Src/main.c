@@ -31,6 +31,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "nm_bsp.h"
+#include "nm_bus_wrapper.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -96,21 +97,20 @@ int main(void)
   MX_DCMI_Init();
   MX_I2C1_Init();
   MX_JPEG_Init();
-  MX_SPI2_Init();
+//  MX_SPI2_Init();
   MX_USART2_UART_Init();
   MX_DMA_Init();
 
   /* USER CODE BEGIN 2 */
   nm_bsp_init();
-  nm_bsp_reset();
   nm_bsp_register_isr(my_int);
-
+  nm_bus_init(NULL);
   /* USER CODE END 2 */
   /* USER CODE BEGIN 3 */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t buff[256]={0};
-  HAL_StatusTypeDef result = HAL_OK;
+//  uint8_t buff[256]={0};
+//  HAL_StatusTypeDef result = HAL_OK;
   while (1)
   {
     /* USER CODE END WHILE */
@@ -125,7 +125,7 @@ int main(void)
 //	  }
 
 	  HAL_Delay(250);
-	  result = HAL_SPI_Receive(&hspi2, buff, 256, 250);
+//	  result = HAL_SPI_Receive(&hspi2, buff, 256, 250);
 
   }
   /* USER CODE END 3 */
