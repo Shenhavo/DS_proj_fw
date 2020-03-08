@@ -47,6 +47,9 @@
  #define WIFI_INT_N_Pin GPIO_PIN_13
  #define WIFI_INT_N_GPIO_Port GPIOD
  #define WIFI_INT_N_EXTI_IRQn EXTI15_10_IRQn
+
+ #define SPI2_NSS_GPIO GPIOB
+ #define SPI2_NSS_Pin GPIO_PIN_12
  /* USER CODE BEGIN Private defines */
 /* USER CODE END Private defines */
 

@@ -5,7 +5,7 @@ wifi/host_drv/bus_wrapper/source/nm_bus_wrapper.o: \
  C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/common/include/nm_debug.h \
  C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp_internal.h \
  C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bus_wrapper/include/nm_bus_wrapper.h \
- ../Core/Inc/spi.h ../Core/Inc/main.h \
+ ../Core/Inc/gpio.h ../Core/Inc/main.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h \
  ../Core/Inc/stm32h7xx_hal_conf.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h \
@@ -39,7 +39,8 @@ wifi/host_drv/bus_wrapper/source/nm_bus_wrapper.o: \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi_ex.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h \
- ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h
+ ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h \
+ ../Core/Inc/spi.h
 
 C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bsp/include/nm_bsp.h:
 
@@ -51,7 +52,7 @@ C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-d
 
 C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/wifi/host_drv/bus_wrapper/include/nm_bus_wrapper.h:
 
-../Core/Inc/spi.h:
+../Core/Inc/gpio.h:
 
 ../Core/Inc/main.h:
 
@@ -122,3 +123,5 @@ C:/Shenhav/proyecto_final/firmware/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-d
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h:
 
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h:
+
+../Core/Inc/spi.h:

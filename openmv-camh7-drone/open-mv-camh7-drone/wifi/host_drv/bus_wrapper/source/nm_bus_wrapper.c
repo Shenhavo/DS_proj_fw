@@ -40,6 +40,7 @@
 //#include "conf_winc.h"
 
 // HAL defines
+#include "gpio.h"
 #include "spi.h"
 
 #define NM_BUS_MAX_TRX_SZ	256
@@ -372,9 +373,12 @@ sint8 nm_bus_ioctl(uint8 u8Cmd, void* pvParameter)
 //#elif defined CONF_WINC_USE_SPI
 		case NM_BUS_IOCTL_RW:
 		{
+			HAL_GPIO_WritePin(SPI2_NSS_GPIO, SPI2_NSS_Pin, GPIO_PIN_RESET);
 			tstrNmSpiRw* pstrParam = (tstrNmSpiRw*) pvParameter;
 
 			s8Ret = spi_rw(pstrParam->pu8InBuf, pstrParam->pu8OutBuf, pstrParam->u16Sz);
+
+			HAL_GPIO_WritePin(SPI2_NSS_GPIO, SPI2_NSS_Pin, GPIO_PIN_SET);
 		}
 		break;
 //#endif

@@ -62,7 +62,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+#define BUFF_SIZE 64
 /* USER CODE END 0 */
 
 /**
@@ -109,23 +109,24 @@ int main(void)
   /* USER CODE BEGIN 3 */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-//  uint8_t buff[256]={0};
+
+  uint8_t TxBuff[BUFF_SIZE]={0};
+  uint8_t RxBuff[BUFF_SIZE]={0};
+  tstrNmSpiRw stSpi = {NULL};
+  stSpi.pu8InBuf = RxBuff;
+  stSpi.pu8OutBuf = TxBuff;
+  stSpi.u16Sz = BUFF_SIZE;
+
+
 //  HAL_StatusTypeDef result = HAL_OK;
   while (1)
   {
-    /* USER CODE END WHILE */
-//	  if(HAL_GPIO_ReadPin(WIFI_INT_N_GPIO_Port, WIFI_INT_N_Pin) == GPIO_PIN_RESET)
-//	  {
-//		  HAL_GPIO_TogglePin(LED_G_GPIO_Port, LED_G_Pin);
-//	  }
-//	  uint32_t X = HAL_NVIC_GetPendingIRQ(EXTI15_10_IRQn);
-//	  if(X == 1)
-//	  {
-//		  HAL_GPIO_TogglePin(LED_G_GPIO_Port, LED_G_Pin);
-//	  }
 
-	  HAL_Delay(250);
-//	  result = HAL_SPI_Receive(&hspi2, buff, 256, 250);
+	  HAL_Delay(333);
+	 if( nm_bus_ioctl(NULL,(void*) &stSpi) != HAL_OK)
+	 {
+		 HAL_GPIO_TogglePin(LED_R_GPIO_Port, LED_R_Pin);
+	 }
 
   }
   /* USER CODE END 3 */
