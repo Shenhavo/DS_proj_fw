@@ -34,12 +34,11 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.o: \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi_ex.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h \
- ../wifi/winc1500/config/conf_winc.h ../Core/Inc/spi.h ../Core/Inc/main.h \
- ../wifi/winc1500/driver/include/m2m_types.h \
- ../wifi/winc1500/common/include/nm_common.h \
- ../wifi/winc1500/bsp/include/nm_bsp.h \
- ../wifi/winc1500/common/include/nm_debug.h \
- ../wifi/winc1500/bsp/include/nm_bsp_internal.h
+ ../winc1500/config/conf_winc.h ../Core/Inc/spi.h ../Core/Inc/main.h \
+ ../winc1500/driver/include/m2m_types.h \
+ ../winc1500/common/include/nm_common.h ../winc1500/bsp/include/nm_bsp.h \
+ ../winc1500/common/include/nm_debug.h \
+ ../winc1500/bsp/include/nm_bsp_internal.h
 
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h:
 
@@ -109,18 +108,18 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.o: \
 
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h:
 
-../wifi/winc1500/config/conf_winc.h:
+../winc1500/config/conf_winc.h:
 
 ../Core/Inc/spi.h:
 
 ../Core/Inc/main.h:
 
-../wifi/winc1500/driver/include/m2m_types.h:
+../winc1500/driver/include/m2m_types.h:
 
-../wifi/winc1500/common/include/nm_common.h:
+../winc1500/common/include/nm_common.h:
 
-../wifi/winc1500/bsp/include/nm_bsp.h:
+../winc1500/bsp/include/nm_bsp.h:
 
-../wifi/winc1500/common/include/nm_debug.h:
+../winc1500/common/include/nm_debug.h:
 
-../wifi/winc1500/bsp/include/nm_bsp_internal.h:
+../winc1500/bsp/include/nm_bsp_internal.h:

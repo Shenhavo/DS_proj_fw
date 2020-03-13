@@ -16,15 +16,8 @@
   *                        opensource.org/licenses/BSD-3-Clause
   *
   ******************************************************************************
-  */
-/* USER CODE END Header */
-/* Exported macro ------------------------------------------------------------*/
-
-/** Wi-Fi Settings */
-#define MAIN_WLAN_SSID        "sowifi" /* < Destination SSID */
-#define MAIN_WLAN_AUTH        M2M_WIFI_SEC_WPA_PSK /* < Security manner */
-#define MAIN_WLAN_PSK         "12345678" /* < Password for Destination SSID */
-/* Define to prevent recursive inclusion -------------------------------------*/
+  ******************************************************************************
+  *******************************************************************************/
 #ifndef __MAIN_H
 #define __MAIN_H
 
@@ -54,6 +47,15 @@ extern "C" {
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
+
+/* USER CODE END Header */
+/* Exported macro ------------------------------------------------------------*/
+
+/** Wi-Fi Settings */
+#define MAIN_WLAN_SSID        "sowifi" /* < Destination SSID */
+#define MAIN_WLAN_AUTH        M2M_WIFI_SEC_WPA_PSK /* < Security manner */
+#define MAIN_WLAN_PSK         "12345678" /* < Password for Destination SSID */
+/* Define to prevent recursive inclusion -------------------------------------*/
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */

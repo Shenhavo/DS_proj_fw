@@ -1,6 +1,0 @@
-nm_bus_wrapper.c:176:21:spi_rw_pio	32	static
-nm_bus_wrapper.c:230:7:spi_rw	24	static
-nm_bus_wrapper.c:251:7:nm_bus_init	24	static
-nm_bus_wrapper.c:350:7:nm_bus_ioctl	24	static
-nm_bus_wrapper.c:394:7:nm_bus_deinit	16	static
-nm_bus_wrapper.c:439:7:nm_bus_reinit	16	static

@@ -20,12 +20,12 @@ SUBDIRS := \
 Core/Src \
 Core/Startup \
 Drivers/STM32H7xx_HAL_Driver/Src \
-wifi/winc1500/bsp/source \
-wifi/winc1500/bus_wrapper/source \
-wifi/winc1500/common/source \
-wifi/winc1500/driver/source \
-wifi/winc1500/root_cert/X509 \
-wifi/winc1500/root_cert \
-wifi/winc1500/socket/source \
-wifi/winc1500/spi_flash/source \
+winc1500/bsp/source \
+winc1500/bus_wrapper/source \
+winc1500/common/source \
+winc1500/driver/source \
+winc1500/root_cert/X509 \
+winc1500/root_cert \
+winc1500/socket/source \
+winc1500/spi_flash/source \
 

@@ -1,7 +1,0 @@
-nm_common.c:38:6:m2m_memcpy	24	static
-nm_common.c:48:7:m2m_checksum	24	static
-nm_common.c:60:6:m2m_memset	24	static
-nm_common.c:70:8:m2m_strlen	24	static
-nm_common.c:81:7:m2m_strncmp	24	static
-nm_common.c:95:9:m2m_strstr	24	static
-nm_common.c:118:7:m2m_memcmp	32	static

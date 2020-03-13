@@ -27,23 +27,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 0000002e  00000000  00000000  00030078  2**0
                   CONTENTS, READONLY
- 12 .debug_info   00036a16  00000000  00000000  000300a6  2**0
+ 12 .debug_info   000355af  00000000  00000000  000300a6  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_abbrev 00005c86  00000000  00000000  00066abc  2**0
+ 13 .debug_abbrev 00005a59  00000000  00000000  00065655  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_aranges 00001988  00000000  00000000  0006c748  2**3
+ 14 .debug_aranges 00001988  00000000  00000000  0006b0b0  2**3
                   CONTENTS, READONLY, DEBUGGING
- 15 .debug_ranges 000017d8  00000000  00000000  0006e0d0  2**3
+ 15 .debug_ranges 000017d8  00000000  00000000  0006ca38  2**3
                   CONTENTS, READONLY, DEBUGGING
- 16 .debug_macro  0003c553  00000000  00000000  0006f8a8  2**0
+ 16 .debug_macro  0003c03e  00000000  00000000  0006e210  2**0
                   CONTENTS, READONLY, DEBUGGING
- 17 .debug_line   0001f290  00000000  00000000  000abdfb  2**0
+ 17 .debug_line   0001e0a2  00000000  00000000  000aa24e  2**0
                   CONTENTS, READONLY, DEBUGGING
- 18 .debug_str    00161a68  00000000  00000000  000cb08b  2**0
+ 18 .debug_str    00161a36  00000000  00000000  000c82f0  2**0
                   CONTENTS, READONLY, DEBUGGING
- 19 .comment      0000007b  00000000  00000000  0022caf3  2**0
+ 19 .comment      0000007b  00000000  00000000  00229d26  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00006f28  00000000  00000000  0022cb70  2**2
+ 20 .debug_frame  00006f28  00000000  00000000  00229da4  2**2
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -27520,9 +27520,9 @@ void nm_bus_wifi_spi_init(SPI_HandleTypeDef *hspi)
  800c14a:	480d      	ldr	r0, [pc, #52]	; (800c180 <nm_bus_wifi_spi_init+0x84>)
  800c14c:	f7f7 ffb4 	bl	80040b8 <HAL_GPIO_WritePin>
     /**SPIx GPIO Configuration
-    PB3     ------> SPI_WIFI_SCK
-    PB4     ------> SPI_WIFI_MISO
-    PB5     ------> SPI_WIFI_MOSI
+    PB13     ------> SPI_WIFI_SCK
+    PB14     ------> SPI_WIFI_MISO
+    PB15     ------> SPI_WIFI_MOSI
     */
     GPIO_InitStruct.Pin = SPI_WIFI_SCK_PIN|SPI_WIFI_MISO_PIN|SPI_WIFI_MOSI_PIN;
  800c150:	f44f 4360 	mov.w	r3, #57344	; 0xe000
@@ -27537,7 +27537,7 @@ void nm_bus_wifi_spi_init(SPI_HandleTypeDef *hspi)
  800c15e:	2303      	movs	r3, #3
  800c160:	61bb      	str	r3, [r7, #24]
     GPIO_InitStruct.Alternate = SPI2_WIFI_AF;
- 800c162:	2306      	movs	r3, #6
+ 800c162:	2305      	movs	r3, #5
  800c164:	61fb      	str	r3, [r7, #28]
     HAL_GPIO_Init(SPI_WIFI_MOSI_GPIO_PORT, &GPIO_InitStruct);
  800c166:	f107 030c 	add.w	r3, r7, #12
