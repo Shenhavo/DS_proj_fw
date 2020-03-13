@@ -129,7 +129,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_hal.h"
-
+#include "config/conf_winc.h"
+#include "spi.h"
 /** @addtogroup STM32H7xx_HAL_Driver
   * @{
   */
@@ -487,15 +488,15 @@ HAL_StatusTypeDef HAL_SPI_DeInit(SPI_HandleTypeDef *hspi)
   *               the configuration information for SPI module.
   * @retval None
   */
-__weak void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(hspi);
-
-  /* NOTE : This function should not be modified, when the callback is needed,
-            the HAL_SPI_MspInit should be implemented in the user file
-   */
-}
+//__weak void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
+//{
+//  /* Prevent unused argument(s) compilation warning */
+//  UNUSED(hspi);
+//
+//  /* NOTE : This function should not be modified, when the callback is needed,
+//            the HAL_SPI_MspInit should be implemented in the user file
+//   */
+//}
 
 /**
   * @brief  De-Initialize the SPI MSP.

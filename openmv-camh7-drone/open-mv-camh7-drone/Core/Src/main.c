@@ -19,7 +19,11 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdbool.h>
 #include "main.h"
+#include "driver/include/m2m_wifi.h"
+#include "config/conf_winc.h"
+#include <string.h>
 #include "dcmi.h"
 #include "dma.h"
 #include "i2c.h"
@@ -30,13 +34,26 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "nm_bsp.h"
-#include "nm_bus_wrapper.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+#ifdef __GNUC__
+/* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
+   set to 'Yes') calls __io_putchar() */
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
+static void SystemClock_Config(void);
 
+static void wifi_cb(uint8_t u8MsgType, void *pvMsg);
+extern void isr(void);
+
+/** Index of scan list to request scan result. */
+static uint8_t scan_request_index = 0;
+/** Number of APs found. */
+static uint8_t num_founded_ap = 0;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -82,11 +99,19 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+	tstrWifiInitParam param;
+	int8_t ret;
   /* USER CODE END Init */
 
-  /* Configure the system clock */
+  /* Configure the system clock */ // TODO: see if  /* Configure the system clock to 180 MHz */
   SystemClock_Config();
+
+
+	/* GPIO Ports Clock Enable */
+	__GPIOC_CLK_ENABLE();
+	__GPIOA_CLK_ENABLE();
+	__GPIOB_CLK_ENABLE();
+  /* Initialize the BSP. */
 
   /* USER CODE BEGIN SysInit */
 
@@ -97,37 +122,35 @@ int main(void)
   MX_DCMI_Init();
   MX_I2C1_Init();
   MX_JPEG_Init();
-//  MX_SPI2_Init();
   MX_USART2_UART_Init();
   MX_DMA_Init();
 
-  /* USER CODE BEGIN 2 */
-  nm_bsp_init();
-  nm_bsp_register_isr(my_int);
-  nm_bus_init(NULL);
-  /* USER CODE END 2 */
-  /* USER CODE BEGIN 3 */
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-//  uint8_t buff[256]={0};
-//  HAL_StatusTypeDef result = HAL_OK;
-  while (1)
-  {
-    /* USER CODE END WHILE */
-//	  if(HAL_GPIO_ReadPin(WIFI_INT_N_GPIO_Port, WIFI_INT_N_Pin) == GPIO_PIN_RESET)
-//	  {
-//		  HAL_GPIO_TogglePin(LED_G_GPIO_Port, LED_G_Pin);
-//	  }
-//	  uint32_t X = HAL_NVIC_GetPendingIRQ(EXTI15_10_IRQn);
-//	  if(X == 1)
-//	  {
-//		  HAL_GPIO_TogglePin(LED_G_GPIO_Port, LED_G_Pin);
-//	  }
+	nm_bsp_init();
 
-	  HAL_Delay(250);
-//	  result = HAL_SPI_Receive(&hspi2, buff, 256, 250);
+	/* Initialize Wi-Fi parameters structure. */
+	memset((uint8_t *)&param, 0, sizeof(tstrWifiInitParam));
 
-  }
+	/* =================  Initialize Wi-Fi driver with data and status callbacks. ================= */
+	//param.pfAppWifiCb = wifi_cb;
+	param.pfAppWifiCb = (tpfAppWifiCb)wifi_cb;
+	ret = m2m_wifi_init(&param);
+	if (M2M_SUCCESS != ret)
+	{
+		  printf("main: m2m_wifi_init call error!(%d)\r\n", ret);
+		  while (1)
+		  {
+		  }
+	}
+
+	/* Request scan. */
+	m2m_wifi_request_scan(M2M_WIFI_CH_ALL);
+
+	while (1) {
+		/* Handle pending events from network controller. */
+		while (m2m_wifi_handle_events(NULL) != M2M_SUCCESS) {
+		}
+	}
+	return 0;
   /* USER CODE END 3 */
 }
 
@@ -196,20 +219,118 @@ void SystemClock_Config(void)
   }
 }
 
-/* USER CODE BEGIN 4 */
+///* USER CODE BEGIN 4 */
+void EXTI15_10_IRQHandler(void)
+{
+    uint16_t GPIO_Pin;
+
+    /* Get GPIO_Pin */
+    if (__HAL_GPIO_EXTI_GET_IT(CONF_WINC_SPI_INT_PIN))
+    {
+        GPIO_Pin = CONF_WINC_SPI_INT_PIN;
+    }
+
+    HAL_GPIO_EXTI_IRQHandler(GPIO_Pin);
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if( GPIO_Pin == GPIO_PIN_13)
+	if(GPIO_Pin == CONF_WINC_SPI_INT_PIN)
+    {
+        isr();
+    }
+}
+
+static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
+{
+	switch (u8MsgType) {
+	case M2M_WIFI_RESP_SCAN_DONE:
 	{
-		chip_isr(); // SO: in case of WIFI event go to internal pFunction
+		tstrM2mScanDone *pstrInfo = (tstrM2mScanDone *)pvMsg;
+		scan_request_index = 0;
+		if (pstrInfo->u8NumofCh >= 1) {
+			m2m_wifi_req_scan_result(scan_request_index);
+			scan_request_index++;
+		} else {
+			m2m_wifi_request_scan(M2M_WIFI_CH_ALL);
+		}
+
+		break;
+	}
+
+	case M2M_WIFI_RESP_SCAN_RESULT:
+	{
+		tstrM2mWifiscanResult *pstrScanResult = (tstrM2mWifiscanResult *)pvMsg;
+		uint16_t demo_ssid_len;
+		uint16_t scan_ssid_len = strlen((const char *)pstrScanResult->au8SSID);
+
+		/* display founded AP. */
+		printf("[%d] SSID:%s\r\n", scan_request_index, pstrScanResult->au8SSID);
+
+		num_founded_ap = m2m_wifi_get_num_ap_found();
+		if (scan_ssid_len) {
+			/* check same SSID. */
+			demo_ssid_len = strlen((const char *)MAIN_WLAN_SSID);
+			if
+			(
+				(demo_ssid_len == scan_ssid_len) &&
+				(!memcmp(pstrScanResult->au8SSID, (uint8_t *)MAIN_WLAN_SSID, demo_ssid_len))
+			) {
+				/* A scan result matches an entry in the preferred AP List.
+				 * Initiate a connection request.
+				 */
+				printf("Found %s \r\n", MAIN_WLAN_SSID);
+				m2m_wifi_connect((char *)MAIN_WLAN_SSID,
+						sizeof(MAIN_WLAN_SSID),
+						MAIN_WLAN_AUTH,
+						(void *)MAIN_WLAN_PSK,
+						M2M_WIFI_CH_ALL);
+				break;
+			}
+		}
+
+		if (scan_request_index < num_founded_ap) {
+			m2m_wifi_req_scan_result(scan_request_index);
+			scan_request_index++;
+		} else {
+			printf("can not find AP %s\r\n", MAIN_WLAN_SSID);
+			m2m_wifi_request_scan(M2M_WIFI_CH_ALL);
+		}
+
+		break;
+	}
+
+	case M2M_WIFI_RESP_CON_STATE_CHANGED:
+	{
+		tstrM2mWifiStateChanged *pstrWifiState = (tstrM2mWifiStateChanged *)pvMsg;
+		if (pstrWifiState->u8CurrState == M2M_WIFI_CONNECTED) {
+			m2m_wifi_request_dhcp_client();
+		} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
+			printf("Wi-Fi disconnected\r\n");
+
+			/* Request scan. */
+			m2m_wifi_request_scan(M2M_WIFI_CH_ALL);
+		}
+
+		break;
+	}
+
+	case M2M_WIFI_REQ_DHCP_CONF:
+	{
+		uint8_t *pu8IPAddress = (uint8_t *)pvMsg;
+		printf("Wi-Fi connected\r\n");
+		printf("Wi-Fi IP is %u.%u.%u.%u\r\n",
+				pu8IPAddress[0], pu8IPAddress[1], pu8IPAddress[2], pu8IPAddress[3]);
+		break;
+	}
+
+	default:
+	{
+		break;
+	}
 	}
 }
 
-
-void my_int(void)
-{
-	HAL_GPIO_TogglePin(LED_B_GPIO_Port, LED_B_Pin);
-}
 /* USER CODE END 4 */
 
 /**
@@ -220,7 +341,9 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
-
+  while (true)
+  {
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -238,20 +361,11 @@ void assert_failed(uint8_t *file, uint32_t line)
 	/* User can add his own implementation to report the file name and line number,
 	 tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
+  while (true)
+  {
+  }
 }
 #endif /* USE_FULL_ASSERT */
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

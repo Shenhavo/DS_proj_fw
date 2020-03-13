@@ -18,7 +18,12 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
+/* Exported macro ------------------------------------------------------------*/
 
+/** Wi-Fi Settings */
+#define MAIN_WLAN_SSID        "sowifi" /* < Destination SSID */
+#define MAIN_WLAN_AUTH        M2M_WIFI_SEC_WPA_PSK /* < Security manner */
+#define MAIN_WLAN_PSK         "12345678" /* < Password for Destination SSID */
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H
@@ -29,7 +34,9 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_hal.h"
-#include "stm32h7xx_hal.h"
+//#include "stm32f4xx_nucleo_144.h" // TODO: see if i missed something
+#include "stdio.h"
+#include "driver/include/m2m_types.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -52,13 +59,8 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-void Error_Handler(void);
-
-/* USER CODE BEGIN EFP */
-void my_int(void);
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 /* USER CODE END EFP */
-
+void Error_Handler(void);
 
 /* USER CODE END Private defines */
 

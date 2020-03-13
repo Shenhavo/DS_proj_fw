@@ -33,6 +33,11 @@ Core/Src/stm32h7xx_it.o: ../Core/Src/stm32h7xx_it.c ../Core/Inc/main.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi_ex.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h \
+ ../wifi/winc1500/driver/include/m2m_types.h \
+ ../wifi/winc1500/common/include/nm_common.h \
+ ../wifi/winc1500/bsp/include/nm_bsp.h \
+ ../wifi/winc1500/common/include/nm_debug.h \
+ ../wifi/winc1500/bsp/include/nm_bsp_internal.h \
  ../Core/Inc/stm32h7xx_it.h
 
 ../Core/Inc/main.h:
@@ -104,5 +109,15 @@ Core/Src/stm32h7xx_it.o: ../Core/Src/stm32h7xx_it.c ../Core/Inc/main.h \
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h:
 
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h:
+
+../wifi/winc1500/driver/include/m2m_types.h:
+
+../wifi/winc1500/common/include/nm_common.h:
+
+../wifi/winc1500/bsp/include/nm_bsp.h:
+
+../wifi/winc1500/common/include/nm_debug.h:
+
+../wifi/winc1500/bsp/include/nm_bsp_internal.h:
 
 ../Core/Inc/stm32h7xx_it.h:

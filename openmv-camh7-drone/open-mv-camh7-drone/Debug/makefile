@@ -8,9 +8,14 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include wifi/host_drv/common/source/subdir.mk
--include wifi/host_drv/bus_wrapper/source/subdir.mk
--include wifi/host_drv/bsp/source/subdir.mk
+-include wifi/winc1500/spi_flash/source/subdir.mk
+-include wifi/winc1500/socket/source/subdir.mk
+-include wifi/winc1500/root_cert/X509/subdir.mk
+-include wifi/winc1500/root_cert/subdir.mk
+-include wifi/winc1500/driver/source/subdir.mk
+-include wifi/winc1500/common/source/subdir.mk
+-include wifi/winc1500/bus_wrapper/source/subdir.mk
+-include wifi/winc1500/bsp/source/subdir.mk
 -include Drivers/STM32H7xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk

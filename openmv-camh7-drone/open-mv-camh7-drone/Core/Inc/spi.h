@@ -37,6 +37,7 @@ extern SPI_HandleTypeDef hspi2;
 /* USER CODE END Private defines */
 
 void MX_SPI2_Init(void);
+void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi);
 void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle);
 /* USER CODE BEGIN Prototypes */
 

@@ -1,0 +1,7 @@
+nm_bus_wrapper_stm32f429.c:74:13:spi_select_slave	16	static
+nm_bus_wrapper_stm32f429.c:153:14:spi_rw	40	static
+nm_bus_wrapper_stm32f429.c:195:6:nm_bus_wifi_spi_init	40	static
+nm_bus_wrapper_stm32f429.c:230:7:nm_bus_init	24	static
+nm_bus_wrapper_stm32f429.c:270:7:nm_bus_ioctl	24	static
+nm_bus_wrapper_stm32f429.c:293:7:nm_bus_deinit	4	static
+nm_bus_wrapper_stm32f429.c:305:7:nm_bus_reinit	16	static
