@@ -250,7 +250,7 @@ NMI_API sint8 hif_handle_isr(void);
 *   @return
             The function SHALL increment a counter for handler routine.
 */
-void isr(void);
+extern void isr(void);
 
 #ifdef __cplusplus
 }

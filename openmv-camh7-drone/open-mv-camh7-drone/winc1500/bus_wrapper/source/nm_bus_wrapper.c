@@ -254,59 +254,12 @@ sint8 nm_bus_init(void *pvinit)
 		M2M_ERR("SPI bus Initialization error\r\n");
 	}
 
+	//SO: remove SPI lines internal pull-ups
+	m2m_periph_pullup_ctrl(M2M_PERIPH_PULLUP_DIS_SD_DAT2_SPI_RXD, 0);
+	m2m_periph_pullup_ctrl(M2M_PERIPH_PULLUP_DIS_SD_DAT1_SPI_SSN, 0);
+	m2m_periph_pullup_ctrl(M2M_PERIPH_PULLUP_DIS_SD_CMD_SPI_SCK, 0);
+	m2m_periph_pullup_ctrl(M2M_PERIPH_PULLUP_DIS_SD_DAT0_SPI_TXD, 0);
 
-
-
-
-
-
-
-	// TODO: SO: remove
-
-//	typedef enum {
-//		M2M_PERIPH_PULLUP_DIS_HOST_WAKEUP     = (1ul << 0),
-//		M2M_PERIPH_PULLUP_DIS_RTC_CLK         = (1ul << 1),
-//		M2M_PERIPH_PULLUP_DIS_IRQN            = (1ul << 2),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_3          = (1ul << 3),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_4          = (1ul << 4),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_5          = (1ul << 5),
-//		M2M_PERIPH_PULLUP_DIS_SD_DAT3         = (1ul << 6),
-//		M2M_PERIPH_PULLUP_DIS_SD_DAT2_SPI_RXD = (1ul << 7),
-//		M2M_PERIPH_PULLUP_DIS_SD_DAT1_SPI_SSN = (1ul << 9),
-//		M2M_PERIPH_PULLUP_DIS_SD_CMD_SPI_SCK  = (1ul << 10),
-//		M2M_PERIPH_PULLUP_DIS_SD_DAT0_SPI_TXD = (1ul << 11),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_6          = (1ul << 12),
-//		M2M_PERIPH_PULLUP_DIS_SD_CLK          = (1ul << 13),
-//		M2M_PERIPH_PULLUP_DIS_I2C_SCL         = (1ul << 14),
-//		M2M_PERIPH_PULLUP_DIS_I2C_SDA         = (1ul << 15),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_11         = (1ul << 16),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_12         = (1ul << 17),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_13         = (1ul << 18),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_14         = (1ul << 19),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_15         = (1ul << 20),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_16         = (1ul << 21),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_17         = (1ul << 22),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_18         = (1ul << 23),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_19         = (1ul << 24),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_20         = (1ul << 25),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_21         = (1ul << 26),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_22         = (1ul << 27),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_23         = (1ul << 28),
-//		M2M_PERIPH_PULLUP_DIS_GPIO_24         = (1ul << 29),
-//	} tenuPullupMask;
-
-
-//for( uint8_t times =0; times <25; times ++)
-//{
-//	m2m_periph_pullup_ctrl(M2M_PERIPH_PULLUP_DIS_GPIO_15, 0);
-//	m2m_periph_pullup_ctrl(M2M_PERIPH_PULLUP_DIS_GPIO_17, 0);
-//	m2m_periph_pullup_ctrl(M2M_PERIPH_PULLUP_DIS_GPIO_18, 0);
-//}
-
-	// END OF SO: remove
-
-
-//	HAL_SPI_MspInit(&hspiWifi); // SO: removed since it's called twice
 	return result;
 }
 

@@ -36,7 +36,9 @@ Core/Src/stm32h7xx_hal_msp.o: ../Core/Src/stm32h7xx_hal_msp.c \
  ../winc1500/driver/include/m2m_types.h \
  ../winc1500/common/include/nm_common.h ../winc1500/bsp/include/nm_bsp.h \
  ../winc1500/common/include/nm_debug.h \
- ../winc1500/bsp/include/nm_bsp_internal.h
+ ../winc1500/bsp/include/nm_bsp_internal.h \
+ ../winc1500/driver/include/m2m_wifi.h ../winc1500/driver/source/nmdrv.h \
+ ../winc1500/config/conf_winc.h
 
 ../Core/Inc/main.h:
 
@@ -117,3 +119,9 @@ Core/Src/stm32h7xx_hal_msp.o: ../Core/Src/stm32h7xx_hal_msp.c \
 ../winc1500/common/include/nm_debug.h:
 
 ../winc1500/bsp/include/nm_bsp_internal.h:
+
+../winc1500/driver/include/m2m_wifi.h:
+
+../winc1500/driver/source/nmdrv.h:
+
+../winc1500/config/conf_winc.h:
