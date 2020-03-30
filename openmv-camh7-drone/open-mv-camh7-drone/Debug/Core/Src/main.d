@@ -36,12 +36,11 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../winc1500/driver/include/m2m_types.h \
  ../winc1500/common/include/nm_common.h ../winc1500/bsp/include/nm_bsp.h \
  ../winc1500/common/include/nm_debug.h \
- ../winc1500/bsp/include/nm_bsp_internal.h \
- ../winc1500/driver/include/m2m_wifi.h ../winc1500/driver/source/nmdrv.h \
+ ../winc1500/bsp/include/nm_bsp_internal.h ../Core/Inc/debug_mngr.h \
  ../winc1500/config/conf_winc.h ../Core/Inc/wifi_mngr.h \
  ../Core/Inc/dcmi.h ../Core/Inc/main.h ../Core/Inc/dma.h \
  ../Core/Inc/i2c.h ../Core/Inc/jpeg.h ../Core/Inc/spi.h \
- ../Core/Inc/usart.h ../Core/Inc/gpio.h
+ ../Core/Inc/usart.h ../Core/Inc/gpio.h ../Core/Inc/led.h
 
 ../Core/Inc/main.h:
 
@@ -123,9 +122,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../winc1500/bsp/include/nm_bsp_internal.h:
 
-../winc1500/driver/include/m2m_wifi.h:
-
-../winc1500/driver/source/nmdrv.h:
+../Core/Inc/debug_mngr.h:
 
 ../winc1500/config/conf_winc.h:
 
@@ -146,3 +143,5 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/usart.h:
 
 ../Core/Inc/gpio.h:
+
+../Core/Inc/led.h:

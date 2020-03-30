@@ -672,11 +672,11 @@ typedef enum{
 	/*!<
 		Receive socket event.
 	*/
-	SOCKET_MSG_SEND,
+	SOCKET_MSG_SEND,	//SO: generally used for TCP
 	/*!<
 		Send socket event.
 	*/
-	SOCKET_MSG_SENDTO,
+	SOCKET_MSG_SENDTO, //SO: generally used for UDP
 	/*!<
 		sendto socket event.
 	*/

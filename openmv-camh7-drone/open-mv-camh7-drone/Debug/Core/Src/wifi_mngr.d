@@ -36,10 +36,9 @@ Core/Src/wifi_mngr.o: ../Core/Src/wifi_mngr.c ../Core/Inc/main.h \
  ../winc1500/driver/include/m2m_types.h \
  ../winc1500/common/include/nm_common.h ../winc1500/bsp/include/nm_bsp.h \
  ../winc1500/common/include/nm_debug.h \
- ../winc1500/bsp/include/nm_bsp_internal.h \
+ ../winc1500/bsp/include/nm_bsp_internal.h ../Core/Inc/led.h \
  ../winc1500/driver/include/m2m_wifi.h ../winc1500/driver/source/nmdrv.h \
- ../winc1500/config/conf_winc.h ../Core/Inc/wifi_mngr.h \
- ../winc1500/socket/include/socket.h
+ ../winc1500/socket/include/socket.h ../Core/Inc/wifi_mngr.h
 
 ../Core/Inc/main.h:
 
@@ -121,12 +120,12 @@ Core/Src/wifi_mngr.o: ../Core/Src/wifi_mngr.c ../Core/Inc/main.h \
 
 ../winc1500/bsp/include/nm_bsp_internal.h:
 
+../Core/Inc/led.h:
+
 ../winc1500/driver/include/m2m_wifi.h:
 
 ../winc1500/driver/source/nmdrv.h:
 
-../winc1500/config/conf_winc.h:
+../winc1500/socket/include/socket.h:
 
 ../Core/Inc/wifi_mngr.h:
-
-../winc1500/socket/include/socket.h:

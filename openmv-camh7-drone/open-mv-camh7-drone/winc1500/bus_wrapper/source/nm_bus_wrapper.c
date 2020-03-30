@@ -198,7 +198,7 @@ void nm_bus_wifi_spi_init(SPI_HandleTypeDef *hspi)
     GPIO_InitTypeDef  GPIO_InitStruct;
 
     /* Peripheral clock enable */
-    SPI_WIFI_CLK_ENABLE();
+    SPI_WIFI_CLK_ENABLE(); // __HAL_RCC_SPI2_CLK_ENABLE()
 
     /* Configure GPIO pin : PA4 - we are using ST GPIO definitions for winc1500 */
     GPIO_InitStruct.Pin   = SPI_WIFI_CS_PIN;
@@ -242,7 +242,7 @@ sint8 nm_bus_init(void *pvinit)
 	hspiWifi.Init.CLKPolarity	   = SPI_POLARITY_LOW;
 	hspiWifi.Init.CLKPhase		   = SPI_PHASE_1EDGE;
 	hspiWifi.Init.NSS			   = SPI_NSS_SOFT;
-	hspiWifi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+	hspiWifi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
 	hspiWifi.Init.FirstBit		   = SPI_FIRSTBIT_MSB;
 	hspiWifi.Init.TIMode		   = SPI_TIMODE_DISABLE;
 	hspiWifi.Init.CRCCalculation   = SPI_CRCCALCULATION_DISABLE;

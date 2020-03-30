@@ -78,18 +78,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PCPin PCPin PCPin */
-  GPIO_InitStruct.Pin = LED_R_Pin|LED_G_Pin|LED_B_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  HAL_GPIO_WritePin(GPIOC, LED_R_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOC, LED_G_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOC, LED_B_Pin, GPIO_PIN_SET);
-
-
   /*Configure GPIO pins : PA0 PA1 PA2 PA3 
                            PA7 PA8 PA9 PA10 
                            PA11 PA12 PA15 */

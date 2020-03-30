@@ -21,6 +21,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include <stdbool.h>
 #include "main.h"
+#include "debug_mngr.h"
+#include "config/conf_winc.h"
 #include "wifi_mngr.h"
 #include "dcmi.h"
 #include "dma.h"
@@ -29,6 +31,7 @@
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
+#include "led.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -44,7 +47,6 @@
 #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif /* __GNUC__ */
 static void SystemClock_Config(void);
-
 
 /**
   * @brief  The application entry point.
@@ -63,20 +65,17 @@ int main(void)
 	MX_JPEG_Init();
 	MX_USART2_UART_Init();
 	MX_DMA_Init();
+	LED_Init();
 
 	WifiMngr_Init();
 
-	/* connect to router. */
-	WifiMngr_Connect(M2M_WIFI_CH_ALL);
 	while (true)
 	{
-		/* Handle pending events from network controller. */
-		while (WifiMngr_HandleEvents() != M2M_SUCCESS) {
-		}
+		WifiMngr_HandleEvents();
 	}
+
 	return 0;
 	/* USER CODE END 3 */
-
 }
 
 /**
@@ -170,8 +169,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
 }
 
-
-
 /* USER CODE END 4 */
 
 /**
@@ -181,9 +178,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-	/* User can add his own implementation to report the HAL error return state */
+  printf("\r\n***Error_handler***\r\n");
   while (true)
   {
+	  HAL_Delay(500);
+	  LED_SetState(eLedStates_red);
+	  HAL_Delay(500);
+	  LED_SetState(eLedStates_all_off);
   }
   /* USER CODE END Error_Handler_Debug */
 }

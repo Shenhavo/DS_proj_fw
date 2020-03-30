@@ -10,9 +10,23 @@
  extern "C" {
 #endif
 
+#define CALC_TX_AVG_TIME
+
+#ifdef CALC_TX_AVG_TIME
+	#define NUM_OF_TX_TIMES_TO_AVG	500
+	#define OUTLINERS_TO_OMIT		10
+	 void WifiMngr_Calc(void);
+#endif //CALC_TX_AVG_TIME
+
+
+
+typedef struct sockaddr_in stSockAdd;
+//typedef struct tstrSocketBindMsg stBindMsg;
+typedef tstrM2MAPConfig stAccPoint;
+
  int8_t WifiMngr_Init(void);
- sint8 WifiMngr_ScanReq(tenuM2mScanCh a_e_tenuM2mScanCh);
- sint8 WifiMngr_Connect(tenuM2mScanCh a_e_tenuM2mScanCh);
+// sint8 WifiMngr_ScanReq(tenuM2mScanCh a_e_tenuM2mScanCh);
+// sint8 WifiMngr_Connect(tenuM2mScanCh a_e_tenuM2mScanCh);
  sint8	WifiMngr_HandleEvents(void);
 
 #ifdef __cplusplus

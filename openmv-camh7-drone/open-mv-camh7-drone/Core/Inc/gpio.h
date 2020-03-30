@@ -34,12 +34,6 @@
 /* USER CODE BEGIN Private defines */
  // SO: moved from main.h
  /* Private defines -----------------------------------------------------------*/
- #define LED_R_Pin GPIO_PIN_0
- #define LED_R_GPIO_Port GPIOC
- #define LED_G_Pin GPIO_PIN_1
- #define LED_G_GPIO_Port GPIOC
- #define LED_B_Pin GPIO_PIN_2
- #define LED_B_GPIO_Port GPIOC
  #define WIFI_CHIP_EN_Pin GPIO_PIN_5
  #define WIFI_CHIP_EN_GPIO_Port GPIOA
  #define WIFI_RESET_N_Pin GPIO_PIN_12
