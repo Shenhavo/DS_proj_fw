@@ -8,3 +8,4 @@
 *.mk
 *.su
 openmv-camh7-drone/open-mv-camh7-drone/Debug/open-mv-camh7-drone.list
+*.o

@@ -18,7 +18,7 @@
 	 void WifiMngr_Calc(void);
 #endif //CALC_TX_AVG_TIME
 
-
+#define SIZE_OF_AVG_JPEG_IMAGE_KB	15
 
 typedef struct sockaddr_in stSockAdd;
 //typedef struct tstrSocketBindMsg stBindMsg;

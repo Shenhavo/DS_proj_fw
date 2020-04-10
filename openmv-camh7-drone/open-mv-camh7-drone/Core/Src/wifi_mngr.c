@@ -30,6 +30,7 @@ static uint8_t gau8SocketTestBuffer[MAIN_WIFI_M2M_BUFFER_SIZE];
 static SOCKET tcp_server_socket = -1;
 static SOCKET tcp_client_socket = -1;
 static uint8_t g_u8Ctr = 0;
+static uint32_t g_u32Ctr = 0;
 /** Wi-Fi connection state */
 //static uint8_t wifi_connected;
 stSockAdd g_stSockAdd;
@@ -124,7 +125,14 @@ sint8	WifiMngr_HandleEvents(void)
 #ifdef CALC_TX_AVG_TIME
 		WifiMngr_Calc();
 #endif // CALC_TX_AVG_TIME
+		if( g_u32Ctr%SIZE_OF_AVG_JPEG_IMAGE_KB == 0) // adding timestamp once every SIZE_OF_AVG_JPEG_IMAGE_KB sent
+		{
+			uint32_t CurrTick = HAL_GetTick();
+			memcpy(TstBuff,&CurrTick,sizeof(uint32_t));
+		}
+
 		send(tcp_client_socket, TstBuff, 1024, 0); // about 9-10 msec
+		g_u32Ctr++;
 		}
 	}
 	return ret;
