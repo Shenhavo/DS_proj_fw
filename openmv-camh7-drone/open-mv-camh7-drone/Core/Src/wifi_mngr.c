@@ -41,7 +41,7 @@ stAccPoint g_stAccPoint;
 	static uint32_t Delta_a[NUM_OF_TX_TIMES_TO_AVG] = {0};
 #endif // CALC_TX_AVG_TIME
 
-
+static uint32_t g_IsSendPhaseBegin = false;
 
 /* functions implementation area */
 //=========== ===  end of socket section === ===========
@@ -117,6 +117,16 @@ sint8	WifiMngr_HandleEvents(void)
 		/* Bind service*/
 		bind(tcp_server_socket, (struct sockaddr *)&g_stSockAdd, sizeof(struct sockaddr_in));
 	}
+	else
+	{
+		if(g_IsSendPhaseBegin == true)
+		{
+#ifdef CALC_TX_AVG_TIME
+		WifiMngr_Calc();
+#endif // CALC_TX_AVG_TIME
+		send(tcp_client_socket, TstBuff, 1024, 0); // about 9-10 msec
+		}
+	}
 	return ret;
 }
 
@@ -178,10 +188,8 @@ static void socket_cb(SOCKET sock, uint8_t u8Msg, void *pvMsg)
 		LED_SetState(eLedStates_green);
 		tstrSocketListenMsg *pstrListen = (tstrSocketListenMsg *)pvMsg;
 		if (pstrListen && pstrListen->status == 0) {
-//			printf("socket_cb: Ready to listen.\r\n");
 			accept(tcp_server_socket, NULL, NULL);
 		} else {
-//			printf("socket_cb: listen error!\r\n");
 			close(tcp_server_socket);
 			tcp_server_socket = -1;
 		}
@@ -233,15 +241,8 @@ static void socket_cb(SOCKET sock, uint8_t u8Msg, void *pvMsg)
 			LED_SetState(eLedStates_blue_green);
 
 		}
-#ifdef CALC_TX_AVG_TIME
-		WifiMngr_Calc();
-#endif // CALC_TX_AVG_TIME
-		send(tcp_client_socket, TstBuff, 1024, 0);
-//		}
-//		send(tcp_client_socket, g_Stop_cmd, 6, 0);
-//		recv(tcp_client_socket, gau8SocketTestBuffer, sizeof(gau8SocketTestBuffer), 0);
-//		send(tcp_client_socket, &g_u8Ctr, 1, 0);
-//		g_u8Ctr++;
+
+		g_IsSendPhaseBegin = true;
 	}
 	break;
 	default:
@@ -265,11 +266,19 @@ void WifiMngr_Calc(void)
 		for(uint32_t idx = OUTLINERS_TO_OMIT; idx<NUM_OF_TX_TIMES_TO_AVG;  idx++)
 		{
 			avg += Delta_a[idx];
-			avg /= (NUM_OF_TX_TIMES_TO_AVG-OUTLINERS_TO_OMIT);
-			printf("c");
 		}
+		avg /= (NUM_OF_TX_TIMES_TO_AVG-OUTLINERS_TO_OMIT);
+		printf("c");
+		recv(tcp_client_socket, gau8SocketTestBuffer, sizeof(gau8SocketTestBuffer), 0);
 	}
 }
+
+//		uint32 Tock = HAL_GetTick();
+//// ===============
+//	  	uint32 Tick = HAL_GetTick();
+//	  	uint32 dt = Tick - Tock;
+//	  	printf("c");
+
 #endif // CALC_TX_AVG_TIME
 
 

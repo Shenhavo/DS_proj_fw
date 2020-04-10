@@ -320,11 +320,13 @@ sint8 hif_send(uint8 u8Gid,uint8 u8Opcode,uint8 *pu8CtrlBuf,uint16 u16CtrlBufSiz
 	{
 		strHif.u16Length += u16CtrlBufSize;
 	}
-	ret = hif_chip_wake();
+
+	ret = hif_chip_wake();   // neglectable 0msec
 	if(ret == M2M_SUCCESS)
 	{
 		volatile uint32 reg, dma_addr = 0;
 		volatile uint16 cnt = 0;
+
 //#define OPTIMIZE_BUS
 /*please define in firmware also*/
 #ifndef OPTIMIZE_BUS
@@ -350,7 +352,6 @@ sint8 hif_send(uint8 u8Gid,uint8 u8Opcode,uint8 *pu8CtrlBuf,uint16 u16CtrlBufSiz
 		if(M2M_SUCCESS != ret) goto ERR1;
 #endif
 		dma_addr = 0;
-
 		for(cnt = 0; cnt < 1000; cnt ++)
 		{
 			ret = nm_read_reg_with_ret(WIFI_HOST_RCV_CTRL_2,(uint32 *)&reg);
@@ -377,7 +378,7 @@ sint8 hif_send(uint8 u8Gid,uint8 u8Opcode,uint8 *pu8CtrlBuf,uint16 u16CtrlBufSiz
                 break;
 			}
 		}
-        
+// 395-432 ~ 9 msec
 		if (dma_addr != 0)
 		{
 			volatile uint32	u32CurrAddr;
@@ -392,6 +393,7 @@ sint8 hif_send(uint8 u8Gid,uint8 u8Opcode,uint8 *pu8CtrlBuf,uint16 u16CtrlBufSiz
 				if(M2M_SUCCESS != ret) goto ERR1;
 				u32CurrAddr += u16CtrlBufSize;
 			}
+			// 395-413 ~ 1 msec
 			if(pu8DataBuf != NULL)
 			{
 				u32CurrAddr += (u16DataOffset - u16CtrlBufSize);
@@ -399,10 +401,9 @@ sint8 hif_send(uint8 u8Gid,uint8 u8Opcode,uint8 *pu8CtrlBuf,uint16 u16CtrlBufSiz
 				if(M2M_SUCCESS != ret) goto ERR1;
 				u32CurrAddr += u16DataSize;
 			}
-
 			reg = dma_addr << 2;
 			reg |= NBIT1;
-			ret = nm_write_reg(WIFI_HOST_RCV_CTRL_3, reg);
+			ret = nm_write_reg(WIFI_HOST_RCV_CTRL_3, reg); // ~ approx. 1 msec
 			if(M2M_SUCCESS != ret) goto ERR1;
 		}
 		else
@@ -412,13 +413,13 @@ sint8 hif_send(uint8 u8Gid,uint8 u8Opcode,uint8 *pu8CtrlBuf,uint16 u16CtrlBufSiz
 			ret = M2M_ERR_MEM_ALLOC;
 			goto ERR2;
 		}
-
 	}
 	else
 	{
 		M2M_ERR("(HIF)Fail to wakup the chip\n");
 		goto ERR2;
 	}
+
 	/*actual sleep ret = M2M_SUCCESS*/
  	ret = hif_chip_sleep();
 	return ret;

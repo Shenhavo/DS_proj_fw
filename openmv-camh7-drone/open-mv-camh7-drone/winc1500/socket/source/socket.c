@@ -769,11 +769,13 @@ sint16 send(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags)
 			u16DataOffset	= gastrSockets[sock].u16DataOffset;
 		}
 
+		// about 9-10 msec
 		s16Ret =  SOCKET_REQUEST(u8Cmd|M2M_REQ_DATA_PKT, (uint8*)&strSend, sizeof(tstrSendCmd), pvSendBuffer, u16SendLength, u16DataOffset);
 		if(s16Ret != SOCK_ERR_NO_ERROR)
 		{
 			s16Ret = SOCK_ERR_BUFFER_FULL;
 		}
+
 	}
 	return s16Ret;
 }

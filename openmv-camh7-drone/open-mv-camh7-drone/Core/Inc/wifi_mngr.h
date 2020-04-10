@@ -10,7 +10,7 @@
  extern "C" {
 #endif
 
-#define CALC_TX_AVG_TIME
+//#define CALC_TX_AVG_TIME
 
 #ifdef CALC_TX_AVG_TIME
 	#define NUM_OF_TX_TIMES_TO_AVG	500

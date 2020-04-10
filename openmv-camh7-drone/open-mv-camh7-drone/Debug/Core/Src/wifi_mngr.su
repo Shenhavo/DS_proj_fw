@@ -1,5 +1,4 @@
 wifi_mngr.c:52:8:WifiMngr_Init	48	static
 wifi_mngr.c:104:7:WifiMngr_HandleEvents	16	static
-wifi_mngr.c:126:13:wifi_cb	24	static
-wifi_mngr.c:157:13:socket_cb	32	static
-wifi_mngr.c:255:6:WifiMngr_Calc	24	static
+wifi_mngr.c:136:13:wifi_cb	24	static
+wifi_mngr.c:167:13:socket_cb	32	static

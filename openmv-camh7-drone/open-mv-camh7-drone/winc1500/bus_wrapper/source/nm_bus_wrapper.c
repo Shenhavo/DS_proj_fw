@@ -160,9 +160,9 @@ static sint8 spi_rw(uint8* pu8Mosi, uint8* pu8Miso, uint16 u16Sz)
 	   M2M_ERR("%s:size is too big. error (%d)\n",__FUNCTION__,status);
 	   return HAL_ERROR;
    }
+
     /* Start SPI transaction - polling method */
   	spi_select_slave(true);
-
 
     /* Transmit/Recieve */
     if (pu8Mosi == NULL)
