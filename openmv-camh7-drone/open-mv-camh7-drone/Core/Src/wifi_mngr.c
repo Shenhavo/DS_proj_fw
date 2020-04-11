@@ -13,6 +13,8 @@
 #include "driver/include/m2m_wifi.h"
 #include "socket/include/socket.h"
 #include "wifi_mngr.h"
+// debug stuff
+#include "usart.h"
 
 // &&&&&&&&&&&&&&&& CB functions &&&&&&&&&&&&&&&&&&
 static void wifi_cb(uint8_t u8MsgType, void *pvMsg);
@@ -129,7 +131,14 @@ sint8	WifiMngr_HandleEvents(void)
 		{
 			uint32_t CurrTick = HAL_GetTick();
 			memcpy(TstBuff,&CurrTick,sizeof(uint32_t));
-//			printf("%d\r\n", CurrTick);
+
+			// debug stuff
+			char StrNum[12]; // 10 chars to uint32_t + 2 for '\r\n'
+			itoa(CurrTick, StrNum, 10);
+			StrNum[10] = '\r';
+			StrNum[11] = '\n';
+			HAL_UART_Transmit( &DEBUG_UART_HANDLER, &StrNum, sizeof(StrNum), 10);
+			//
 		}
 
 		send(tcp_client_socket, TstBuff, 1024, 0); // about 9-10 msec

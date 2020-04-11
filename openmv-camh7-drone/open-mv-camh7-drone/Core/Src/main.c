@@ -19,34 +19,53 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdbool.h>
 #include "main.h"
-#include "debug_mngr.h"
-#include "config/conf_winc.h"
-#include "wifi_mngr.h"
 #include "dcmi.h"
 #include "dma.h"
-#include "i2c.h"
 #include "jpeg.h"
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
-#include "led.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdbool.h>
+#include "debug_mngr.h"
+#include "config/conf_winc.h"
+#include "wifi_mngr.h"
+#include "led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-#ifdef __GNUC__
-/* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
-   set to 'Yes') calls __io_putchar() */
-#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
-static void SystemClock_Config(void);
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+/* USER CODE BEGIN PFP */
+
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
@@ -54,29 +73,51 @@ static void SystemClock_Config(void);
   */
 int main(void)
 {
-	HAL_Init();
-	SystemClock_Config();
+  /* USER CODE BEGIN 1 */
 
-	/* Initialize the BSP. */
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_DCMI_Init();
-	MX_I2C1_Init();
-	MX_JPEG_Init();
-	MX_USART2_UART_Init();
-	MX_DMA_Init();
+  /* USER CODE END 1 */
+  
+
+  /* MCU Configuration--------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+	
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DCMI_Init();
+  MX_JPEG_Init();
+  MX_SPI2_Init();
+  MX_DMA_Init();
+  MX_USART3_UART_Init();
+  /* USER CODE BEGIN 2 */
 	LED_Init();
-
 	WifiMngr_Init();
-//	uint8_t hello_str[] = "hello_world\r\n";
-//	HAL_UART_Transmit( &huart2, hello_str, sizeof(hello_str), 300);
-	while (true)
-	{
-		WifiMngr_HandleEvents();
-	}
 
-	return 0;
-	/* USER CODE END 3 */
+
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+	  WifiMngr_HandleEvents();
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
+  /* USER CODE END 3 */
 }
 
 /**
@@ -104,12 +145,12 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 4;//32;
-  RCC_OscInitStruct.PLL.PLLN = 12;//129;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 12;
   RCC_OscInitStruct.PLL.PLLP = 2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;//2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   RCC_OscInitStruct.PLL.PLLR = 2;
-  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;//RCC_PLL1VCIRANGE_1;
+  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
   RCC_OscInitStruct.PLL.PLLFRACN = 0;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -133,11 +174,9 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_SPI2
-                              |RCC_PERIPHCLK_I2C1;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_SPI2;
   PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
   PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
-  PeriphClkInitStruct.I2c123ClockSelection = RCC_I2C123CLKSOURCE_D2PCLK1;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -148,7 +187,7 @@ void SystemClock_Config(void)
 	__GPIOB_CLK_ENABLE();
 }
 
-///* USER CODE BEGIN 4 */
+/* USER CODE BEGIN 4 */
 void EXTI15_10_IRQHandler(void)
 {
     uint16_t GPIO_Pin;
@@ -203,12 +242,12 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
 	 tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
   while (true)
   {
   }
+  
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

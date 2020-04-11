@@ -43,14 +43,6 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
-/* USER CODE END EC */
-
-/* Exported macro ------------------------------------------------------------*/
-
-/* USER CODE END Header */
-/* Exported macro ------------------------------------------------------------*/
-
 /** Wi-Fi Settings */
 
 
@@ -75,9 +67,27 @@ extern "C" {
 #define MAIN_WLAN_AUTH                 M2M_WIFI_SEC_OPEN /* < Security manner */
 #define MAIN_WLAN_CHANNEL              (6) /* < Channel number */
 
+/* USER CODE END EC */
+
+/* Exported macro ------------------------------------------------------------*/
+
+/* USER CODE END Header */
+
+
+/* Exported macro ------------------------------------------------------------*/
+/* USER CODE BEGIN EM */
+
+/* USER CODE END EM */
+
 /* Exported functions prototypes ---------------------------------------------*/
-/* USER CODE END EFP */
 void Error_Handler(void);
+
+/* USER CODE BEGIN EFP */
+
+/* USER CODE END EFP */
+
+
+/* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
