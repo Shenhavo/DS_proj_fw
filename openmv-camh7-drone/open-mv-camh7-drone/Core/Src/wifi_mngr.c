@@ -129,6 +129,7 @@ sint8	WifiMngr_HandleEvents(void)
 		{
 			uint32_t CurrTick = HAL_GetTick();
 			memcpy(TstBuff,&CurrTick,sizeof(uint32_t));
+//			printf("%d\r\n", CurrTick);
 		}
 
 		send(tcp_client_socket, TstBuff, 1024, 0); // about 9-10 msec

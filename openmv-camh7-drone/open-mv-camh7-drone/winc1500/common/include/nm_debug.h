@@ -58,9 +58,9 @@
 #define M2M_LOG_DBG										4
 
 #if (defined __APS3_CORTUS__)
-#define M2M_LOG_LEVEL									M2M_LOG_DBG
+#define M2M_LOG_LEVEL									M2M_LOG_NONE
 #else
-#define M2M_LOG_LEVEL									M2M_LOG_DBG
+#define M2M_LOG_LEVEL									M2M_LOG_NONE
 #endif
 
 

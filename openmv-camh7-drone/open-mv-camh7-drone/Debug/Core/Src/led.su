@@ -1,3 +1,0 @@
-led.c:16:6:LED_Init	32	static
-led.c:32:6:LED_SetState	16	static
-led.c:102:12:LED_GetState	16	static
