@@ -242,7 +242,7 @@ sint8 nm_bus_init(void *pvinit)
 	hspiWifi.Init.CLKPolarity	   = SPI_POLARITY_LOW;
 	hspiWifi.Init.CLKPhase		   = SPI_PHASE_1EDGE;
 	hspiWifi.Init.NSS			   = SPI_NSS_SOFT;
-	hspiWifi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256; // TODO: DB - this is to coply with cubemx output.
+	hspiWifi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; // TODO: DB - this is to coply with cubemx output = 50Mbps
 	hspiWifi.Init.FirstBit		   = SPI_FIRSTBIT_MSB;
 	hspiWifi.Init.TIMode		   = SPI_TIMODE_DISABLE;
 	hspiWifi.Init.CRCCalculation   = SPI_CRCCALCULATION_DISABLE;
