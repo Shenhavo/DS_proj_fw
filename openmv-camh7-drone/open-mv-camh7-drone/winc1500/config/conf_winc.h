@@ -51,7 +51,6 @@ extern "C" {
 //#include "stm32f4xx_hal_spi.h"	// --
 #include "stm32h7xx_hal.h"			// ++
 #include "stm32h7xx_hal_spi.h"		// ++
-//#include "conf_winc.h"
 /*
    ---------------------------------
    ---------- PIN settings ---------

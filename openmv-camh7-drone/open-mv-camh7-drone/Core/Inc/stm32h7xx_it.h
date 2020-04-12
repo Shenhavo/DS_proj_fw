@@ -60,7 +60,9 @@ void DMA1_Stream0_IRQHandler(void);
 void SPI2_IRQHandler(void);
 void USART3_IRQHandler(void);
 void EXTI15_10_IRQHandler(void);
+void SDMMC1_IRQHandler(void);
 void DCMI_IRQHandler(void);
+void JPEG_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

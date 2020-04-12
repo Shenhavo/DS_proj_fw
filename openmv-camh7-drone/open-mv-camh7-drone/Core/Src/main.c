@@ -22,7 +22,10 @@
 #include "main.h"
 #include "dcmi.h"
 #include "dma.h"
+#include "fatfs.h"
+#include "i2c.h"
 #include "jpeg.h"
+#include "sdmmc.h"
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
@@ -32,6 +35,7 @@
 #include <stdbool.h>
 #include "debug_mngr.h"
 #include "config/conf_winc.h"
+#include "driver/include/m2m_types.h"
 #include "wifi_mngr.h"
 #include "led.h"
 /* USER CODE END Includes */
@@ -98,25 +102,27 @@ int main(void)
   MX_GPIO_Init();
   MX_DCMI_Init();
   MX_JPEG_Init();
-  MX_SPI2_Init();
+//  MX_SPI2_Init(); // TODO: DB - this causes problems. fix this to fit with the CUBEMX
   MX_DMA_Init();
+  MX_I2C1_Init();
+  MX_SDMMC1_SD_Init();
+  MX_FATFS_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 	LED_Init();
 	WifiMngr_Init();
-
-
+	printf("~~ init finished ~~\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	  WifiMngr_HandleEvents();
+	while (1)
+	{
+		WifiMngr_HandleEvents();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+	}
   /* USER CODE END 3 */
 }
 
@@ -162,51 +168,51 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
                               |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV1;
+  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
   RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
   }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_SPI2;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_SPI2
+                              |RCC_PERIPHCLK_SDMMC|RCC_PERIPHCLK_I2C1;
+  PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL;
   PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
   PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+  PeriphClkInitStruct.I2c123ClockSelection = RCC_I2C123CLKSOURCE_D2PCLK1;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
-	/* GPIO Ports Clock Enable */
-	__GPIOC_CLK_ENABLE();
-	__GPIOA_CLK_ENABLE();
-	__GPIOB_CLK_ENABLE();
 }
 
 /* USER CODE BEGIN 4 */
-void EXTI15_10_IRQHandler(void)
-{
-    uint16_t GPIO_Pin;
+//void EXTI15_10_IRQHandler(void)
+//{
+//    uint16_t GPIO_Pin;
+//
+//    /* Get GPIO_Pin */
+//    if (__HAL_GPIO_EXTI_GET_IT(CONF_WINC_SPI_INT_PIN))
+//    {
+//        GPIO_Pin = CONF_WINC_SPI_INT_PIN;
+//    }
+//
+//    HAL_GPIO_EXTI_IRQHandler(GPIO_Pin);
+//}
 
-    /* Get GPIO_Pin */
-    if (__HAL_GPIO_EXTI_GET_IT(CONF_WINC_SPI_INT_PIN))
-    {
-        GPIO_Pin = CONF_WINC_SPI_INT_PIN;
-    }
-
-    HAL_GPIO_EXTI_IRQHandler(GPIO_Pin);
-}
-
+// TODO: DB - define in cube and move to `stm32h7xx_it.h`
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == CONF_WINC_SPI_INT_PIN)
-    {
-        isr();
-    }
+	{
+		isr();
+	}
 }
 
 /* USER CODE END 4 */
@@ -218,14 +224,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  printf("\r\n***Error_handler***\r\n");
-  while (true)
-  {
-	  HAL_Delay(500);
-	  LED_SetState(eLedStates_red);
-	  HAL_Delay(500);
-	  LED_SetState(eLedStates_all_off);
-  }
+	printf("\r\n***Error_handler***\r\n");
+	while (true)
+	{
+		HAL_Delay(500);
+		LED_SetState(eLedStates_red);
+		HAL_Delay(500);
+		LED_SetState(eLedStates_all_off);
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -242,10 +248,10 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
 	 tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  while (true)
-  {
-  }
-  
+	while (true)
+	{
+	}
+
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

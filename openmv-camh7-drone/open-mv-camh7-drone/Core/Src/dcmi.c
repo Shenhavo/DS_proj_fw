@@ -9,10 +9,10 @@
   * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                             www.st.com/SLA0044
   *
   ******************************************************************************
   */
@@ -37,7 +37,7 @@ void MX_DCMI_Init(void)
   hdcmi.Init.VSPolarity = DCMI_VSPOLARITY_LOW;
   hdcmi.Init.HSPolarity = DCMI_HSPOLARITY_LOW;
   hdcmi.Init.CaptureRate = DCMI_CR_ALL_FRAME;
-  hdcmi.Init.ExtendedDataMode = DCMI_EXTEND_DATA_10B;
+  hdcmi.Init.ExtendedDataMode = DCMI_EXTEND_DATA_8B;
   hdcmi.Init.JPEGMode = DCMI_JPEG_DISABLE;
   hdcmi.Init.ByteSelectMode = DCMI_BSM_ALL;
   hdcmi.Init.ByteSelectStart = DCMI_OEBS_ODD;
@@ -74,8 +74,6 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
     PA6     ------> DCMI_PIXCLK
     PC6     ------> DCMI_D0
     PC7     ------> DCMI_D1
-    PC10     ------> DCMI_D8
-    PC12     ------> DCMI_D9
     PB6     ------> DCMI_D5
     PB7     ------> DCMI_VSYNC
     PE0     ------> DCMI_D2
@@ -96,7 +94,7 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
     GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_10|GPIO_PIN_12;
+    GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -157,8 +155,6 @@ void HAL_DCMI_MspDeInit(DCMI_HandleTypeDef* dcmiHandle)
     PA6     ------> DCMI_PIXCLK
     PC6     ------> DCMI_D0
     PC7     ------> DCMI_D1
-    PC10     ------> DCMI_D8
-    PC12     ------> DCMI_D9
     PB6     ------> DCMI_D5
     PB7     ------> DCMI_VSYNC
     PE0     ------> DCMI_D2
@@ -169,7 +165,7 @@ void HAL_DCMI_MspDeInit(DCMI_HandleTypeDef* dcmiHandle)
 
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_4|GPIO_PIN_6);
 
-    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_10|GPIO_PIN_12);
+    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_6|GPIO_PIN_7);
 
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_6|GPIO_PIN_7);
 
