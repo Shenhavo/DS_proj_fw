@@ -19,34 +19,57 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdbool.h>
 #include "main.h"
-#include "debug_mngr.h"
-#include "config/conf_winc.h"
-#include "wifi_mngr.h"
 #include "dcmi.h"
 #include "dma.h"
+#include "fatfs.h"
 #include "i2c.h"
 #include "jpeg.h"
+#include "sdmmc.h"
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
-#include "led.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdbool.h>
+#include "debug_mngr.h"
+#include "config/conf_winc.h"
+#include "driver/include/m2m_types.h"
+#include "wifi_mngr.h"
+#include "led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-#ifdef __GNUC__
-/* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
-   set to 'Yes') calls __io_putchar() */
-#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
-static void SystemClock_Config(void);
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+/* USER CODE BEGIN PFP */
+
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
@@ -54,28 +77,53 @@ static void SystemClock_Config(void);
   */
 int main(void)
 {
-	HAL_Init();
-	SystemClock_Config();
+  /* USER CODE BEGIN 1 */
 
-	/* Initialize the BSP. */
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_DCMI_Init();
-	MX_I2C1_Init();
-	MX_JPEG_Init();
-	MX_USART2_UART_Init();
-	MX_DMA_Init();
+  /* USER CODE END 1 */
+  
+
+  /* MCU Configuration--------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+	
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DCMI_Init();
+  MX_JPEG_Init();
+//  MX_SPI2_Init(); // TODO: DB - this conflicts with the nm_bus init of WifiMngr_Init
+  MX_DMA_Init();
+  MX_I2C1_Init();
+  MX_SDMMC1_SD_Init();
+  MX_FATFS_Init();
+  MX_USART3_UART_Init();
+  /* USER CODE BEGIN 2 */
 	LED_Init();
-
 	WifiMngr_Init();
+	printf("~~ init finished ~~\r\n");
+  /* USER CODE END 2 */
 
-	while (true)
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+	while (1)
 	{
 		WifiMngr_HandleEvents();
-	}
+    /* USER CODE END WHILE */
 
-	return 0;
-	/* USER CODE END 3 */
+    /* USER CODE BEGIN 3 */
+	}
+  /* USER CODE END 3 */
 }
 
 /**
@@ -93,7 +141,7 @@ void SystemClock_Config(void)
   HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
   /** Configure the main internal regulator output voltage 
   */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
   while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
   /** Initializes the CPU, AHB and APB busses clocks 
@@ -103,12 +151,12 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 32;//4;
-  RCC_OscInitStruct.PLL.PLLN = 129;//12;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 50;
   RCC_OscInitStruct.PLL.PLLP = 2;
-  RCC_OscInitStruct.PLL.PLLQ = 2;//4;
+  RCC_OscInitStruct.PLL.PLLQ = 2;
   RCC_OscInitStruct.PLL.PLLR = 2;
-  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_1;//RCC_PLL1VCIRANGE_3;
+  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
   RCC_OscInitStruct.PLL.PLLFRACN = 0;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -120,20 +168,21 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
                               |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV1;
-  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV1;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
+  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_SPI2
-                              |RCC_PERIPHCLK_I2C1;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_SPI2
+                              |RCC_PERIPHCLK_SDMMC|RCC_PERIPHCLK_I2C1;
+  PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL;
   PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
   PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
   PeriphClkInitStruct.I2c123ClockSelection = RCC_I2C123CLKSOURCE_D2PCLK1;
@@ -141,32 +190,29 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-	/* GPIO Ports Clock Enable */
-	__GPIOC_CLK_ENABLE();
-	__GPIOA_CLK_ENABLE();
-	__GPIOB_CLK_ENABLE();
 }
 
-///* USER CODE BEGIN 4 */
-void EXTI15_10_IRQHandler(void)
-{
-    uint16_t GPIO_Pin;
+/* USER CODE BEGIN 4 */
+//void EXTI15_10_IRQHandler(void)
+//{
+//    uint16_t GPIO_Pin;
+//
+//    /* Get GPIO_Pin */
+//    if (__HAL_GPIO_EXTI_GET_IT(CONF_WINC_SPI_INT_PIN))
+//    {
+//        GPIO_Pin = CONF_WINC_SPI_INT_PIN;
+//    }
+//
+//    HAL_GPIO_EXTI_IRQHandler(GPIO_Pin);
+//}
 
-    /* Get GPIO_Pin */
-    if (__HAL_GPIO_EXTI_GET_IT(CONF_WINC_SPI_INT_PIN))
-    {
-        GPIO_Pin = CONF_WINC_SPI_INT_PIN;
-    }
-
-    HAL_GPIO_EXTI_IRQHandler(GPIO_Pin);
-}
-
+// TODO: DB - define in cube and move to `stm32h7xx_it.h`
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == CONF_WINC_SPI_INT_PIN)
-    {
-        isr();
-    }
+	{
+		isr();
+	}
 }
 
 /* USER CODE END 4 */
@@ -178,14 +224,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  printf("\r\n***Error_handler***\r\n");
-  while (true)
-  {
-	  HAL_Delay(500);
-	  LED_SetState(eLedStates_red);
-	  HAL_Delay(500);
-	  LED_SetState(eLedStates_all_off);
-  }
+	printf("\r\n***Error_handler***\r\n");
+	while (true)
+	{
+		HAL_Delay(500);
+		LED_SetState(eLedStates_red);
+		HAL_Delay(500);
+		LED_SetState(eLedStates_all_off);
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -202,12 +248,12 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
 	 tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	while (true)
+	{
+	}
+
   /* USER CODE END 6 */
-  while (true)
-  {
-  }
 }
 #endif /* USE_FULL_ASSERT */
-
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

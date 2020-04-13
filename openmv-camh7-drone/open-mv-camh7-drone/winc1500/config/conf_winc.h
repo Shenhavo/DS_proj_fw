@@ -51,7 +51,6 @@ extern "C" {
 //#include "stm32f4xx_hal_spi.h"	// --
 #include "stm32h7xx_hal.h"			// ++
 #include "stm32h7xx_hal_spi.h"		// ++
-//#include "conf_winc.h"
 /*
    ---------------------------------
    ---------- PIN settings ---------
@@ -150,7 +149,7 @@ extern SPI_HandleTypeDef hspiWifi;
 */
 
 /* Debug variable, defined here instead of IAR project options */
-#define CONF_WINC_DEBUG				            1
+#define CONF_WINC_DEBUG				            (0)
 #ifdef CONF_WINC_DEBUG
 #   define CONF_WINC_PRINTF                     printf //HAL_OutputMessage
 #else

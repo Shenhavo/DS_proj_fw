@@ -10,13 +10,21 @@
  extern "C" {
 #endif
 #include <stdio.h>
+#include "usart.h"
 
  int _write(int file, char *ptr, int len)
  {
    /* Implement your write code here, this is used by puts and printf for example */
    int i=0;
    for(i=0 ; i<len ; i++)
-     ITM_SendChar((*ptr++));
+   {
+#ifdef USE_DEBUG_UART
+	   HAL_UART_Transmit( &DEBUG_UART_HANDLER, (uint8_t*)ptr, 1, 1);
+#endif //DEBUG_UART
+	   ITM_SendChar((*ptr));
+	   ptr++;
+   }
+
    return len;
  }
 

@@ -58,6 +58,10 @@
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_dcmi;
 extern DCMI_HandleTypeDef hdcmi;
+extern JPEG_HandleTypeDef hjpeg;
+extern SD_HandleTypeDef hsd1;
+extern SPI_HandleTypeDef hspi2;
+extern UART_HandleTypeDef huart3;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -213,18 +217,70 @@ void DMA1_Stream0_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles SPI2 global interrupt.
+  */
+void SPI2_IRQHandler(void)
+{
+  /* USER CODE BEGIN SPI2_IRQn 0 */
+
+  /* USER CODE END SPI2_IRQn 0 */
+  HAL_SPI_IRQHandler(&hspi2);
+  /* USER CODE BEGIN SPI2_IRQn 1 */
+
+  /* USER CODE END SPI2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART3 global interrupt.
+  */
+void USART3_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART3_IRQn 0 */
+
+  /* USER CODE END USART3_IRQn 0 */
+  HAL_UART_IRQHandler(&huart3);
+  /* USER CODE BEGIN USART3_IRQn 1 */
+
+  /* USER CODE END USART3_IRQn 1 */
+}
+
+/**
   * @brief This function handles EXTI line[15:10] interrupts.
   */
-//void EXTI15_10_IRQHandler(void)
-//{
-//  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+void EXTI15_10_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+
+    uint16_t GPIO_Pin;
+
+    /* Get GPIO_Pin */
+    // TODO: fix redenitions: WIFI_INT_N_Pin / CONF_WINC_SPI_INT_PIN
+    if (__HAL_GPIO_EXTI_GET_IT(WIFI_INT_N_Pin))
+    {
+        GPIO_Pin = WIFI_INT_N_Pin;
+    }
+
+    HAL_GPIO_EXTI_IRQHandler(GPIO_Pin);
+  /* USER CODE END EXTI15_10_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
 //
-//  /* USER CODE END EXTI15_10_IRQn 0 */
-//  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
-//  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
-//
-//  /* USER CODE END EXTI15_10_IRQn 1 */
-//}
+  /* USER CODE END EXTI15_10_IRQn 1 */
+}
+
+/**
+  * @brief This function handles SDMMC1 global interrupt.
+  */
+void SDMMC1_IRQHandler(void)
+{
+  /* USER CODE BEGIN SDMMC1_IRQn 0 */
+
+  /* USER CODE END SDMMC1_IRQn 0 */
+  HAL_SD_IRQHandler(&hsd1);
+  /* USER CODE BEGIN SDMMC1_IRQn 1 */
+
+  /* USER CODE END SDMMC1_IRQn 1 */
+}
 
 /**
   * @brief This function handles DCMI global interrupt.
@@ -238,6 +294,20 @@ void DCMI_IRQHandler(void)
   /* USER CODE BEGIN DCMI_IRQn 1 */
 
   /* USER CODE END DCMI_IRQn 1 */
+}
+
+/**
+  * @brief This function handles JPEG global interrupt.
+  */
+void JPEG_IRQHandler(void)
+{
+  /* USER CODE BEGIN JPEG_IRQn 0 */
+
+  /* USER CODE END JPEG_IRQn 0 */
+  HAL_JPEG_IRQHandler(&hjpeg);
+  /* USER CODE BEGIN JPEG_IRQn 1 */
+
+  /* USER CODE END JPEG_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

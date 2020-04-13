@@ -1,7 +1,0 @@
-nm_bsp_stm32h743vi.c:56:13:init_chip_pins	32	static
-nm_bsp_stm32h743vi.c:97:7:nm_bsp_init	8	static
-nm_bsp_stm32h743vi.c:113:7:nm_bsp_deinit	8	static
-nm_bsp_stm32h743vi.c:133:6:nm_bsp_reset	8	static
-nm_bsp_stm32h743vi.c:163:6:nm_bsp_sleep	16	static
-nm_bsp_stm32h743vi.c:175:6:nm_bsp_register_isr	40	static
-nm_bsp_stm32h743vi.c:219:6:nm_bsp_interrupt_ctrl	16	static
