@@ -33,7 +33,6 @@
 extern UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN Private defines */
-#define USE_DEBUG_UART
 #define DEBUG_UART_HANDLER		huart3
 /* USER CODE END Private defines */
 

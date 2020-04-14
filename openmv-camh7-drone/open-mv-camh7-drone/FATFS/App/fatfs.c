@@ -34,6 +34,8 @@ void MX_FATFS_Init(void)
 
   /* USER CODE BEGIN Init */
   /* additional user code for init */     
+
+
   /* USER CODE END Init */
 }
 
@@ -50,7 +52,10 @@ DWORD get_fattime(void)
 }
 
 /* USER CODE BEGIN Application */
-     
+uint8_t Fatfs_GetRetSD(void)
+{
+	return retSD;
+}
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -45,6 +45,11 @@ extern "C" {
 /* USER CODE BEGIN EC */
 /** Wi-Fi Settings */
 
+#define PROJ_SHA			"0x3d20031129454aab83774be030722506892d2cf6"
+
+
+#define USE_UART_DEBUG
+#define USE_SWV_DEBUG
 
 //#define MAIN_WIFI_M2M_PRODUCT_NAME        "NMCTemp"
 //#define MAIN_WIFI_M2M_SERVER_IP           0xC0A80079 /* 255.255.255.255 */

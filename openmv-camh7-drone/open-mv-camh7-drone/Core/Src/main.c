@@ -38,6 +38,10 @@
 #include "driver/include/m2m_types.h"
 #include "wifi_mngr.h"
 #include "led.h"
+
+#include "jpeg_utils_conf.h"
+#include "jpeg_utils.h"
+#include "encode_dma.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -102,7 +106,6 @@ int main(void)
   MX_GPIO_Init();
   MX_DCMI_Init();
   MX_JPEG_Init();
-//  MX_SPI2_Init(); // TODO: DB - this conflicts with the nm_bus init of WifiMngr_Init
   MX_DMA_Init();
   MX_I2C1_Init();
   MX_SDMMC1_SD_Init();
@@ -111,11 +114,28 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	LED_Init();
 	WifiMngr_Init();
+	FS_Init();
+
+	if ( Fatfs_GetRetSD() == 0 )
+	{
+		printf("FATFS Link Driver OK\r\n");
+	}
+	else
+	{
+		printf("FATFS Link Driver ERR\r\n");
+	}
+
 	printf("~~ init finished ~~\r\n");
+	printf("GIT REV SHA: %s\r\n", PROJ_SHA);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+//	FS_FileOperations();
+	FS_FileOperationsBmpResaveOnSdCard();
+//	FS_FileOperationsBmpCompressDma();
+
 	while (1)
 	{
 		WifiMngr_HandleEvents();
@@ -248,8 +268,14 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
 	 tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	printf("\r\n***assert_failed***\r\n");
+	printf("Wrong parameters value: file %s on line %d\r\n", file, line);
 	while (true)
 	{
+		HAL_Delay(500);
+		LED_SetState(eLedStates_red);
+		HAL_Delay(500);
+		LED_SetState(eLedStates_all_off);
 	}
 
   /* USER CODE END 6 */
