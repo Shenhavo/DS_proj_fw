@@ -20,8 +20,9 @@
    {
 #ifdef USE_DEBUG_UART
 	   HAL_UART_Transmit( &DEBUG_UART_HANDLER, (uint8_t*)ptr, 1, 1);
-#endif //DEBUG_UART
+#else
 	   ITM_SendChar((*ptr));
+#endif //DEBUG_UART
 	   ptr++;
    }
 
