@@ -24,8 +24,6 @@
 //FATFS g_SDFatFs;  /* File system object for SD card logical drive */ // TODO: DB - check this
 static uint8_t isInitialized = 0;
 uint8_t workBuffer[_MAX_SS];
-extern char SDPath[4]; /* SD card logical drive path */ // TODO: DB - check this
-extern FATFS SDFatFS; /* File system object for SD logical drive */ // TODO: DB - check this
 
 
 
@@ -257,10 +255,9 @@ void FS_FileOperationsBmpResave(void)
  */
 void FS_FileOperationsBmpResaveOnSdCard(void)
 {
-	FRESULT res;                                          /* FatFs function common result code */
-	uint32_t BytesWritten = 0;
-	FIL MyImgCopy;     /* File object */
+	FRESULT res;					/* FatFs function common result code */
 	FIL BmpFileSrc, BmpFileDst;     /* File object */
+
 	if(f_mount(&SDFatFS, (TCHAR const*)SDPath, 0) == FR_OK)
 	{
 		/*##-6- Open the file with read access #############################*/
@@ -300,12 +297,13 @@ void FS_FileOperationsBmpResaveOnSdCard(void)
 }
 
 /**
- * @brief  compress bitmap to jpeg - NOT TESTED!
+ * @brief  compress bitmap to jpeg
+ * please read the file documentation
  * @retval None
  */
 void FS_FileOperationsBmpCompressDma(void)
 {
-	FRESULT res;                                          /* FatFs function common result code */
+	FRESULT res;			/* FatFs function common result code */
 
 
 	/* Register the file system object to the FatFs module */
@@ -313,54 +311,49 @@ void FS_FileOperationsBmpCompressDma(void)
 	{
 		printf("compressing file: %s\r\n", BMP_FILE_NAME_ON_SD);
 
-		FIL MyJpegImg, BmpFile;     /* File object */
-		FIL File;
+		FIL DestJpegImg, SrcBmpFile;     /* File object */
 		uint32_t BytesWritten, BytesRead = 0;
-//		uint8_t DataOut[500000] = {0xFF};
-//		uint32_t DataOutSize = 500000;
 		uint32_t JpegEncodeProcessingEnd = 0;
 
 		/*##-6- Open the file with read access #############################*/
-		if((res = f_open(&BmpFile, BMP_FILE_NAME_ON_SD, FA_READ)) == FR_OK)
+		if((res = f_open(&SrcBmpFile, BMP_FILE_NAME_ON_SD, FA_READ)) == FR_OK)
 		{
 			printf("FR_OK\r\n");
-			if((res = f_open(&MyJpegImg, JPEG_FILE_NAME_ON_SD, FA_WRITE | FA_CREATE_ALWAYS)) == FR_OK)
+			if((res = f_open(&DestJpegImg, JPEG_FILE_NAME_ON_SD, FA_WRITE | FA_CREATE_ALWAYS)) == FR_OK)
 			{
 				printf("file compression starting ..\r\n");
 
+				JPEG_ConfTypeDef SrcBmpInfo;
+				BMP_GetInfo(&SrcBmpFile, &SrcBmpInfo);
+				printf("SrcBmp Params: W=%d H=%d\r\n", SrcBmpInfo.ImageWidth, SrcBmpInfo.ImageHeight);
 
-//				/*##-8- JPEG Encoding with DMA (Not Blocking ) Method ################*/
-//				JPEG_Encode_DMA(&hjpeg, &BmpFile, &MyJpegImg);
-//
-//				/*##-9- Wait till end of JPEG encoding and perform Input/Output Processing in BackGround  #*/
-//				do
-//				{
-//					JPEG_EncodeInputHandler(&hjpeg);
-//					JpegEncodeProcessingEnd = JPEG_EncodeOutputHandler(&hjpeg);
-//
-//				}while(JpegEncodeProcessingEnd == 0);
-				// create a copy of the bmp
-				uint32_t ReadChunks = 0;
-				uint32_t BytesCopied = 0;
-				do{
-					f_read(&BmpFile, workBuffer, sizeof(workBuffer), (void *)&BytesRead);
-					printf("read %d: %d\r\n", ReadChunks, BytesRead);
-					f_write(&MyJpegImg, workBuffer, sizeof(workBuffer), (void *)&BytesWritten);
-					ReadChunks++;
+				/*##-8- JPEG Encoding with DMA (Not Blocking ) Method ################*/
+				JPEG_Encode_DMA(&hjpeg, &SrcBmpFile, &DestJpegImg);
 
-					if(BytesRead != BytesWritten)
-					{
-						printf("copy ERR\r\n");
-						break;
-					}
+				/*##-9- Wait till end of JPEG encoding and perform Input/Output Processing in BackGround  #*/
+				do
+				{
+					JPEG_EncodeInputHandler(&hjpeg);
+					JpegEncodeProcessingEnd = JPEG_EncodeOutputHandler(&hjpeg);
 
-				}while(BytesRead>0);
-//				f_write(&MyJpegImg, BmpFile.buf, sizeof(BmpFile.buf), (void *)&BytesWritten);
+				}while(JpegEncodeProcessingEnd == 0);
+
 				/*##-10- Close the JPEG file #######################################*/
-				f_close(&MyJpegImg);
-//
+
+				uint32_t SrcBmpImgFileSize = f_size(&SrcBmpFile);
+				uint32_t DestJpegImgFileSize = f_size(&DestJpegImg);
+				printf("source file size = %d [bits]\r\n", SrcBmpImgFileSize);
+				printf("converted file size = %d [bits]\r\n", DestJpegImgFileSize);
+
+				if ( (res = f_close(&DestJpegImg)) == FR_OK )
+				{
+					printf("DestJpegImg close OK\r\n");
+				}
 			}
-			f_close(&BmpFile);
+			if ( (res = f_close(&SrcBmpFile)) == FR_OK )
+			{
+				printf("SrcBmpFile close OK\r\n");
+			}
 		}
 		else
 		{

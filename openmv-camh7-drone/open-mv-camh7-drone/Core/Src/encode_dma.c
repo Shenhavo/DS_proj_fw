@@ -37,9 +37,9 @@
 /* Private typedef -----------------------------------------------------------*/
 typedef struct
 {
-	uint8_t State;
-	uint8_t *DataBuffer;
-	uint32_t DataBufferSize;
+  __IO  uint8_t State;  
+  uint8_t *DataBuffer;
+  __IO uint32_t DataBufferSize;
 
 }JPEG_Data_BufferTypeDef;
 
@@ -78,7 +78,7 @@ JPEG_Data_BufferTypeDef Jpeg_IN_BufferTab = {JPEG_BUFFER_EMPTY , MCU_Data_IntBuf
 
 uint32_t MCU_TotalNb                = 0;
 uint32_t MCU_BlockIndex             = 0;
-uint32_t Jpeg_HWEncodingEnd         = 0;
+__IO uint32_t Jpeg_HWEncodingEnd    = 0;
 
 
 __IO uint32_t Output_Is_Paused      = 0;
@@ -89,9 +89,6 @@ JPEG_ConfTypeDef Conf;
 FIL *pBmpFile;
 FIL *pJpegFile;
 
-uint32_t RGB_InputImageIndex;
-uint32_t RGB_InputImageSize_Bytes;
-uint32_t RGB_InputImageAddress;
 
 /* Private function prototypes -----------------------------------------------*/
 static void ReadBmpRgbLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
@@ -99,56 +96,7 @@ static void ReadBmpRgbLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuf
 void BMP_GetInfo(FIL * Filename, JPEG_ConfTypeDef *pInfo);
 /* Private functions ---------------------------------------------------------*/
 
-///**
-//  * @brief  Encode_DMA
-//  * @param hjpeg: JPEG handle pointer
-//  * @param  FileName    : jpg file path for decode.
-//  * @param  DestAddress : ARGB destination Frame Buffer Address.
-//  * @retval None
-//  */
-//uint32_t JPEG_Encode_DMA(JPEG_HandleTypeDef *hjpeg, uint32_t RGBImageBufferAddress, uint32_t RGBImageSize_Bytes, FIL *jpgfile)
-//{
-//  pJpegFile = jpgfile;
-//  uint32_t DataBufferSize = 0;
-//
-//  /* Reset all Global variables */
-//  MCU_TotalNb                = 0;
-//  MCU_BlockIndex             = 0;
-//  Jpeg_HWEncodingEnd         = 0;
-//  Output_Is_Paused           = 0;
-//  Input_Is_Paused            = 0;
-//
-//  /* Get RGB Info */
-//  RGB_GetInfo(&Conf);
-//  JPEG_GetEncodeColorConvertFunc(&Conf, &pRGBToYCbCr_Convert_Function, &MCU_TotalNb);
-//
-//  /* Clear Output Buffer */
-//  Jpeg_OUT_BufferTab.DataBufferSize = 0;
-//  Jpeg_OUT_BufferTab.State = JPEG_BUFFER_EMPTY;
-//
-//  /* Fill input Buffers */
-//  RGB_InputImageIndex = 0;
-//  RGB_InputImageAddress = RGBImageBufferAddress;
-//  RGB_InputImageSize_Bytes = RGBImageSize_Bytes;
-//  DataBufferSize= Conf.ImageWidth * MAX_INPUT_LINES * BYTES_PER_PIXEL;
-//
-//  if(RGB_InputImageIndex < RGB_InputImageSize_Bytes)
-//  {
-//    /* Pre-Processing */
-//    MCU_BlockIndex += pRGBToYCbCr_Convert_Function((uint8_t *)(RGB_InputImageAddress + RGB_InputImageIndex), Jpeg_IN_BufferTab.DataBuffer, 0, DataBufferSize,(uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
-//    Jpeg_IN_BufferTab.State = JPEG_BUFFER_FULL;
-//
-//    RGB_InputImageIndex += DataBufferSize;
-//  }
-//
-//  /* Fill Encoding Params */
-//  HAL_JPEG_ConfigEncoding(hjpeg, &Conf);
-//
-//  /* Start JPEG encoding with DMA method */
-//  HAL_JPEG_Encode_DMA(hjpeg ,Jpeg_IN_BufferTab.DataBuffer ,Jpeg_IN_BufferTab.DataBufferSize ,Jpeg_OUT_BufferTab.DataBuffer ,CHUNK_SIZE_OUT);
-//
-//  return 0;
-//}
+
 
 /**
  * @brief  Encode_DMA
@@ -210,7 +158,7 @@ uint32_t JPEG_EncodeOutputHandler(JPEG_HandleTypeDef *hjpeg)
 
 	if(Jpeg_OUT_BufferTab.State == JPEG_BUFFER_FULL)
 	{
-		f_write (pJpegFile, Jpeg_OUT_BufferTab.DataBuffer ,Jpeg_OUT_BufferTab.DataBufferSize, /*(UINT*)*/(&bytesWritefile)) ; // (UINT*)
+		f_write (pJpegFile, Jpeg_OUT_BufferTab.DataBuffer ,Jpeg_OUT_BufferTab.DataBufferSize, (UINT*)(&bytesWritefile)) ;
 
 		Jpeg_OUT_BufferTab.State = JPEG_BUFFER_EMPTY;
 		Jpeg_OUT_BufferTab.DataBufferSize = 0;
@@ -219,7 +167,7 @@ uint32_t JPEG_EncodeOutputHandler(JPEG_HandleTypeDef *hjpeg)
 		{
 			return 1;
 		}
-		else if((Output_Is_Paused == 1) && (Jpeg_OUT_BufferTab.State == JPEG_BUFFER_EMPTY))
+    else if(Output_Is_Paused == 1)
 		{
 			Output_Is_Paused = 0;
 			HAL_JPEG_Resume(hjpeg, JPEG_PAUSE_RESUME_OUTPUT);
@@ -237,17 +185,17 @@ uint32_t JPEG_EncodeOutputHandler(JPEG_HandleTypeDef *hjpeg)
  */
 void JPEG_EncodeInputHandler(JPEG_HandleTypeDef *hjpeg)
 {
-	uint32_t DataBufferSize = Conf.ImageWidth * MAX_INPUT_LINES * BYTES_PER_PIXEL;
+  uint32_t dataBufferSize = 0;
 
-	if((Jpeg_IN_BufferTab.State == JPEG_BUFFER_EMPTY) && (MCU_BlockIndex <= MCU_TotalNb))
-	{
-		/* Read and reorder lines from RGB input and fill data buffer */
-		if(RGB_InputImageIndex < RGB_InputImageSize_Bytes)
-		{
-			/* Pre-Processing */
-			MCU_BlockIndex += pRGBToYCbCr_Convert_Function((uint8_t *)(RGB_InputImageAddress + RGB_InputImageIndex), Jpeg_IN_BufferTab.DataBuffer, 0, DataBufferSize, (uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
-			Jpeg_IN_BufferTab.State = JPEG_BUFFER_FULL;
-			RGB_InputImageIndex += DataBufferSize;
+  if((Jpeg_IN_BufferTab.State == JPEG_BUFFER_EMPTY) && (MCU_BlockIndex <= MCU_TotalNb))  
+  {
+    /* Read and reorder 16 lines from BMP file and fill data buffer */
+    ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
+    if(dataBufferSize != 0)
+    {
+      /* Pre-Processing */
+      MCU_BlockIndex += pRGBToYCbCr_Convert_Function(Input_Data_Buffer, Jpeg_IN_BufferTab.DataBuffer, 0, dataBufferSize, (uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
+      Jpeg_IN_BufferTab.State = JPEG_BUFFER_FULL;
 
 			if(Input_Is_Paused == 1)
 			{

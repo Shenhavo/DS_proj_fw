@@ -63,6 +63,7 @@ void EXTI15_10_IRQHandler(void);
 void SDMMC1_IRQHandler(void);
 void DCMI_IRQHandler(void);
 void JPEG_IRQHandler(void);
+void MDMA_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

@@ -58,7 +58,10 @@
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_dcmi;
 extern DCMI_HandleTypeDef hdcmi;
+extern MDMA_HandleTypeDef hmdma_jpeg_infifo_th;
+extern MDMA_HandleTypeDef hmdma_jpeg_outfifo_th;
 extern JPEG_HandleTypeDef hjpeg;
+//extern MDMA_HandleTypeDef hmdma_mdma_channel42_jpeg_end_conversion_0;
 extern SD_HandleTypeDef hsd1;
 extern SPI_HandleTypeDef hspi2;
 extern UART_HandleTypeDef huart3;
@@ -310,7 +313,24 @@ void JPEG_IRQHandler(void)
   /* USER CODE END JPEG_IRQn 1 */
 }
 
+/**
+  * @brief This function handles MDMA global interrupt.
+  */
+void MDMA_IRQHandler(void)
+{
+  /* USER CODE BEGIN MDMA_IRQn 0 */
+
+  /* USER CODE END MDMA_IRQn 0 */
+//  HAL_MDMA_IRQHandler(&hmdma_mdma_channel42_jpeg_end_conversion_0);
+	HAL_MDMA_IRQHandler(hjpeg.hdmain);
+	HAL_MDMA_IRQHandler(hjpeg.hdmaout);
+  /* USER CODE BEGIN MDMA_IRQn 1 */
+
+  /* USER CODE END MDMA_IRQn 1 */
+}
+
 /* USER CODE BEGIN 1 */
+
 
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
