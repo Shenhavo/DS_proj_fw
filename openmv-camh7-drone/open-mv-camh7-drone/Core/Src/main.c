@@ -28,6 +28,7 @@
 #include "mdma.h"
 #include "sdmmc.h"
 #include "spi.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -115,13 +116,15 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DCMI_Init();
+    MX_MDMA_Init(); // must be before `MX_JPEG_Init()`
   MX_JPEG_Init();
   MX_DMA_Init();
   MX_I2C1_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   MX_USART3_UART_Init();
-//  MX_MDMA_Init(); // TODO: DB - need to refactor this with the cubemx
+
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	LED_Init();
 	WifiMngr_Init();
@@ -260,7 +263,7 @@ void MPU_Config(void)
   */
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.Number = MPU_REGION_NUMBER0;
-  MPU_InitStruct.BaseAddress =  0x24000000;//;//0x0; //
+  MPU_InitStruct.BaseAddress = 0x24000000;
   MPU_InitStruct.Size = MPU_REGION_SIZE_512KB;
   MPU_InitStruct.SubRegionDisable = 0x0;
   MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;

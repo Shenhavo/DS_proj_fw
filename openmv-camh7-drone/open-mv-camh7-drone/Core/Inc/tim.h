@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : mdma.c
+  * File Name          : TIM.h
   * Description        : This file provides code for the configuration
-  *                      of all the requested global MDMA transfers.
+  *                      of the TIM instances.
   ******************************************************************************
   * @attention
   *
@@ -16,41 +16,36 @@
   *
   ******************************************************************************
   */
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __tim_H
+#define __tim_H
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "mdma.h"
+#include "main.h"
 
-/* USER CODE BEGIN 0 */
+/* USER CODE BEGIN Includes */
 
-/* USER CODE END 0 */
+/* USER CODE END Includes */
 
-/*----------------------------------------------------------------------------*/
-/* Configure MDMA                                                              */
-/*----------------------------------------------------------------------------*/
+extern TIM_HandleTypeDef htim2;
 
-/* USER CODE BEGIN 1 */
+/* USER CODE BEGIN Private defines */
 
-/* USER CODE END 1 */
+/* USER CODE END Private defines */
 
-/** 
-  * Enable MDMA controller clock
-  */
-void MX_MDMA_Init(void) 
-{
+void MX_TIM2_Init(void);
 
-  /* MDMA controller clock enable */
-  __HAL_RCC_MDMA_CLK_ENABLE();
-  /* Local variables */
+/* USER CODE BEGIN Prototypes */
 
-  /* MDMA interrupt initialization */
-  /* MDMA_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(MDMA_IRQn, 8, 0);
-  HAL_NVIC_EnableIRQ(MDMA_IRQn);
+/* USER CODE END Prototypes */
 
+#ifdef __cplusplus
 }
-/* USER CODE BEGIN 2 */
-
-/* USER CODE END 2 */
+#endif
+#endif /*__ tim_H */
 
 /**
   * @}

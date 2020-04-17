@@ -28,7 +28,6 @@
 #include "main.h"
 
 /* MDMA transfer handles -----------------------------------------------------*/
-extern MDMA_HandleTypeDef hmdma_mdma_channel42_jpeg_end_conversion_0;
 
 /* USER CODE BEGIN Includes */
 
