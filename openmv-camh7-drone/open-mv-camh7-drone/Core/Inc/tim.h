@@ -39,7 +39,9 @@ extern TIM_HandleTypeDef htim2;
 void MX_TIM2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void TIM_StartImuTick(void);
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
+bool TIM_IsImuTimeoutEvent(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

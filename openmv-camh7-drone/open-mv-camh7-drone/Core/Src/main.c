@@ -145,13 +145,24 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-//	FS_FileOperations();
-//	FS_FileOperationsBmpResaveOnSdCard();
-	FS_FileOperationsBmpCompressDma();
+	if(BSP_SD_IsDetected())
+	{
+		FS_FileOperationsBmpCompressDma();
+	}
+	else
+	{
+		printf("sd not detected, skipping example\r\n");
+	}
+	TIM_StartImuTick();
 
 	while (1)
 	{
 		WifiMngr_HandleEvents();
+
+		if (TIM_IsImuTimeoutEvent() == true)
+		{
+			printf("imu mock\r\n");
+		}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -205,7 +216,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV16;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
   RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 

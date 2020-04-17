@@ -33,7 +33,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-//#include "jpeg_utils.h" // TODO: move from here
+#include "stdbool.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -45,7 +45,7 @@ extern "C" {
 /* USER CODE BEGIN EC */
 /** Wi-Fi Settings */
 
-#define PROJ_SHA			"0xb2c4c8da587dadfdc51948ad2f84d8d3113c5732"
+#define PROJ_SHA			"0xb72d4dbd288f1ab1f2f144e21feceeba29f43bd7"
 
 
 #define USE_UART_DEBUG

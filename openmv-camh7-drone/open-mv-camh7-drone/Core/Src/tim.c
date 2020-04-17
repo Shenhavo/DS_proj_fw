@@ -21,7 +21,7 @@
 #include "tim.h"
 
 /* USER CODE BEGIN 0 */
-
+bool IsTim2TimeoutEvent = false;
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim2;
@@ -103,6 +103,57 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 } 
 
 /* USER CODE BEGIN 1 */
+
+void TIM_StartImuTick(void)
+{
+	// TODO: DB - fix the values - for now , counts 0.0052428[sec] ~ 190.74[Hz] period
+
+	htim2.Init.Period            = 1;
+	htim2.Init.Prescaler         = 65535;
+	htim2.Init.ClockDivision     = 0;
+	htim2.Init.CounterMode       = TIM_COUNTERMODE_UP;
+	htim2.Init.RepetitionCounter = 0;
+
+	if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+	{
+		Error_Handler();
+	}
+
+	if (HAL_TIM_Base_Start_IT(&htim2) != HAL_OK)
+	{
+		Error_Handler();
+	}
+}
+
+
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  IsTim2TimeoutEvent = true;
+}
+
+/**
+  * @brief
+  * @param  None
+  * @retval None
+  */
+bool TIM_IsImuTimeoutEvent(void)
+{
+	bool ReturnVal = false;
+
+  if ( IsTim2TimeoutEvent == true )
+  {
+	  ReturnVal = true;
+	  IsTim2TimeoutEvent = false;
+  }
+
+  return ReturnVal;
+}
 
 /* USER CODE END 1 */
 
