@@ -116,14 +116,13 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DCMI_Init();
-    MX_MDMA_Init(); // must be before `MX_JPEG_Init()`
+  MX_MDMA_Init();
   MX_JPEG_Init();
   MX_DMA_Init();
   MX_I2C1_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   MX_USART3_UART_Init();
-
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	LED_Init();

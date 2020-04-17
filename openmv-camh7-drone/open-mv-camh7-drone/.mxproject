@@ -58,6 +58,4 @@ HeaderFiles#19=C:/developments/shenhavs-code/DS_proj_fw/openmv-camh7-drone/open-
 SourceFiles#17=C:/developments/shenhavs-code/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Core/Src/stm32h7xx_hal_msp.c
 HeaderFiles#20=C:/developments/shenhavs-code/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Core/Inc/main.h
 SourceFiles#18=C:/developments/shenhavs-code/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Core/Src/main.c
-HeaderFiles=;
-SourceFiles=;
 
