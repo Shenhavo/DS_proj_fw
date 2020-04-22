@@ -242,7 +242,7 @@ static void WifiMngr_WifiCB(uint8_t u8MsgType, void *pvMsg)
 		} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
 			printf("wifi_cb: DISCONNECTED\r\n");
 			p_stWifiMngr->m_eIsWifiConnected = M2M_WIFI_DISCONNECTED;
-			bind(p_stWifiMngr->m_tcp_server_socket, (struct sockaddr *)&g_stSockAdd, sizeof(struct sockaddr_in)); //TODO: SO: see it it's required
+			p_stWifiMngr->m_IsHardFault		= true;
 		}
 	}
 	break;
