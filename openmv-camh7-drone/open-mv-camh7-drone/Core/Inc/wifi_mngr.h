@@ -24,6 +24,19 @@ typedef struct sockaddr_in stSockAdd;
 //typedef struct tstrSocketBindMsg stBindMsg;
 typedef tstrM2MAPConfig stAccPoint;
 
+typedef tenuM2mConnState eIsWifiConn;
+
+typedef struct stWifiMngr_name { // TODO: add also stImg...
+   uint8_t* 		m_pTxBuff;
+   uint8_t* 		m_pRxBuff;
+   bool	   			m_IsRxReady;
+   bool	   			m_IsTxPhase;
+   eIsWifiConn		m_eIsWifiConnected;
+//   uint32_t 	m_SizeB;
+
+} stWifiMngr;
+
+
  int8_t WifiMngr_Init(void);
 // sint8 WifiMngr_ScanReq(tenuM2mScanCh a_e_tenuM2mScanCh);
 // sint8 WifiMngr_Connect(tenuM2mScanCh a_e_tenuM2mScanCh);

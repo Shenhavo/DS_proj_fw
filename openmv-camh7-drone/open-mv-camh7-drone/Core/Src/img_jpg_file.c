@@ -44,7 +44,6 @@ stImg*	Img_jpg_Iterate( stImg* a_pstImg)
 		{
 			case eImgStates_start:
 			{
-				printf("st, sz = %d, ptr = %d\r\n", pstImg->m_SizeB, pstImg->m_pImg);
 				if( pstImg->m_SizeB > PACKET_DATA_LEN_B)
 				{
 					pstImg->m_eImgStates = eImgStates_sending;
@@ -57,7 +56,6 @@ stImg*	Img_jpg_Iterate( stImg* a_pstImg)
 			break;
 			case eImgStates_sending:
 			{
-				printf("sn, sz = %d, ptr = %d\r\n", pstImg->m_SizeB, pstImg->m_pImg);
 				if( pstImg->m_SizeB > PACKET_DATA_LEN_B)
 				{
 					pstImg->m_SizeB -= PACKET_DATA_LEN_B;
@@ -71,13 +69,12 @@ stImg*	Img_jpg_Iterate( stImg* a_pstImg)
 			break;
 			case eImgStates_last_packet:
 			{
-				printf("lp, sz = %d, ptr = %d\r\n", pstImg->m_SizeB, pstImg->m_pImg);
+
 				pstImg->m_eImgStates = eImgStates_finished;
 			}
 			break;
 			case eImgStates_finished:
 			{
-//				printf("fn, sz = %d, ptr = %d\r\n", pstImg->m_SizeB, pstImg->m_pImg);
 			}
 			break;
 			default:
@@ -96,7 +93,7 @@ void	 	Img_jpg_get_example_struct(stImg* a_pstImg)
 	a_pstImg->m_eImgStates 	= eImgStates_start;
 	a_pstImg->m_pImg		= img_jpg_file_a;
 	a_pstImg->m_SizeB		= IMG_JPG_SIZE_B;
-	printf("Example Image was loaded\r\n");
+//	printf("Example Image was loaded\r\n");
 }
 
 
