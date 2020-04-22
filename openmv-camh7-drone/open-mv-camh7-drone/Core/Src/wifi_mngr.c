@@ -202,9 +202,10 @@ static void WifiMngr_WifiCB(uint8_t u8MsgType, void *pvMsg)
 		} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
 			printf("wifi_cb: DISCONNECTED\r\n");
 			p_stWifiMngr->m_eIsWifiConnected = M2M_WIFI_DISCONNECTED;
-			Img_jpg_get_example_struct(&g_stImg);
-			WifiMngr_InitStruct(p_stWifiMngr);
-			WifiMngr_CloseSocket();
+//			Img_jpg_get_example_struct(&g_stImg);
+//			WifiMngr_InitStruct(p_stWifiMngr);
+//			WifiMngr_CloseSocket();
+			bind(tcp_server_socket, (struct sockaddr *)&g_stSockAdd, sizeof(struct sockaddr_in));
 		}
 	}
 	break;
@@ -363,9 +364,9 @@ static void	WifiMngr_CloseSocket(void)
 static void	WifiMngr_CloseSocket(void)
 {
 	close(tcp_server_socket);
-	socketDeinit();
+//	socketDeinit();
 	tcp_server_socket 	= -1;
-	tcp_client_socket	= -1;
+//	tcp_client_socket	= -1;
 }
 
 /* ================
