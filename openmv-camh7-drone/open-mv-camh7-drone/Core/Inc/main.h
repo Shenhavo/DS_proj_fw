@@ -17,6 +17,8 @@
   *
   ******************************************************************************
   */
+
+// TODO: DB - after finishing using ImuPrintMock - disable the `use float print` in tool settings
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -33,7 +35,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-//#include "jpeg_utils.h" // TODO: move from here
+#include "stdbool.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -45,7 +47,7 @@ extern "C" {
 /* USER CODE BEGIN EC */
 /** Wi-Fi Settings */
 
-#define PROJ_SHA			"0xb2c4c8da587dadfdc51948ad2f84d8d3113c5732"
+#define PROJ_SHA			"0x9611e9302e276efc81ca20e9bdeaf4a64f904753"
 
 
 #define USE_UART_DEBUG

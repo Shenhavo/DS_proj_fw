@@ -44,6 +44,8 @@
 #include "jpeg_utils_conf.h"
 #include "jpeg_utils.h"
 #include "encode_dma.h"
+
+#include "bno055.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,12 +66,53 @@
 
 /* USER CODE BEGIN PV */
 
+/*!
+ * @brief struct for Accel-output data of precision float
+ */
+typedef struct
+{
+    float x; /**< accel x float data */
+    float y; /**< accel y float data */
+    float z; /**< accel z float data */
+}bno055_accel_float_t_mock;
+
+/*!
+ * @brief struct for Gyro-output data of precision float
+ */
+typedef struct
+{
+    float x; /**< Gyro x float data */
+    float y; /**< Gyro y float data */
+    float z; /**< Gyro z float data */
+}bno055_gyro_float_t_mock;
+
+/*!
+ * @brief struct for Mag-output data of precision float
+ */
+typedef struct
+{
+    float x; /**< Mag x float data */
+    float y; /**< Mag y float data */
+    float z; /**< Mag z float data */
+}bno055_mag_float_t_mock;
+
+#pragma pack(1)
+typedef struct
+{
+	bno055_accel_float_t_mock 	accl_f;
+	bno055_gyro_float_t_mock	gyro_f;
+	bno055_mag_float_t_mock		mag_f;
+}ImuSensorData;
+
+ImuSensorData ImuMockStruct = {0x00};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
+
+void ImuMockValues(void);
 
 /* USER CODE END PFP */
 
@@ -145,13 +188,25 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-//	FS_FileOperations();
-//	FS_FileOperationsBmpResaveOnSdCard();
-	FS_FileOperationsBmpCompressDma();
+	if(BSP_SD_IsDetected())
+	{
+		FS_FileOperationsBmpCompressDma();
+	}
+	else
+	{
+		printf("sd not detected, skipping example\r\n");
+	}
+	TIM_StartImuTick();
+
 
 	while (1)
 	{
 		WifiMngr_HandleEvents();
+
+		if (TIM_IsImuTimeoutEvent() == true)
+		{
+			ImuMockValues();
+		}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -226,18 +281,52 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-//void EXTI15_10_IRQHandler(void)
-//{
-//    uint16_t GPIO_Pin;
-//
-//    /* Get GPIO_Pin */
-//    if (__HAL_GPIO_EXTI_GET_IT(CONF_WINC_SPI_INT_PIN))
-//    {
-//        GPIO_Pin = CONF_WINC_SPI_INT_PIN;
-//    }
-//
-//    HAL_GPIO_EXTI_IRQHandler(GPIO_Pin);
-//}
+
+/**
+ * @brief  print a demo of imu data
+ * @retval None
+ */
+void ImuMockValues(void)
+{
+	uint32_t CurrTick = HAL_GetTick();
+
+	// accl values [m^2/sec] ~ ( -20, +20 )
+	// sanity check : accl_f.x^2 + accl_f.y^2 = 1
+	ImuMockStruct.accl_f.x = sin(CurrTick);
+	ImuMockStruct.accl_f.y = cos(CurrTick);
+	ImuMockStruct.accl_f.z = CurrTick;
+
+	// gyro in dps ~ ( -500 , + 500 )
+	// sanity check : gyro_f.y^2 + gyro_f.z = 1
+	ImuMockStruct.gyro_f.x = CurrTick*2;
+	ImuMockStruct.gyro_f.y = 500 * -sin(CurrTick);
+	ImuMockStruct.gyro_f.z = 500 * -cos(CurrTick);
+
+	// microTesla data of mag xyz (???)
+	// this is not mandatory
+	ImuMockStruct.mag_f.x = 1;
+	ImuMockStruct.mag_f.y = 2;
+	ImuMockStruct.mag_f.z = 3;
+
+	// send payload here
+
+	// note the printf adds delay to the code
+	printf("~~~~ imu mock ~~~~\r\n");
+
+
+	printf("accl_f.x =\t%f\r\n", ImuMockStruct.accl_f.x);
+	printf("accl_f.y =\t%f\r\n", ImuMockStruct.accl_f.y);
+	printf("accl_f.z =\t%f\r\n", ImuMockStruct.accl_f.z);
+
+	printf("gyro_f.x =\t%f\r\n", ImuMockStruct.gyro_f.x);
+	printf("gyro_f.y =\t%f\r\n", ImuMockStruct.gyro_f.y);
+	printf("gyro_f.z =\t%f\r\n", ImuMockStruct.gyro_f.z);
+
+	printf("mag_f.x =\t%f\r\n", ImuMockStruct.mag_f.x);
+	printf("mag_f.y =\t%f\r\n", ImuMockStruct.mag_f.y);
+	printf("mag_f.z =\t%f\r\n", ImuMockStruct.mag_f.z);
+}
+
 
 // TODO: DB - define in cube and move to `stm32h7xx_it.h`
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)

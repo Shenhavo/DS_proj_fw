@@ -15,14 +15,16 @@
 #define _F_OP_PLAYGROUND_H_
 
 
-
+#define IMAGE_HEIGHT 400
+#define IMAGE_WIDTH  240
+#define IMAGE_QUALITY 90
 
 #define FILE_NAME						"MyTxt.TXT"
 #define IMG_TO_COMPRESS					"image01.bmp"
 #define IMG_TO_RESAVE					"CpyBmp01.bmp"
-#define BMP_FILE_NAME_ON_SD				"image01.bmp" // "image05.jpg"// "smile.bmp"//
+#define BMP_FILE_NAME_ON_SD				"image04.bmp" // "image05.jpg"// "smile.bmp"//
 #define BMP_TO_RESAVE_FILE_NAME_ON_SD	"IMG_CPY.BMP"
-#define JPEG_FILE_NAME_ON_SD			"converted_img.jpg"
+#define JPEG_FILE_NAME_ON_SD			"image04-converted_img-rgb888_ycbcr_subs420_q100.jpg"
 
 #define IS_NEED_SD_FORAMT	0
 

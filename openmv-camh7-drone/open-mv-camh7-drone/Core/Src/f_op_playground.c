@@ -15,8 +15,8 @@
 #include "jpeg_utils.h"
 #include "encode_dma.h"
 
-#include "img_bmp_file.h"
-#include "img_jpg_file.h"
+//#include "img_bmp_file.h"
+//#include "img_jpg_file.h"
 
 #include "f_op_playground.h"
 
@@ -170,84 +170,84 @@ void FS_FileSearchOperations(void)
 	Error_Handler();
 }
 
-/**
- * @brief  compress bitmpa to jpeg - NOT TESTED!
- * @retval None
- */
-void FS_FileOperationsBmpCompress(void)
-{
-	FRESULT res;                                          /* FatFs function common result code */
-
-
-	/* Register the file system object to the FatFs module */
-	if(f_mount(&SDFatFS, (TCHAR const*)SDPath, 0) == FR_OK)
-	{
-		printf("compressing file: %s\r\n", IMG_TO_COMPRESS);
-
-		FIL MyCompressedImg;     /* File object */
-		uint32_t BytesWritten = 0;
-		uint8_t DataOut[500000] = {0xFF};
-		uint32_t DataOutSize = 500000;
-		if((res = f_open(&MyCompressedImg, IMG_TO_COMPRESS, FA_WRITE | FA_CREATE_ALWAYS)) == FR_OK)
-		{
-			printf("file compression starting ..\r\n");
-			// JPEG_DecodingUsingFs_Polling
-			if ( (res = HAL_JPEG_Encode(&hjpeg, img_bmp_file, IMG_BMP_SIZE_B, DataOut, DataOutSize, 10000)) == HAL_OK )
-			{
-				if ( (res = f_write( &MyCompressedImg, &DataOut, DataOutSize, &BytesWritten)) == FR_OK )
-				{
-					printf("finished! %u bytes\r\n", BytesWritten);
-				}
-				else
-				{
-					printf("f_write err: %d\r\n", res);
-				}
-				//		   JPEG_DecodingUsingFs_Polling
-				//		   JPEG_EcodingUsingFs_Polling
-
-				f_close(&MyCompressedImg);
-			}
-			else
-			{
-				printf("jpeg conversion err: %d\r\n", res);
-			}
-		}
-		else
-		{
-			printf("f_open err: %d\r\n", res);
-		}
-
-	}
-
-}
+///**
+// * @brief  compress bitmpa to jpeg - NOT TESTED!
+// * @retval None
+// */
+//void FS_FileOperationsBmpCompress(void)
+//{
+//	FRESULT res;                                          /* FatFs function common result code */
+//
+//
+//	/* Register the file system object to the FatFs module */
+//	if(f_mount(&SDFatFS, (TCHAR const*)SDPath, 0) == FR_OK)
+//	{
+//		printf("compressing file: %s\r\n", IMG_TO_COMPRESS);
+//
+//		FIL MyCompressedImg;     /* File object */
+//		uint32_t BytesWritten = 0;
+//		uint8_t DataOut[500000] = {0xFF};
+//		uint32_t DataOutSize = 500000;
+//		if((res = f_open(&MyCompressedImg, IMG_TO_COMPRESS, FA_WRITE | FA_CREATE_ALWAYS)) == FR_OK)
+//		{
+//			printf("file compression starting ..\r\n");
+//			// JPEG_DecodingUsingFs_Polling
+//			if ( (res = HAL_JPEG_Encode(&hjpeg, img_bmp_file, IMG_BMP_SIZE_B, DataOut, DataOutSize, 10000)) == HAL_OK )
+//			{
+//				if ( (res = f_write( &MyCompressedImg, &DataOut, DataOutSize, &BytesWritten)) == FR_OK )
+//				{
+//					printf("finished! %u bytes\r\n", BytesWritten);
+//				}
+//				else
+//				{
+//					printf("f_write err: %d\r\n", res);
+//				}
+//				//		   JPEG_DecodingUsingFs_Polling
+//				//		   JPEG_EcodingUsingFs_Polling
+//
+//				f_close(&MyCompressedImg);
+//			}
+//			else
+//			{
+//				printf("jpeg conversion err: %d\r\n", res);
+//			}
+//		}
+//		else
+//		{
+//			printf("f_open err: %d\r\n", res);
+//		}
+//
+//	}
+//
+//}
 
 /**
  * @brief  resaves bitmap to sd card
  * @retval None
  */
-void FS_FileOperationsBmpResave(void)
-{
-	FRESULT res;                                          /* FatFs function common result code */
-	uint32_t BytesWritten = 0;
-	FIL MyImgCopy;     /* File object */
-	if(f_mount(&SDFatFS, (TCHAR const*)SDPath, 0) == FR_OK)
-	{
-		if((res = f_open(&MyImgCopy, IMG_TO_RESAVE, FA_WRITE | FA_CREATE_ALWAYS)) == FR_OK)
-		{
-			printf("file resave starting ..\r\n");
-			for (uint32_t PixelIdx = 0; PixelIdx < IMG_BMP_SIZE_B; PixelIdx++)
-			{
-				res = f_write( &MyImgCopy, &img_bmp_file[PixelIdx], 1, &BytesWritten);
-			}
-			printf("finished!\r\n");
-			f_close(&MyImgCopy);
-		}
-		else
-		{
-			printf("f_open err: %d\r\n", res);
-		}
-	}
-}
+//void FS_FileOperationsBmpResave(void)
+//{
+//	FRESULT res;                                          /* FatFs function common result code */
+//	uint32_t BytesWritten = 0;
+//	FIL MyImgCopy;     /* File object */
+//	if(f_mount(&SDFatFS, (TCHAR const*)SDPath, 0) == FR_OK)
+//	{
+//		if((res = f_open(&MyImgCopy, IMG_TO_RESAVE, FA_WRITE | FA_CREATE_ALWAYS)) == FR_OK)
+//		{
+//			printf("file resave starting ..\r\n");
+//			for (uint32_t PixelIdx = 0; PixelIdx < IMG_BMP_SIZE_B; PixelIdx++)
+//			{
+//				res = f_write( &MyImgCopy, &img_bmp_file[PixelIdx], 1, &BytesWritten);
+//			}
+//			printf("finished!\r\n");
+//			f_close(&MyImgCopy);
+//		}
+//		else
+//		{
+//			printf("f_open err: %d\r\n", res);
+//		}
+//	}
+//}
 
 /**
  * @brief  resaves bitmap to sd card
