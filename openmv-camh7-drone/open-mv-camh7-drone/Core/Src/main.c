@@ -27,6 +27,7 @@
 #include "jpeg.h"
 #include "sdmmc.h"
 #include "spi.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -57,6 +58,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+/*!
+ * @brief struct for Accel-output data of precision float
+ */
 
 /* USER CODE END PV */
 
@@ -108,6 +113,7 @@ int main(void)
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   MX_USART3_UART_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	LED_Init();
 	WifiMngr_Init();
@@ -116,9 +122,23 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+
+	TIM_StartImuTick();
+
+	uint32_t x = 0;
 	while (1)
 	{
 		WifiMngr_HandleEvents();
+		if (TIM_IsImuTimeoutEvent() == true)
+		{
+			printf("%d\r\n",x);
+			if( x== 256)
+			{
+				TIM_StopImuTick();
+			}
+			x++;
+		}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -193,18 +213,13 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-//void EXTI15_10_IRQHandler(void)
-//{
-//    uint16_t GPIO_Pin;
-//
-//    /* Get GPIO_Pin */
-//    if (__HAL_GPIO_EXTI_GET_IT(CONF_WINC_SPI_INT_PIN))
-//    {
-//        GPIO_Pin = CONF_WINC_SPI_INT_PIN;
-//    }
-//
-//    HAL_GPIO_EXTI_IRQHandler(GPIO_Pin);
-//}
+
+/**
+ * @brief  print a demo of imu data
+ * @retval None
+ */
+
+
 
 // TODO: DB - define in cube and move to `stm32h7xx_it.h`
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -244,10 +259,12 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
 	 tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	printf("\r\n***assert_failed***\r\n");
+	printf("Wrong parameters value: file %s on line %d\r\n", file, line);
 	while (true)
 	{
 	}
