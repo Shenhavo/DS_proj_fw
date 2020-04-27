@@ -126,15 +126,17 @@ int main(void)
 
 	TIM_StartImuTick();
 
-	uint32_t x = 0;
+	uint32_t x = 1;
+	printf("->%d\r\n",HAL_GetTick());
 	while (1)
 	{
 		WifiMngr_HandleEvents();
 		if (TIM_IsImuTimeoutEvent() == true)
 		{
-			printf("%d\r\n",x);
-			if( x== 256)
+//			printf("%d\r\n",x);
+			if( x== 1000)
 			{
+				printf("->%d\r\n",HAL_GetTick());
 				TIM_StopImuTick();
 			}
 			x++;

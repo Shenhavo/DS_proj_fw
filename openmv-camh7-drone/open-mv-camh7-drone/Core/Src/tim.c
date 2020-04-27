@@ -106,10 +106,10 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 
 void TIM_StartImuTick(void)
 {
-	// TODO: DB - fix the values - for now , counts 0.0052428[sec] ~ 190.74[Hz] period
+	// TODO: SO: counts every 1msec ~ 1000Hz
 
-	htim2.Init.Period            = 25;
-	htim2.Init.Prescaler         = 40000;
+	htim2.Init.Period            = 3;
+	htim2.Init.Prescaler         = 50000;
 	htim2.Init.ClockDivision     = 0;
 	htim2.Init.CounterMode       = TIM_COUNTERMODE_UP;
 	htim2.Init.RepetitionCounter = 0;
