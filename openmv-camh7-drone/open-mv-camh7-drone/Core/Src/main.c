@@ -22,6 +22,7 @@
 #include "main.h"
 #include "dcmi.h"
 #include "dma.h"
+#include "dma2d.h"
 #include "fatfs.h"
 #include "i2c.h"
 #include "jpeg.h"
@@ -46,6 +47,8 @@
 #include "encode_dma.h"
 
 #include "bno055.h"
+
+#include "sensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -167,6 +170,7 @@ int main(void)
   MX_FATFS_Init();
   MX_USART3_UART_Init();
   MX_TIM2_Init();
+  MX_DMA2D_Init();
   /* USER CODE BEGIN 2 */
 	LED_Init();
 	WifiMngr_Init();
@@ -198,6 +202,21 @@ int main(void)
 	}
 	TIM_StartImuTick();
 
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+	sensor_init();
+	int CamId = sensor_get_id();
+	printf("camera id = %d\r\n", CamId);
+	if ( CamId == MT9V034_ID )
+	{
+		printf("camera OK\r\n");
+	}
+	else
+	{
+		printf("camera ERR\r\n");
+	}
+
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
 	while (1)
 	{
@@ -205,7 +224,7 @@ int main(void)
 
 		if (TIM_IsImuTimeoutEvent() == true)
 		{
-			ImuMockValues();
+//			ImuMockValues();
 		}
     /* USER CODE END WHILE */
 

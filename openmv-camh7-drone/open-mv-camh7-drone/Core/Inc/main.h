@@ -31,7 +31,6 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_hal.h"
-#include "stm32h7xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -73,6 +72,8 @@ extern "C" {
 #define MAIN_WLAN_SSID                 "WINC1500_AP" /* < SSID */
 #define MAIN_WLAN_AUTH                 M2M_WIFI_SEC_OPEN /* < Security manner */
 #define MAIN_WLAN_CHANNEL              (6) /* < Channel number */
+
+#define OMV_ENABLE_MT9V034
 
 /* USER CODE END EC */
 
