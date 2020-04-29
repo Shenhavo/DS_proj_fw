@@ -44,8 +44,6 @@ typedef struct stWifiMngr_name { // TODO: add also stImg...
    socketIdx_t 		m_tcp_server_socket;
    socketIdx_t 		m_tcp_client_socket;
    bool				m_IsHardFault;
-//   uint32_t 	m_SizeB;
-
 } stWifiMngr;
 
 

@@ -23,14 +23,13 @@
 #define IMG_JPG_SIZE_B	sizeof(img_jpg_file_a)
 
 static char g_Start_cmd[7] 	= "Start\r\n";
-static stImg g_stImg		= {NULL};
+
 
 static uint8_t g_WifiTxBuff[MAIN_WIFI_M2M_BUFFER_SIZE] = DEFAULT_TX_ARR;
 /** Receive buffer definition. */
 static uint8_t g_WifiRxBuff[MAIN_WIFI_M2M_BUFFER_SIZE];
 
 static stWifiMngr g_stWifiMngr = {NULL};
-
 
 /** Wi-Fi connection state */
 //static uint8_t wifi_connected;
@@ -49,7 +48,7 @@ static void WifiMngr_WifiCB(uint8_t u8MsgType, void *pvMsg);
 static void WifiMngr_SocketCB(socketIdx_t sock, uint8_t u8Msg, void *pvMsg);
 
 static void WifiMngr_InitStruct(stWifiMngr* a_p_stWifiMngr);
-static eImgStates	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr, stImg* a_pstImg);
+static eImgStates	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr);
 static void	WifiMngr_CloseSocket(void);
 
 /*  ============= public functions implementation section  =============*/
@@ -106,10 +105,6 @@ int8_t WifiMngr_Init(void)
 	stWifiMngr* p_stWifiMngr 		= &g_stWifiMngr;
 	WifiMngr_InitStruct(p_stWifiMngr);
 
-
-	// TODO: SO: remove later
-	Img_jpg_get_example_struct(&g_stImg);
-
 	return ret;
 }
 
@@ -158,7 +153,7 @@ int8_t WifiMngr_ReInit(void)
 
 
 	// TODO: SO: remove later
-	Img_jpg_get_example_struct(&g_stImg);
+	Img_jpg_GetNewImg(&g_stImg);
 
 	return ret;
 }
@@ -189,16 +184,15 @@ sint8	WifiMngr_HandleEvents(void)
 			{
 				if(p_stWifiMngr->m_IsTxPhase == true)
 				{
-					stImg* p_stImg = &g_stImg;
-					p_stImg = Img_jpg_Iterate( p_stImg );
-					eImgStates ImgState =  WifiMngr_SendImage(p_stWifiMngr, p_stImg);
+					PacketMngr_Iterate();
+					eImgStates ImgState =  WifiMngr_SendImage(p_stWifiMngr);
 					if( ImgState >= eImgStates_finished )
 					{
 
-						if( PacketMngr_GetIsFrameReady() == true)
+						if(  PacketMngr_GetState() == eFrameState_NewFrame)
 						{
-							printf("3->%d\r\n", HAL_GetTick());
-							Img_jpg_get_example_struct(&g_stImg); // TODO: SO: restarting image structure, later bring new image
+//							printf("3->%d\r\n", HAL_GetTick());
+							Img_jpg_GetNewImg(p_stWifiMngr->m_p_stImg); // TODO: SO: restarting image structure, later bring a new image
 						}
 					}
 				}
@@ -211,8 +205,10 @@ sint8	WifiMngr_HandleEvents(void)
 						{
 							memset(p_stWifiMngr->m_pRxBuff,0, sizeof(p_stWifiMngr->m_pRxBuff)); // TODO: SO: see if it is still required
 							printf("Got Start\r\n");
-							memcpy(g_WifiTxBuff,(uint8_t*)(&g_stImg.m_SizeB),sizeof(uint32_t)); // sending Image size so that ground station will know
-							send(p_stWifiMngr->m_tcp_client_socket, g_WifiTxBuff, 1024, 0);
+
+							// NOT necessary anymore, since
+//							memcpy(g_WifiTxBuff,(uint8_t*)(&g_stImg.m_SizeB),sizeof(uint32_t)); // sending Image size so that ground station will know
+//							send(p_stWifiMngr->m_tcp_client_socket, g_WifiTxBuff, 1024, 0);
 						}
 					}
 					else
@@ -418,11 +414,11 @@ static void	WifiMngr_CloseSocket(void)
 }
 
 /* ================
-eImgStates	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr, stImg* a_pstImg)
+eImgStates	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr)
 ================ */
-eImgStates	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr, stImg* a_pstImg)
+eImgStates	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr)
 {
-	stImg* p_stImg = a_pstImg;
+	stImg* p_stImg = Img_jpg_GetStruct();
 	if( p_stImg != NULL)
 	{
 		switch (p_stImg->m_eImgStates)
@@ -443,7 +439,7 @@ eImgStates	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr, stImg* a_pstImg)
 			break;
 			case eImgStates_finished:
 			{
-				printf("2->%d\r\n", HAL_GetTick());
+//				printf("2->%d\r\n", HAL_GetTick());
 			}
 			break;
 			default:
@@ -453,6 +449,9 @@ eImgStates	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr, stImg* a_pstImg)
 	return p_stImg->m_eImgStates;
 }
 
+
+
+///* ================  ATWINC API =================
 ///* ================
 // sint8 WifiMngr_ScanReq(tenuM2mScanCh a_e_tenuM2mScanCh)
 //================ */

@@ -144,7 +144,7 @@ int8_t WifiMngr_Init(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 //  g_IsTim2TimeoutEvent = true;
-	PacketMngr_Routine();
+	PacketMngr_Update();
 }
 
 /**

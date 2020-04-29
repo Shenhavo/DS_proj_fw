@@ -29,30 +29,45 @@
 #define MID_FRAME_SOF	'A'
 #define IMU_SOF			'i'
 
+#define NEW_FRAME_DATA_SIZE_B			1017
+#define MID_FRAME_DATA_SIZE_B			1023
 
-typedef enum ePacketMngrState_name
-{
-	ePacketMngrState_off = 0,
-	ePacketMngrState_NewFrame,
-	ePacketMngrState_MidFrame,
-	ePacketMngrState_IMU,
-}ePacketMngrState;
+typedef struct stNewFrame_name {
+	uint8_t		m_NewFrameSOF;
+	uint16_t	m_FrameSize;
+	uint32_t	m_SysTick;
+	uint8_t		m_Data[MID_FRAME_DATA_SIZE_B];
+} stNewFrame;
+
+typedef struct stMidFrame_name {
+	uint8_t		m_MidFrameSOF;
+	uint8_t		m_Data[MID_FRAME_DATA_SIZE_B];
+} stMidFrame;
+
+
+//typedef enum eFrameState_name
+//{
+//	eFrameState_off = 0,
+//	eFrameState_NewFrame,
+//	eFrameState_MidFrame,
+//}eFrameState;
 
 typedef struct stPacketMngr_name {
-	ePacketMngrState	m_ePacketMngrState;
-	stImg				m_stImg;
+	stImg*				m_p_stImg;
+
+//	eFrameState			m_eFrameState;
 	uint32_t			m_ImuEventCtr;
 	uint32_t			m_ImuCallsPerPacket;
 	uint32_t			m_FrameEventCtr;
-
-	bool				m_tmpIsFrameReady;
+	bool				m_IsImuReady;
 
 } stPacketMngr;
 
 
 void PacketMngr_Init(void);
-void PacketMngr_Routine(void);
-bool PacketMngr_GetIsFrameReady(void);
+void PacketMngr_Update(void);
+void PacketMngr_Iterate(void);
+eFrameState PacketMngr_GetState(void);
 
 
 

@@ -58,8 +58,9 @@ typedef struct stImg_name {
 
 #define PACKET_DATA_LEN_B	1024
 
-uint8_t* 	Img_jpg_get_arr_ptr(void);
-void	 	Img_jpg_get_example_struct(stImg* a_pstImg);
+uint8_t* 	Img_jpg_GetArrPtr(void);
+stImg* 		Img_jpg_GetStruct(void);
+void	 	Img_jpg_GetNewImg(stImg* a_pstImg);
 stImg* 		Img_jpg_Iterate( stImg* a_pstImg);
 
 

@@ -117,15 +117,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	LED_Init();
 	WifiMngr_Init();
+	TIM_StartImuTick();
 	printf("~~ init finished ~~\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-
-	TIM_StartImuTick();
-
 	while (true)
 	{
 		WifiMngr_HandleEvents();

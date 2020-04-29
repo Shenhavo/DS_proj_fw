@@ -21,13 +21,13 @@ void PacketMngr_Init(void)
 	p_stPacketMngr->m_ImuCallsPerPacket		=	0;
 	p_stPacketMngr->m_ePacketMngrState		=	ePacketMngrState_off;
 	p_stPacketMngr->m_tmpIsFrameReady		= false;
-	// TODO: SO: init also stImg !!!
+	p_stPacketMngr->m_p_stImg				= Img_jpg_GetStruct();
 }
 
 /* ================
-void PacketMngr_Routine(void);
+void PacketMngr_Update(void);
 ================ */
-void PacketMngr_Routine(void)
+void PacketMngr_Update(void)
 {
 	stPacketMngr* p_stPacketMngr = &g_stPacketMngr;
 
@@ -49,24 +49,36 @@ void PacketMngr_Routine(void)
 
 	if(p_stPacketMngr->m_FrameEventCtr == COUNTING_ENDED_VAL)	// SO: new frame packet
 	{
-		p_stPacketMngr->m_tmpIsFrameReady 	=	true;
-		printf("1->%d\r\n", HAL_GetTick());
+		p_stPacketMngr->m_IsFrameReady 	=	true;
+//		printf("1->%d\r\n", HAL_GetTick());
 	}
 }
 
 /* ================
-bool PacketMngr_GetIsFrameReady(void);
+void PacketMngr_Iterate(void);
 ================ */
-bool PacketMngr_GetIsFrameReady(void)
+void PacketMngr_Iterate(void)
 {
-	bool Retval = false;
+	//TODO: SO: add IMU packets later on
 	stPacketMngr* p_stPacketMngr = &g_stPacketMngr;
-	if( p_stPacketMngr->m_tmpIsFrameReady == true)
-	{
-		Retval = true;
-		p_stPacketMngr->m_tmpIsFrameReady = false;
-	}
-	return Retval;
+	Img_jpg_Iterate( &p_stPacketMngr->m_stImg );
+
+}
+
+/* ================
+ePacketMngrState PacketMngr_GetState(void)
+================ */
+eFrameState PacketMngr_GetState(void)
+{
+	return g_stPacketMngr.m_ePacketMngrState;
+}
+
+/* ================
+void PacketMngr_SetState( a_ePacketMngrState)
+================ */
+void PacketMngr_SetState(a_ePacketMngrState)
+{
+	g_stPacketMngr.m_ePacketMngrState = a_ePacketMngrState;
 }
 
 /*****END OF FILE****/
