@@ -19,7 +19,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "tim.h"
-
+#include "packet_mngr.h"
 /* USER CODE BEGIN 0 */
 bool g_IsTim2TimeoutEvent = false;
 /* USER CODE END 0 */
@@ -106,7 +106,7 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 
 void TIM_StartImuTick(void)
 {
-	// TODO: SO: counts every 1msec ~ 1000Hz
+	// TODO: SO: counts every 1msec = 1000Hz
 
 	htim2.Init.Period            = 3;
 	htim2.Init.Prescaler         = 50000;
@@ -143,7 +143,8 @@ int8_t WifiMngr_Init(void)
 ================ */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  g_IsTim2TimeoutEvent = true;
+//  g_IsTim2TimeoutEvent = true;
+	PacketMngr_Routine();
 }
 
 /**

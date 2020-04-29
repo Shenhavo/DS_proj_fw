@@ -15,7 +15,7 @@
 #include "wifi_mngr.h"
 // debug stuff
 #include "img_jpg_file.h"
-
+#include "packet_mngr.h"
 #include "usart.h"
 
 // ============= statics & consts =============
@@ -194,7 +194,12 @@ sint8	WifiMngr_HandleEvents(void)
 					eImgStates ImgState =  WifiMngr_SendImage(p_stWifiMngr, p_stImg);
 					if( ImgState >= eImgStates_finished )
 					{
-						Img_jpg_get_example_struct(&g_stImg); // TODO: SO: restarting image structure, later bring new image
+
+						if( PacketMngr_GetIsFrameReady() == true)
+						{
+							printf("3->%d\r\n", HAL_GetTick());
+							Img_jpg_get_example_struct(&g_stImg); // TODO: SO: restarting image structure, later bring new image
+						}
 					}
 				}
 				else
@@ -438,6 +443,7 @@ eImgStates	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr, stImg* a_pstImg)
 			break;
 			case eImgStates_finished:
 			{
+				printf("2->%d\r\n", HAL_GetTick());
 			}
 			break;
 			default:
