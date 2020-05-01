@@ -48,13 +48,12 @@ uint8_t* Img_jpg_GetArrPtr(void)
 	return img_jpg_file_a;
 }
 
-
 /* ================
 stImg*	Img_jpg_Iterate( void)
 ================ */
 stImg*	Img_jpg_Iterate( void )
 {
-	stImg* pstImg = &g_stImg;
+	stImg* pstImg = &g_stImg // TODO: SO: change iterations size since systick, sof, and size were added
 	if( pstImg != NULL )
 	{
 		switch (pstImg->m_eImgStates)

@@ -51,12 +51,10 @@ typedef enum eImgStates_name
 
 typedef struct stImg_name {
    uint8_t* 	m_pImg;
-   uint32_t 	m_SizeB;
+   uint16_t 	m_SizeB;
    eImgStates	m_eImgStates;
 } stImg;
 
-
-#define PACKET_DATA_LEN_B	1024
 
 uint8_t* 	Img_jpg_GetArrPtr(void);
 eImgStates  Img_jpg_GetImgState(void);

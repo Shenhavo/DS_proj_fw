@@ -29,6 +29,7 @@
 #define MID_FRAME_SOF	'A'
 #define IMU_SOF			'i'
 
+#define	PACKET_DATA_SIZE_B				1024
 #define NEW_FRAME_DATA_SIZE_B			1017
 #define MID_FRAME_DATA_SIZE_B			1023
 
@@ -36,7 +37,7 @@ typedef struct stNewFrame_name {
 	uint8_t		m_NewFrameSOF;
 	uint16_t	m_FrameSize;
 	uint32_t	m_SysTick;
-	uint8_t		m_Data[MID_FRAME_DATA_SIZE_B];
+	uint8_t		m_Data[NEW_FRAME_DATA_SIZE_B];
 } stNewFrame;
 
 typedef struct stMidFrame_name {
@@ -60,13 +61,13 @@ typedef struct stPacketMngr_name {
 	uint32_t			m_ImuCallsPerPacket;
 	uint32_t			m_FrameEventCtr;
 	bool				m_IsImuReady;
-
+	uint8_t				m_PacketData[PACKET_DATA_SIZE_B];
 } stPacketMngr;
 
 
 void PacketMngr_Init(void);
 void PacketMngr_Update(void);
-stImg* PacketMngr_Iterate(void);
+stImg* PacketMngr_IterateImg(void);
 eFrameState PacketMngr_GetState(void);
 
 
