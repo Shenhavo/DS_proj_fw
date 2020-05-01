@@ -31,6 +31,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_hal.h"
+#include "stm32h7xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -105,8 +106,14 @@ void Error_Handler(void);
 #define WIFI_INT_N_Pin GPIO_PIN_13
 #define WIFI_INT_N_GPIO_Port GPIOD
 #define WIFI_INT_N_EXTI_IRQn EXTI15_10_IRQn
+#define DCMI_PCLK_Pin GPIO_PIN_8
+#define DCMI_PCLK_GPIO_Port GPIOA
+#define DCMI_RESET_Pin GPIO_PIN_10
+#define DCMI_RESET_GPIO_Port GPIOA
 #define SD_CD_Pin GPIO_PIN_0
 #define SD_CD_GPIO_Port GPIOD
+#define DCMI_PWDN_Pin GPIO_PIN_7
+#define DCMI_PWDN_GPIO_Port GPIOD
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

@@ -171,6 +171,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM2_Init();
   MX_DMA2D_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 	LED_Init();
 	WifiMngr_Init();
@@ -209,11 +210,11 @@ int main(void)
 	printf("camera id = %d\r\n", CamId);
 	if ( CamId == MT9V034_ID )
 	{
-		printf("camera OK\r\n");
+		printf("camera MT9V034 OK\r\n");
 	}
 	else
 	{
-		printf("camera ERR\r\n");
+		printf("camera MT9V034 ERR\r\n");
 	}
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
