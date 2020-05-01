@@ -66,7 +66,7 @@ typedef struct stPacketMngr_name {
 
 void PacketMngr_Init(void);
 void PacketMngr_Update(void);
-void PacketMngr_Iterate(void);
+stImg* PacketMngr_Iterate(void);
 eFrameState PacketMngr_GetState(void);
 
 

@@ -32,6 +32,13 @@ stImg* Img_jpg_GetStruct(void)
 	return &g_stImg;
 }
 
+/* ================
+eImgStates Img_jpg_GetImgState(void)
+================ */
+eImgStates Img_jpg_GetImgState(void)
+{
+	return g_stImg.m_eImgStates;
+}
 
 /* ================
 uint8_t* Img_jpg_get_arr_ptr(void)
@@ -43,11 +50,11 @@ uint8_t* Img_jpg_GetArrPtr(void)
 
 
 /* ================
-stImg*	Img_jpg_Iterate( stImg* a_pstImg)
+stImg*	Img_jpg_Iterate( void)
 ================ */
-stImg*	Img_jpg_Iterate( stImg* a_pstImg)
+stImg*	Img_jpg_Iterate( void )
 {
-	stImg* pstImg = a_pstImg;
+	stImg* pstImg = &g_stImg;
 	if( pstImg != NULL )
 	{
 		switch (pstImg->m_eImgStates)

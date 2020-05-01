@@ -55,14 +55,18 @@ void PacketMngr_Update(void)
 }
 
 /* ================
-void PacketMngr_Iterate(void);
+stImg* PacketMngr_Iterate(void);
 ================ */
-void PacketMngr_Iterate(void)
+stImg* PacketMngr_Iterate(void)
 {
 	//TODO: SO: add IMU packets later on
-	stPacketMngr* p_stPacketMngr = &g_stPacketMngr;
-	Img_jpg_Iterate( &p_stPacketMngr->m_stImg );
 
+	 stImg* p_stImg = Img_jpg_Iterate();
+
+	// prepare a new packet
+
+
+	return p_stImg;
 }
 
 /* ================
