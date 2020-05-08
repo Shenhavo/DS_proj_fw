@@ -100,10 +100,10 @@ static int extclk_config(int frequency)
     TIMOCHandle.Pulse       = period / 2;
     TIMOCHandle.OCMode      = TIM_OCMODE_PWM1;
     TIMOCHandle.OCPolarity  = TIM_OCPOLARITY_HIGH;
-    TIMOCHandle.OCNPolarity = TIM_OCNPOLARITY_HIGH; // TODO: this was not in the original
-    TIMOCHandle.OCFastMode  = TIM_OCFAST_DISABLE;
+    TIMOCHandle.OCNPolarity = TIM_OCNPOLARITY_HIGH; // TODO: this was not in the original OMV code
+    TIMOCHandle.OCFastMode  = TIM_OCFAST_ENABLE; // TODO: was in disable
     TIMOCHandle.OCIdleState = TIM_OCIDLESTATE_RESET;
-    TIMOCHandle.OCNIdleState = TIM_OCNIDLESTATE_RESET;  // TODO: this was not in the original
+    TIMOCHandle.OCNIdleState = TIM_OCNIDLESTATE_RESET;  // TODO: this was not in the original OMV code
 
     if ((HAL_TIM_PWM_Init(&TIMHandle) != HAL_OK)
     || (HAL_TIM_PWM_ConfigChannel(&TIMHandle, &TIMOCHandle, DCMI_TIM_CHANNEL) != HAL_OK)
@@ -160,6 +160,9 @@ static int dcmi_config(uint32_t jpeg_mode)
 static int dma_config()
 {
 	// TODO: uncomment
+	// note: this is impelmented in the dcmi_init() from the cubemx (same definitions)
+
+
 //    // DMA Stream configuration
 //    DMAHandle.Instance                  = DMA2_Stream1;             /* Select the DMA instance          */
 //    #if defined(MCU_SERIES_H7)
@@ -272,45 +275,16 @@ int sensor_init()
     sensor.reset_pol = ACTIVE_HIGH;
 
     /* Reset the sensor */
-    DCMI_RESET_HIGH();
-    HAL_Delay(10); // systick_sleep(10);
-
     DCMI_RESET_LOW();
     HAL_Delay(10); // systick_sleep(10);
 
+    DCMI_RESET_HIGH();
+    HAL_Delay(10); // systick_sleep(10);
+
+    // TODO: the reset polarity is known
+
     /* Probe the sensor */
     sensor.slv_addr = cambus_scan();
-    if (sensor.slv_addr == 0) {
-        /* Sensor has been held in reset,
-           so the reset line is active low */
-        sensor.reset_pol = ACTIVE_LOW;
-
-        /* Pull the sensor out of the reset state */
-        DCMI_RESET_HIGH();
-        HAL_Delay(10); // systick_sleep(10);
-
-        /* Probe again to set the slave addr */
-        sensor.slv_addr = cambus_scan();
-        if (sensor.slv_addr == 0) {
-            sensor.pwdn_pol = ACTIVE_LOW;
-
-            DCMI_PWDN_HIGH();
-            HAL_Delay(10); // systick_sleep(10);
-
-            sensor.slv_addr = cambus_scan();
-            if (sensor.slv_addr == 0) {
-                sensor.reset_pol = ACTIVE_HIGH;
-
-                DCMI_RESET_LOW();
-                HAL_Delay(10); // systick_sleep(10);
-
-                sensor.slv_addr = cambus_scan();
-                if (sensor.slv_addr == 0) {
-                    return -2;
-                }
-            }
-        }
-    }
 
     // Clear sensor chip ID.
     sensor.chip_id = 0;
@@ -329,9 +303,10 @@ int sensor_init()
 
     switch (sensor.chip_id) {
     case MT9V034_ID:
-        if (extclk_config(MT9V034_XCLK_FREQ) != 0) {
-            return -3;
-        }
+        // TODO: this section contains a second initialization which causes problems
+//        if (extclk_config(MT9V034_XCLK_FREQ) != 0) {
+//            return -3;
+//        }
         init_ret = mt9v034_init(&sensor);
         break;
     default:

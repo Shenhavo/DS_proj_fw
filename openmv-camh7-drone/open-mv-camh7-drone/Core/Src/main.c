@@ -217,6 +217,10 @@ int main(void)
 		printf("camera MT9V034 ERR\r\n");
 	}
 
+	// TODO: remove
+//	uint8_t DummyFrameBuff[1000] = {0x00};
+//	HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, DummyFrameBuff, 1000);
+
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
 	while (1)
