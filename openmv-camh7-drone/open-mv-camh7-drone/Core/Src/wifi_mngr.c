@@ -22,7 +22,8 @@
 
 #define IMG_JPG_SIZE_B	sizeof(img_jpg_file_a)
 
-static char g_Start_cmd[7] 	= "Start\r\n";
+#define SIZE_OF_START_CMD_B		7
+static char g_Start_cmd[SIZE_OF_START_CMD_B] 	= "Start\r\n";
 
 
 static uint8_t g_WifiTxBuff[MAIN_WIFI_M2M_BUFFER_SIZE] = DEFAULT_TX_ARR;
@@ -48,7 +49,7 @@ static void WifiMngr_WifiCB(uint8_t u8MsgType, void *pvMsg);
 static void WifiMngr_SocketCB(socketIdx_t sock, uint8_t u8Msg, void *pvMsg);
 
 static void WifiMngr_InitStruct(stWifiMngr* a_p_stWifiMngr);
-static void	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr);
+//static void	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr);
 
 /*  ============= public functions implementation section  =============*/
 /* ================
@@ -104,6 +105,9 @@ int8_t WifiMngr_Init(void)
 	stWifiMngr* p_stWifiMngr 		= &g_stWifiMngr;
 	WifiMngr_InitStruct(p_stWifiMngr);
 
+	// TODO: SO: remove later
+	PacketMngr_GetNewImg();
+
 	return ret;
 }
 
@@ -152,7 +156,7 @@ int8_t WifiMngr_ReInit(void)
 
 
 	// TODO: SO: remove later
-	Img_jpg_GetNewImg(&g_stImg);
+	PacketMngr_GetNewImg();
 
 	return ret;
 }
@@ -185,13 +189,13 @@ sint8	WifiMngr_HandleEvents(void)
 			{
 				//TODO: SO: add IMU packets later on
 
-				eImgStates eImgState = PacketMngr_IterateImg();
+				eImgStates eImgState = PacketMngr_IterateImg(p_stWifiMngr->m_tcp_client_socket);
 				if( eImgState >= eImgStates_finished )
 				{
 
-					if(  PacketMngr_GetState() == eFrameState_NewFrame) //TODO: SO: instead of the sync clock..
+					if(  PacketMngr_GetState() == ePacketMngrState_NewFrame) //TODO: SO: instead of the sync clock..
 					{
-						Img_jpg_GetNewImg(p_stWifiMngr->m_p_stImg); // TODO: SO: restarting image structure, later bring a new image
+						PacketMngr_GetNewImg(); // TODO: SO: restarting image structure, later bring a new image
 					}
 				}
 			}
@@ -202,8 +206,15 @@ sint8	WifiMngr_HandleEvents(void)
 					p_stWifiMngr->m_IsRxReady = false;
 					if( strcmp(p_stWifiMngr->m_pRxBuff,g_Start_cmd) == 0)
 					{
-						memset(p_stWifiMngr->m_pRxBuff,0, sizeof(p_stWifiMngr->m_pRxBuff)); // TODO: SO: see if it is still required
+						memset(p_stWifiMngr->m_pRxBuff,0, SIZE_OF_START_CMD_B);
 						printf("Got Start\r\n");
+						if( LED_GetState() != eLedStates_blue_green)
+						{
+							LED_SetState(eLedStates_blue_green);
+						}
+
+						p_stWifiMngr->m_IsTxPhase = true;
+
 					}
 				}
 				else
@@ -325,12 +336,12 @@ static void WifiMngr_SocketCB(socketIdx_t sock, uint8_t u8Msg, void *pvMsg)
 	break;
 	case SOCKET_MSG_SEND:
 	{
-		if( LED_GetState() != eLedStates_blue_green)
-		{
-			LED_SetState(eLedStates_blue_green);
-		}
-
-		p_stWifiMngr->m_IsTxPhase = true;
+//		if( LED_GetState() != eLedStates_blue_green)
+//		{
+//			LED_SetState(eLedStates_blue_green);
+//		}
+//
+//		p_stWifiMngr->m_IsTxPhase = true;
 	}
 	break;
 	default:
@@ -357,43 +368,45 @@ static void WifiMngr_InitStruct(stWifiMngr* a_p_stWifiMngr)
 	a_p_stWifiMngr->m_IsHardFault		= false;
 }
 
-/* ================
-void	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr)
-================ */
-void WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr)
-{
-
-
-
-	eImgStates eOldImgState =  Img_jpg_GetImgState();// SO: taking old ImgState since Iterating changes it
-
-	stImg* p_stImg = PacketMngr_IterateImg();
-
-	switch (eOldImgState)
-	{
-		case eImgStates_start:
-		{
-			send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, PACKET_DATA_LEN_B, 0);
-		}
-		case eImgStates_sending:
-		{
-			send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, PACKET_DATA_LEN_B, 0);
-		}
-		break;
-		case eImgStates_last_packet:
-		{
-			send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, p_stImg->m_SizeB, 0);
-		}
-		break;
-		case eImgStates_finished:
-		{
-		}
-		break;
-		default:
-			break;
-	}
-
-}
+///* ================
+//void	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr)
+//================ */
+//void WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr)
+//{
+//
+//
+//
+//	eImgStates eOldImgState =  Img_jpg_GetImgState();// SO: taking old ImgState since Iterating changes it
+//
+//
+//	// SO: split IterateImge into two functions: 1. prepares the msg
+//
+//	stImg* p_stImg = PacketMngr_IterateImg();
+//
+//	switch (eOldImgState)
+//	{
+//		case eImgStates_start:
+//		{
+//			send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, PACKET_DATA_LEN_B, 0);
+//		}
+//		case eImgStates_sending:
+//		{
+//			send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, PACKET_DATA_LEN_B, 0);
+//		}
+//		break;
+//		case eImgStates_last_packet:
+//		{
+//			send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, p_stImg->m_SizeB, 0);
+//		}
+//		break;
+//		case eImgStates_finished:
+//		{
+//		}
+//		break;
+//		default:
+//			break;
+//	}
+//}
 
 
 

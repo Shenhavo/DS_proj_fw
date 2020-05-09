@@ -116,6 +116,7 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	LED_Init();
+	PacketMngr_Init();
 	WifiMngr_Init();
 	TIM_StartImuTick();
 	printf("~~ init finished ~~\r\n");

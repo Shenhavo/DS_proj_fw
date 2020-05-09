@@ -22,7 +22,6 @@ void PacketMngr_Init(void)
 	p_stPacketMngr->m_ImuEventCtr			=	0;
 	p_stPacketMngr->m_ImuCallsPerPacket		=	0;
 	p_stPacketMngr->m_ePacketMngrState		=	ePacketMngrState_off;
-	p_stPacketMngr->m_tmpIsFrameReady		= false;
 	p_stPacketMngr->m_p_stImg				= Img_jpg_GetStruct();
 }
 
@@ -51,7 +50,7 @@ void PacketMngr_Update(void)
 
 	if(p_stPacketMngr->m_FrameEventCtr == COUNTING_ENDED_VAL)	// SO: new frame packet
 	{
-		p_stPacketMngr->m_IsFrameReady 	=	true;
+		PacketMngr_SetState(ePacketMngrState_NewFrame);
 //		printf("1->%d\r\n", HAL_GetTick());
 	}
 }
@@ -59,62 +58,77 @@ void PacketMngr_Update(void)
 /* ================
 eImgStates PacketMngr_Iterate(void);
 ================ */
-eImgStates PacketMngr_IterateImg(void)
+eImgStates PacketMngr_IterateImg( int8_t a_Socket)
 {
 
-	stPacketMngr* p_stPacketMngr = &g_stPacketMngr;
+	stPacketMngr* 	p_stPacketMngr 	= 	&g_stPacketMngr;
+	stImg*			p_stImg			=	p_stPacketMngr->m_p_stImg;
 
+	int8_t Result = SOCK_ERR_NO_ERROR;
 
-
-	stImg* p_stImg = Img_jpg_Iterate();
-
-
-
-	switch (p_stImg->m_eImgStates)
+	switch (p_stImg->m_eCurrImgStates)
 	{
 		case eImgStates_start:
 		{
-			stNewFrame* p_stNewFrame = (stNewFrame*)(&p_stPacketMngr->m_PacketData);
+			stNewFrame* p_stNewFrame 	= (stNewFrame*)(p_stPacketMngr->m_PacketBytes);
 			p_stNewFrame->m_NewFrameSOF	=	NEW_FRAME_SOF;
 			p_stNewFrame->m_FrameSize	=	p_stImg->m_SizeB;
 			p_stNewFrame->m_SysTick		=	HAL_GetTick();
-			memcpy(p_stNewFrame->m_Data, p_stImg->m_pImg, );
+			printf("systick = %d\r\n", p_stNewFrame->m_SysTick);
 
+			uint16_t 	packet_data_size_b 	= 	0;
+			uint8_t*	pData				=	p_stImg->m_pImg;
 
-			if( pstImg->m_SizeB > PACKET_DATA_LEN_B)
+			if( p_stImg->m_SizeB > NEW_FRAME_DATA_SIZE_B)
 			{
-				pstImg->m_eImgStates = eImgStates_sending;
+				packet_data_size_b  += NEW_FRAME_DATA_SIZE_B;
+				p_stImg->m_SizeB 	-= NEW_FRAME_DATA_SIZE_B;
+				p_stImg->m_pImg		+= NEW_FRAME_DATA_SIZE_B;
+				p_stImg->m_eNextImgStates = eImgStates_sending;
+				PacketMngr_SetState(ePacketMngrState_MidFrame);
 			}
 			else
 			{
-				pstImg->m_eImgStates = eImgStates_last_packet;
+				packet_data_size_b  += p_stImg->m_SizeB;
+				p_stImg->m_SizeB 	-= p_stImg->m_SizeB;
+				p_stImg->m_pImg		+= p_stImg->m_SizeB;
+				p_stImg->m_eNextImgStates = eImgStates_finished;
+				PacketMngr_SetState(ePacketMngrState_off);
 			}
 
+			memcpy(p_stNewFrame->m_Data, pData, packet_data_size_b);
 
-			send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, PACKET_DATA_SIZE_B, 0);
+			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stNewFrame , NEW_FRAME_HEADER_SIZE_B + packet_data_size_b, 0);
 		}
 		case eImgStates_sending:
 		{
+			stMidFrame* p_stMidFrame 	= (stMidFrame*)(p_stPacketMngr->m_PacketBytes);
+			p_stMidFrame->m_MidFrameSOF	= MID_FRAME_SOF;
+
+			uint16_t 	packet_data_size_b 	= 	0;
+			uint8_t*	pData				=	p_stImg->m_pImg;
 
 
-			if( pstImg->m_SizeB > PACKET_DATA_LEN_B)
+			if( p_stImg->m_SizeB > MID_FRAME_DATA_SIZE_B)
 			{
-				pstImg->m_SizeB -= PACKET_DATA_LEN_B;
-				pstImg->m_pImg	+= PACKET_DATA_LEN_B;
+				packet_data_size_b  += MID_FRAME_DATA_SIZE_B;
+				p_stImg->m_SizeB 	-= MID_FRAME_DATA_SIZE_B;
+				p_stImg->m_pImg		+= MID_FRAME_DATA_SIZE_B;
+				p_stImg->m_eNextImgStates = eImgStates_sending;
+				PacketMngr_SetState(ePacketMngrState_MidFrame);
 			}
 			else
 			{
-				pstImg->m_eImgStates = eImgStates_last_packet;
+				packet_data_size_b  += p_stImg->m_SizeB;
+				p_stImg->m_SizeB 	-= p_stImg->m_SizeB;
+				p_stImg->m_pImg		+= p_stImg->m_SizeB;
+				p_stImg->m_eNextImgStates = eImgStates_finished;
+				PacketMngr_SetState(ePacketMngrState_off);
 			}
 
-
-			send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, PACKET_DATA_SIZE_B, 0);
-		}
-		break;
-		case eImgStates_last_packet:
-		{
-			pstImg->m_eImgStates = eImgStates_finished;
-			send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, p_stImg->m_SizeB, 0);
+			memcpy(p_stMidFrame->m_Data, pData, packet_data_size_b);
+			printf("0x%x,0x%x,0x%x,0x%x\r\n", p_stMidFrame->m_Data[0],p_stMidFrame->m_Data[1],p_stMidFrame->m_Data[2],p_stMidFrame->m_Data[3]);
+			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stMidFrame , MID_FRAME_HEADER_SIZE_B + packet_data_size_b, 0);
 		}
 		break;
 		case eImgStates_finished:
@@ -125,33 +139,15 @@ eImgStates PacketMngr_IterateImg(void)
 			break;
 	}
 
+	assert_param( (Result == SOCK_ERR_NO_ERROR) );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// prepare a new packet
-
-
-	 return p_stImg->m_eImgStates;
+	 return Img_jpg_UpdateImgState();
 }
 
 /* ================
 ePacketMngrState PacketMngr_GetState(void)
 ================ */
-eFrameState PacketMngr_GetState(void)
+ePacketMngrState PacketMngr_GetState(void)
 {
 	return g_stPacketMngr.m_ePacketMngrState;
 }
@@ -159,9 +155,18 @@ eFrameState PacketMngr_GetState(void)
 /* ================
 void PacketMngr_SetState( a_ePacketMngrState)
 ================ */
-void PacketMngr_SetState(a_ePacketMngrState)
+void PacketMngr_SetState(ePacketMngrState a_ePacketMngrState)
 {
 	g_stPacketMngr.m_ePacketMngrState = a_ePacketMngrState;
 }
+
+/* ================
+void PacketMngr_GetNewImg( void )
+================ */
+void PacketMngr_GetNewImg( void )
+{
+	Img_jpg_GetNewImg();
+}
+
 
 /*****END OF FILE****/
