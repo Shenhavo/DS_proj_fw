@@ -19,10 +19,15 @@ void PacketMngr_Init(void)
 {
 	stPacketMngr* p_stPacketMngr = &g_stPacketMngr;
 	p_stPacketMngr->m_FrameEventCtr			=	0;
-	p_stPacketMngr->m_ImuEventCtr			=	0;
-	p_stPacketMngr->m_ImuCallsPerPacket		=	0;
 	p_stPacketMngr->m_ePacketMngrState		=	ePacketMngrState_off;
 	p_stPacketMngr->m_p_stImg				= Img_jpg_GetStruct();
+
+	p_stPacketMngr->m_ImuEventCtr			=	0;
+	p_stPacketMngr->m_ImuCallsPerPacket		=	0;
+	p_stPacketMngr->m_IsImuCallReady		= false;
+	p_stPacketMngr->m_IsImuPacketReady		= false;
+	memset((&p_stPacketMngr->m_stImuPacket),0,sizeof(stImuPacket));
+
 }
 
 /* ================
@@ -41,9 +46,11 @@ void PacketMngr_Update(void)
 	{
 
 //		printf("new imu call\r\n");
-		UPDATE_IMU_CALLS_CTR(p_stPacketMngr->m_ImuCallsPerPacket);
+		p_stPacketMngr->m_IsImuCallReady	=	true;
+
 		if(p_stPacketMngr->m_ImuCallsPerPacket == COUNTING_ENDED_VAL) // SO: new IMU packet
 		{
+			p_stPacketMngr->m_IsImuPacketReady = true;
 //			printf("new imu packet\r\n");
 		}
 	}
@@ -74,7 +81,6 @@ eImgStates PacketMngr_IterateImg( int8_t a_Socket)
 			p_stNewFrame->m_NewFrameSOF	=	NEW_FRAME_SOF;
 			p_stNewFrame->m_FrameSize	=	p_stImg->m_SizeB;
 			p_stNewFrame->m_SysTick		=	HAL_GetTick();
-			printf("systick = %d\r\n", p_stNewFrame->m_SysTick);
 
 			uint16_t 	packet_data_size_b 	= 	0;
 			uint8_t*	pData				=	p_stImg->m_pImg;
@@ -127,7 +133,6 @@ eImgStates PacketMngr_IterateImg( int8_t a_Socket)
 			}
 
 			memcpy(p_stMidFrame->m_Data, pData, packet_data_size_b);
-			printf("0x%x,0x%x,0x%x,0x%x\r\n", p_stMidFrame->m_Data[0],p_stMidFrame->m_Data[1],p_stMidFrame->m_Data[2],p_stMidFrame->m_Data[3]);
 			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stMidFrame , MID_FRAME_HEADER_SIZE_B + packet_data_size_b, 0);
 		}
 		break;
@@ -139,10 +144,42 @@ eImgStates PacketMngr_IterateImg( int8_t a_Socket)
 			break;
 	}
 
-	assert_param( (Result == SOCK_ERR_NO_ERROR) );
+	if(Result == SOCK_ERR_BUFFER_FULL) //SO: SOCK_ERR_BUFFER_FULL is received whenever user clicks on wifi connections
+	{
+		printf("Socket err: %d\r\n", Result);
+		p_stImg->m_eCurrImgStates = eImgStates_finished;
+		p_stImg->m_eNextImgStates = eImgStates_finished;
+	}
+
+//	assert_param( (Result == SOCK_ERR_NO_ERROR) );
 
 	 return Img_jpg_UpdateImgState();
 }
+
+/* ================
+void PacketMngr_IterateImu( void )
+================ */
+void PacketMngr_IterateImu( void )
+{
+	// TODO: SO: see if sending the packet takes more than 3msec...otherwise there will be missing data
+	stPacketMngr* 	p_stPacketMngr 	= 	&g_stPacketMngr;
+
+	if(p_stPacketMngr->m_IsImuCallReady == true)
+	{
+		p_stPacketMngr->m_IsImuCallReady = false;
+		PacketMngr_GetNewImuCall();
+		UPDATE_IMU_CALLS_CTR(p_stPacketMngr->m_ImuCallsPerPacket);
+
+		if(p_stPacketMngr->m_IsImuPacketReady == true)
+		{
+			stImuPacket* p_stImuPacket = &p_stPacketMngr->m_stImuPacket;
+			p_stImuPacket->m_ImuSOF = IMU_SOF;
+			p_stImuPacket->m_SysTick = HAL_GetTick();
+//			printf("Tick: %d\r\n", HAL_GetTick());
+		}
+	}
+}
+
 
 /* ================
 ePacketMngrState PacketMngr_GetState(void)
@@ -167,6 +204,42 @@ void PacketMngr_GetNewImg( void )
 {
 	Img_jpg_GetNewImg();
 }
+
+/* ================
+void PacketMngr_GetNewImuCall(void)
+================ */
+void PacketMngr_GetNewImuCall(void)
+{
+
+	stPacketMngr* 	p_stPacketMngr 		= 	&g_stPacketMngr;
+	uint32_t		ImuCallsPerPacket	=	p_stPacketMngr->m_ImuCallsPerPacket;
+	stImuCall*		p_stImuCall			= 	&p_stPacketMngr->m_stImuPacket.m_ImuCalls_a[ImuCallsPerPacket];
+
+	//============== TODO: SO: fill real values ==============
+	p_stImuCall->m_AccX		=	ImuCallsPerPacket*0;
+	p_stImuCall->m_AccY		=	ImuCallsPerPacket*1;
+	p_stImuCall->m_AccZ		=	ImuCallsPerPacket*2;
+	p_stImuCall->m_GyroX	=	ImuCallsPerPacket*0;
+	p_stImuCall->m_GyroY	=	ImuCallsPerPacket*-1;
+	p_stImuCall->m_GyroZ	=	ImuCallsPerPacket*-2;
+}
+
+///* ================
+//bool PacketMngr_GetIsImuPacketReady(void)
+//================ */
+//bool PacketMngr_GetIsImuPacketReady(void)
+//{
+//	return g_stPacketMngr.m_IsImuPacketReady;
+//}
+//
+//
+///* ================
+//void PacketMngr_SetIsImuPacketReady( bool a_IsImuPacketReady)
+//================ */
+//void PacketMngr_SetIsImuPacketReady( bool a_IsImuPacketReady)
+//{
+//	g_stPacketMngr.m_IsImuPacketReady = a_IsImuPacketReady;
+//}
 
 
 /*****END OF FILE****/

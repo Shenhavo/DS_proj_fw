@@ -187,7 +187,6 @@ sint8	WifiMngr_HandleEvents(void)
 		{
 			if(p_stWifiMngr->m_IsTxPhase == true)
 			{
-				//TODO: SO: add IMU packets later on
 
 				eImgStates eImgState = PacketMngr_IterateImg(p_stWifiMngr->m_tcp_client_socket);
 				if( eImgState >= eImgStates_finished )
@@ -198,6 +197,9 @@ sint8	WifiMngr_HandleEvents(void)
 						PacketMngr_GetNewImg(); // TODO: SO: restarting image structure, later bring a new image
 					}
 				}
+
+				PacketMngr_IterateImu();
+
 			}
 			else
 			{

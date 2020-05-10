@@ -13,16 +13,16 @@
 #include "img_jpg_file.h"
 //#include "imu_mngr.h"
 
-#define NEW_IMU_EVENT_CYCLE_MSEC	5
-#define NEW_IMU_CALLS_PER_PACKET	10
-#define NEW_FRAME_EVENT_CYCLE_MSEC	50
+#define IMU_EVENT_CYCLE_MSEC	5
+#define IMU_CALLS_PER_PACKET	10
+#define FRAME_EVENT_CYCLE_MSEC	50
 
 #define UPDATE_IMU_EVENT_CTR(x)			(x)++;\
-										(x)=((x)%NEW_IMU_EVENT_CYCLE_MSEC)
+										(x)=((x)%IMU_EVENT_CYCLE_MSEC)
 #define UPDATE_IMU_CALLS_CTR(x)			(x)++;\
-										(x)=((x)%NEW_IMU_CALLS_PER_PACKET)
+										(x)=((x)%IMU_CALLS_PER_PACKET)
 #define UPDATE_FRAME_EVENT_CTR(x)		(x)++;\
-										(x)=((x)%NEW_FRAME_EVENT_CYCLE_MSEC)
+										(x)=((x)%FRAME_EVENT_CYCLE_MSEC)
 #define COUNTING_ENDED_VAL				0
 
 #define NEW_FRAME_SOF	'!'
@@ -51,6 +51,28 @@ typedef struct stMidFrame_name {
 } stMidFrame;
 #pragma pack(pop)
 
+
+#pragma pack(push,1)
+typedef struct stImuCall_name {
+	int16_t	m_GyroX;
+	int16_t	m_GyroY;
+	int16_t	m_GyroZ;
+	int16_t	m_AccX;
+	int16_t	m_AccY;
+	int16_t	m_AccZ;
+} stImuCall;
+#pragma pack(pop)
+
+#pragma pack(push,1)
+typedef struct stImuPacket_name {
+	uint8_t			m_ImuSOF;
+	uint32_t		m_SysTick;
+	stImuCall		m_ImuCalls_a[IMU_CALLS_PER_PACKET];
+} stImuPacket;
+#pragma pack(pop)
+
+
+
 typedef enum eFrameState_name
 {
 	ePacketMngrState_off = 0,
@@ -60,14 +82,17 @@ typedef enum eFrameState_name
 }ePacketMngrState;
 
 typedef struct stPacketMngr_name {
-	stImg*				m_p_stImg;
-
 	ePacketMngrState	m_ePacketMngrState;
+
+	stImg*				m_p_stImg;
+	uint32_t			m_FrameEventCtr;
+	uint8_t				m_PacketBytes[FULL_PACKET_SIZE_B];
+
+	stImuPacket			m_stImuPacket;
 	uint32_t			m_ImuEventCtr;
 	uint32_t			m_ImuCallsPerPacket;
-	uint32_t			m_FrameEventCtr;
-	bool				m_IsImuReady;
-	uint8_t				m_PacketBytes[FULL_PACKET_SIZE_B];
+	bool				m_IsImuCallReady;
+	bool				m_IsImuPacketReady;
 } stPacketMngr;
 
 
@@ -76,9 +101,11 @@ void PacketMngr_Update(void);
 eImgStates PacketMngr_IterateImg(int8_t a_Socket);
 ePacketMngrState PacketMngr_GetState(void);
 void PacketMngr_SetState(ePacketMngrState a_ePacketMngrState);
-void PacketMngr_GetNewImg( void );
-
-
+void PacketMngr_GetNewImg(void);
+void PacketMngr_GetNewImuCall(void);
+void PacketMngr_IterateImu(void);
+//bool PacketMngr_GetIsImuPacketReady(void);
+//void PacketMngr_SetIsImuPacketReady( bool a_IsImuPacketReady);
 #ifdef __cplusplus
 }
 #endif
