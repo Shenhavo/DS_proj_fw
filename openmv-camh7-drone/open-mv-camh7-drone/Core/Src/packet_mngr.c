@@ -157,13 +157,13 @@ eImgStates PacketMngr_IterateImg( int8_t a_Socket)
 }
 
 /* ================
-void PacketMngr_IterateImu( void )
+void PacketMngr_IterateImu( int8_t a_Socket )
 ================ */
-void PacketMngr_IterateImu( void )
+void PacketMngr_IterateImu( int8_t a_Socket )
 {
 	// TODO: SO: see if sending the packet takes more than 3msec...otherwise there will be missing data
 	stPacketMngr* 	p_stPacketMngr 	= 	&g_stPacketMngr;
-
+	stImuPacket* p_stImuPacket = &p_stPacketMngr->m_stImuPacket;
 	if(p_stPacketMngr->m_IsImuCallReady == true)
 	{
 		p_stPacketMngr->m_IsImuCallReady = false;
@@ -172,11 +172,24 @@ void PacketMngr_IterateImu( void )
 
 		if(p_stPacketMngr->m_IsImuPacketReady == true)
 		{
-			stImuPacket* p_stImuPacket = &p_stPacketMngr->m_stImuPacket;
 			p_stImuPacket->m_ImuSOF = IMU_SOF;
 			p_stImuPacket->m_SysTick = HAL_GetTick();
 //			printf("Tick: %d\r\n", HAL_GetTick());
 		}
+	}
+
+	if( (p_stPacketMngr->m_IsImuPacketReady == true)&&
+			(p_stPacketMngr->m_ePacketMngrState == ePacketMngrState_off))
+	{
+		p_stPacketMngr->m_ePacketMngrState = ePacketMngrState_IMU;
+		p_stPacketMngr->m_IsImuPacketReady =	false;
+		int8_t Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stImuPacket , sizeof(stImuPacket), 0);
+
+		if(Result == SOCK_ERR_BUFFER_FULL) //SO: SOCK_ERR_BUFFER_FULL is received whenever user clicks on wifi connections
+		{
+			printf("Socket err imu: %d\r\n", Result);
+		}
+		p_stPacketMngr->m_ePacketMngrState = ePacketMngrState_off;
 	}
 }
 
@@ -216,12 +229,13 @@ void PacketMngr_GetNewImuCall(void)
 	stImuCall*		p_stImuCall			= 	&p_stPacketMngr->m_stImuPacket.m_ImuCalls_a[ImuCallsPerPacket];
 
 	//============== TODO: SO: fill real values ==============
-	p_stImuCall->m_AccX		=	ImuCallsPerPacket*0;
-	p_stImuCall->m_AccY		=	ImuCallsPerPacket*1;
-	p_stImuCall->m_AccZ		=	ImuCallsPerPacket*2;
 	p_stImuCall->m_GyroX	=	ImuCallsPerPacket*0;
-	p_stImuCall->m_GyroY	=	ImuCallsPerPacket*-1;
-	p_stImuCall->m_GyroZ	=	ImuCallsPerPacket*-2;
+	p_stImuCall->m_GyroY	=	ImuCallsPerPacket*100;
+	p_stImuCall->m_GyroZ	=	ImuCallsPerPacket*200;
+	p_stImuCall->m_AccX		=	ImuCallsPerPacket*300;
+	p_stImuCall->m_AccY		=	ImuCallsPerPacket*400;
+	p_stImuCall->m_AccZ		=	ImuCallsPerPacket*500;
+
 }
 
 ///* ================

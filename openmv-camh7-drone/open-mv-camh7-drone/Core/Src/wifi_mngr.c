@@ -198,7 +198,7 @@ sint8	WifiMngr_HandleEvents(void)
 					}
 				}
 
-				PacketMngr_IterateImu();
+				PacketMngr_IterateImu(p_stWifiMngr->m_tcp_client_socket);
 
 			}
 			else

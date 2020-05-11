@@ -103,7 +103,7 @@ ePacketMngrState PacketMngr_GetState(void);
 void PacketMngr_SetState(ePacketMngrState a_ePacketMngrState);
 void PacketMngr_GetNewImg(void);
 void PacketMngr_GetNewImuCall(void);
-void PacketMngr_IterateImu(void);
+void PacketMngr_IterateImu(int8_t a_Socket);
 //bool PacketMngr_GetIsImuPacketReady(void);
 //void PacketMngr_SetIsImuPacketReady( bool a_IsImuPacketReady);
 #ifdef __cplusplus
