@@ -230,11 +230,11 @@ void PacketMngr_GetNewImuCall(void)
 
 	//============== TODO: SO: fill real values ==============
 	p_stImuCall->m_GyroX	=	ImuCallsPerPacket*0;
-	p_stImuCall->m_GyroY	=	ImuCallsPerPacket*100;
+	p_stImuCall->m_GyroY	=	ImuCallsPerPacket*-100;
 	p_stImuCall->m_GyroZ	=	ImuCallsPerPacket*200;
-	p_stImuCall->m_AccX		=	ImuCallsPerPacket*300;
+	p_stImuCall->m_AccX		=	ImuCallsPerPacket*-300;
 	p_stImuCall->m_AccY		=	ImuCallsPerPacket*400;
-	p_stImuCall->m_AccZ		=	ImuCallsPerPacket*500;
+	p_stImuCall->m_AccZ		=	ImuCallsPerPacket*-500;
 
 }
 
