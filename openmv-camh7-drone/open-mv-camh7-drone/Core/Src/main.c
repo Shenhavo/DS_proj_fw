@@ -107,18 +107,30 @@ typedef struct
 }ImuSensorData;
 
 ImuSensorData ImuMockStruct = {0x00};
-#define OMV_AXI_SRAM_ORIGIN		0x24000000
-#define OMV_DMA_REGION_BASE     (OMV_AXI_SRAM_ORIGIN+(496*1024))
-#define OMV_DMA_REGION_SIZE     MPU_REGION_SIZE_16KB
+
+// 640 * 480 = 307200
+//#define FRAME_SIZE		FRAMESIZE_VGA
+//#define IMG_W			(640)
+//#define IMG_H			(480)
+
+// 320 * 240 = 76800
+//#define FRAME_SIZE		FRAMESIZE_QVGA
+//#define IMG_W			(320)
+//#define IMG_H			(240)
+
+// 160 * 120 = 19200
+#define FRAME_SIZE		FRAMESIZE_QQVGA
+#define IMG_W			(160)
+#define IMG_H			(120)
 
 
-#define IMG_H			(160)
-#define IMG_W			(120)
-#define QQVGA_BUFF_SIZE  (IMG_H * IMG_W) // 19200 pixels = max(57KBytes)
-//ALIGN_32BYTES(uint32_t DummyFrameBuff[QQVGA_BUFF_SIZE] __attribute__((section(".sram_d2")));
-//uint32_t __attribute__((section(".sram_d2"))) DummyFrameBuff[QQVGA_BUFF_SIZE];
-ALIGN_32BYTES(uint8_t DummyFrameBuff[QQVGA_BUFF_SIZE]);
-//uint32_t DummyFrameBuff[QQVGA_BUFF_SIZE] = {0x00};
+
+
+#define FRAME_BUFF_SIZE  (IMG_H * IMG_W) // 19200 pixels = max(57KBytes)
+//ALIGN_32BYTES(uint32_t DummyFrameBuff[FRAME_BUFF_SIZE] __attribute__((section(".sram_d2")));
+//uint32_t __attribute__((section(".sram_d2"))) DummyFrameBuff[FRAME_BUFF_SIZE];
+ALIGN_32BYTES(uint8_t DummyFrameBuff[FRAME_BUFF_SIZE]);
+
 // TODO: removed those flags
 extern uint8_t DcmiVsyncIrqEvent;
 extern uint8_t DcmiLineIrqEvent;
@@ -237,22 +249,13 @@ int main(void)
 
 //	sensor_reset();
 //	sensor_set_pixformat(PIXFORMAT_GRAYSCALE);
-	sensor_set_framesize(FRAMESIZE_QQVGA);
-//	HAL_Delay(100);
-//	SCB_InvalidateDCache_by_Addr((uint32_t*)DummyFrameBuff, QQVGA_BUFF_SIZE*4);
+	sensor_set_framesize(FRAME_SIZE);
+
 	printf("DummyFrameBuff at address = 0x%x which is aligned with = %d to uint32_t\r\n", (uint32_t)DummyFrameBuff, ((uint32_t)DummyFrameBuff-D1_AXISRAM_BASE)%32 );
 
 	HAL_StatusTypeDef StartDmaRet;
-	StartDmaRet = HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)DummyFrameBuff, QQVGA_BUFF_SIZE); //QQVGA_BUFF_SIZE
+	StartDmaRet = HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)DummyFrameBuff, FRAME_BUFF_SIZE);
 	printf("StartDmaRet = %d\r\n", StartDmaRet);
-
-	// TODO: revision this:
-	uint32_t length = (IMG_W * IMG_H * 1);
-//    // Start a multibuffer transfer (line by line)
-//    HAL_DCMI_Start_DMA_MB(&DCMIHandle,
-//            DCMI_MODE_SNAPSHOT, addr, length/4, h);
-
-//	DCMI_Start_DMA_MB(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)DummyFrameBuff, length/4, IMG_H);
 
 	// TODO: try take the jpeg example - to revise the cache coherence
 	//
@@ -275,7 +278,7 @@ int main(void)
 		if ( DcmiFrameIrqEvent == 1)
 		{
 			DcmiFrameIrqEvent = 0;
-//			printf("DcmiFrameIrqEvent\r\n");
+			printf("DcmiFrameIrqEvent\r\n");
 
 			while(1);
 		}
@@ -290,10 +293,10 @@ int main(void)
 //			printf("DcmiIrqEvent\r\n");
 		}
 
-		if (DummyFrameBuff[QQVGA_BUFF_SIZE-1] != 0)
+		if (DummyFrameBuff[FRAME_BUFF_SIZE-1] != 0)
 		{
 			HAL_DCMI_Stop(&hdcmi);
-
+			printf("HAL_DCMI_Stop\r\n");
 
 		}
 //		if ( DcmiDmaIrqEvent == 1 )
