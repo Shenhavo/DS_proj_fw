@@ -109,19 +109,19 @@ typedef struct
 ImuSensorData ImuMockStruct = {0x00};
 
 // 640 * 480 = 307200
-//#define FRAME_SIZE		FRAMESIZE_VGA
-//#define IMG_W			(640)
-//#define IMG_H			(480)
+#define FRAME_SIZE		FRAMESIZE_VGA
+#define IMG_W			(640)
+#define IMG_H			(480)
 
 // 320 * 240 = 76800
 //#define FRAME_SIZE		FRAMESIZE_QVGA
 //#define IMG_W			(320)
 //#define IMG_H			(240)
 
-// 160 * 120 = 19200
-#define FRAME_SIZE		FRAMESIZE_QQVGA
-#define IMG_W			(160)
-#define IMG_H			(120)
+//// 160 * 120 = 19200
+//#define FRAME_SIZE		FRAMESIZE_QQVGA
+//#define IMG_W			(160)
+//#define IMG_H			(120)
 
 
 
@@ -132,11 +132,11 @@ ImuSensorData ImuMockStruct = {0x00};
 ALIGN_32BYTES(uint8_t DummyFrameBuff[FRAME_BUFF_SIZE]);
 
 // TODO: removed those flags
-extern uint8_t DcmiVsyncIrqEvent;
-extern uint8_t DcmiLineIrqEvent;
-extern uint8_t DcmiFrameIrqEvent;
-extern uint8_t DcmiIrqEvent;
-extern uint8_t DcmiDmaIrqEvent;
+//extern uint8_t DcmiVsyncIrqEvent;
+//extern uint8_t DcmiLineIrqEvent;
+//extern uint8_t DcmiFrameIrqEvent;
+//extern uint8_t DcmiIrqEvent;
+//extern uint8_t DcmiDmaIrqEvent;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -253,9 +253,30 @@ int main(void)
 
 	printf("DummyFrameBuff at address = 0x%x which is aligned with = %d to uint32_t\r\n", (uint32_t)DummyFrameBuff, ((uint32_t)DummyFrameBuff-D1_AXISRAM_BASE)%32 );
 
-	HAL_StatusTypeDef StartDmaRet;
-	StartDmaRet = HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)DummyFrameBuff, FRAME_BUFF_SIZE);
-	printf("StartDmaRet = %d\r\n", StartDmaRet);
+
+	HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)DummyFrameBuff, FRAME_BUFF_SIZE);
+
+    // Wait for frame
+	uint32_t tick_start = HAL_GetTick();
+
+    while ((DCMI->CR & DCMI_CR_CAPTURE) != 0) {
+        // Wait for interrupt
+        __WFI();
+
+
+        if ((HAL_GetTick() - tick_start) >= 3000) {
+            // Sensor timeout, most likely a HW issue.
+            // Abort the DMA request.
+//            HAL_DMA_Abort(&hdma_dcmi);
+        	HAL_DCMI_Stop(&hdcmi);
+            return -1;
+        }
+    }
+    uint32_t tick_end = HAL_GetTick();
+    uint32_t acq_duration_msec = tick_end - tick_start;
+    HAL_DCMI_Stop(&hdcmi);
+    printf("dcmi of %d X %d acq complete with %d[msec] \r\n", IMG_W, IMG_H, acq_duration_msec );
+
 
 	// TODO: try take the jpeg example - to revise the cache coherence
 	//
@@ -270,35 +291,35 @@ int main(void)
 //			ImuMockValues();
 		}
 
-		if ( DcmiVsyncIrqEvent == 1)
-		{
-			DcmiVsyncIrqEvent = 0;
-//			printf("DcmiVsyncIrqEvent\r\n");
-		}
-		if ( DcmiFrameIrqEvent == 1)
-		{
-			DcmiFrameIrqEvent = 0;
-			printf("DcmiFrameIrqEvent\r\n");
-
-			while(1);
-		}
-		if ( DcmiLineIrqEvent == 1 )
-		{
-			DcmiLineIrqEvent = 0;
-//			printf("DcmiLineIrqEvent\r\n");
-		}
-		if ( DcmiIrqEvent == 1 )
-		{
-			DcmiIrqEvent = 0;
-//			printf("DcmiIrqEvent\r\n");
-		}
-
-		if (DummyFrameBuff[FRAME_BUFF_SIZE-1] != 0)
-		{
-			HAL_DCMI_Stop(&hdcmi);
-			printf("HAL_DCMI_Stop\r\n");
-
-		}
+//		if ( DcmiVsyncIrqEvent == 1)
+//		{
+//			DcmiVsyncIrqEvent = 0;
+////			printf("DcmiVsyncIrqEvent\r\n");
+//		}
+//		if ( DcmiFrameIrqEvent == 1)
+//		{
+//			DcmiFrameIrqEvent = 0;
+//			printf("DcmiFrameIrqEvent\r\n");
+//
+//			while(1);
+//		}
+//		if ( DcmiLineIrqEvent == 1 )
+//		{
+//			DcmiLineIrqEvent = 0;
+////			printf("DcmiLineIrqEvent\r\n");
+//		}
+//		if ( DcmiIrqEvent == 1 )
+//		{
+//			DcmiIrqEvent = 0;
+////			printf("DcmiIrqEvent\r\n");
+//		}
+//
+//		if (DummyFrameBuff[FRAME_BUFF_SIZE-1] != 0)
+//		{
+//			HAL_DCMI_Stop(&hdcmi);
+//			printf("HAL_DCMI_Stop\r\n");
+//
+//		}
 //		if ( DcmiDmaIrqEvent == 1 )
 //		{
 //			DcmiDmaIrqEvent = 0;
