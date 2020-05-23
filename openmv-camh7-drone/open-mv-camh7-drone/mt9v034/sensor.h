@@ -15,6 +15,9 @@
 #include "stm32h7xx_hal.h"
 //#include "imlib.h"
 
+#define IM_MIN(a,b)     ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
+
+
 #define MT9V034_SLV_ADDR    (0xB8)
 
 // Chip ID Registers

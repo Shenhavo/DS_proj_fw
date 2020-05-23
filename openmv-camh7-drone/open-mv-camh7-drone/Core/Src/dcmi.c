@@ -21,7 +21,6 @@
 #include "dcmi.h"
 
 /* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 DCMI_HandleTypeDef hdcmi;
@@ -38,7 +37,7 @@ void MX_DCMI_Init(void)
   hdcmi.Init.HSPolarity = DCMI_HSPOLARITY_LOW;
   hdcmi.Init.CaptureRate = DCMI_CR_ALL_FRAME;
   hdcmi.Init.ExtendedDataMode = DCMI_EXTEND_DATA_8B;
-  hdcmi.Init.JPEGMode = DCMI_JPEG_ENABLE;
+  hdcmi.Init.JPEGMode = DCMI_JPEG_DISABLE;
   hdcmi.Init.ByteSelectMode = DCMI_BSM_ALL;
   hdcmi.Init.ByteSelectStart = DCMI_OEBS_ODD;
   hdcmi.Init.LineSelectMode = DCMI_LSM_ALL;
@@ -83,34 +82,38 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
                           |GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+    HAL_I2CEx_EnableFastModePlus(SYSCFG_PMCR_I2C_PB6_FMP);
+
+    HAL_I2CEx_EnableFastModePlus(SYSCFG_PMCR_I2C_PB7_FMP);
+
     /* DCMI DMA Init */
     /* DCMI Init */
-    hdma_dcmi.Instance = DMA2_Stream1;
+    hdma_dcmi.Instance = DMA2_Stream7;
     hdma_dcmi.Init.Request = DMA_REQUEST_DCMI;
     hdma_dcmi.Init.Direction = DMA_PERIPH_TO_MEMORY;
     hdma_dcmi.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -131,7 +134,7 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
     __HAL_LINKDMA(dcmiHandle,DMA_Handle,hdma_dcmi);
 
     /* DCMI interrupt Init */
-    HAL_NVIC_SetPriority(DCMI_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(DCMI_IRQn, 14, 0);
     HAL_NVIC_EnableIRQ(DCMI_IRQn);
   /* USER CODE BEGIN DCMI_MspInit 1 */
 
@@ -185,6 +188,71 @@ void HAL_DCMI_MspDeInit(DCMI_HandleTypeDef* dcmiHandle)
 
 /* USER CODE BEGIN 1 */
 
+//// this code snippet is from the openmv hal dir
+//HAL_StatusTypeDef DCMI_Start_DMA_MB(DCMI_HandleTypeDef* hdcmi, uint32_t DCMI_Mode, uint32_t pData, uint32_t Length, uint32_t Count)
+//{
+//  /* Initialise the second memory address */
+//  uint32_t SecondMemAddress = 0;
+//
+//  /* Check function parameters */
+//  assert_param(IS_DCMI_CAPTURE_MODE(DCMI_Mode));
+//
+//  /* Process Locked */
+//  __HAL_LOCK(hdcmi);
+//
+//  /* Lock the DCMI peripheral state */
+//  hdcmi->State = HAL_DCMI_STATE_BUSY;
+//
+//  /* Enable DCMI by setting DCMIEN bit */
+//  __HAL_DCMI_ENABLE(hdcmi);
+//
+//  /* Configure the DCMI Mode */
+//  hdcmi->Instance->CR &= ~(DCMI_CR_CM);
+//  hdcmi->Instance->CR |=  (uint32_t)(DCMI_Mode);
+//
+//  /* Set the DMA memory0 conversion complete callback */
+//  hdcmi->DMA_Handle->XferCpltCallback = DCMI_DMAXferCplt;
+//
+//  /* Set the DMA error callback */
+//  hdcmi->DMA_Handle->XferErrorCallback = DCMI_DMAError;
+//
+//  /* Set the dma abort callback */
+//  hdcmi->DMA_Handle->XferAbortCallback = NULL;
+//
+//  /* DCMI_DOUBLE_BUFFER Mode */
+//  /* Set the DMA memory1 conversion complete callback */
+//  hdcmi->DMA_Handle->XferM1CpltCallback = DCMI_DMAXferCplt;
+//
+//  /* Initialise transfer parameters */
+//  hdcmi->XferCount = Count-2;
+//  hdcmi->XferSize = Length/Count;
+//  hdcmi->pBuffPtr = pData;
+//
+//  /* Update second memory address */
+//  SecondMemAddress = (uint32_t)(pData + (4*hdcmi->XferSize));
+//
+//  /* Start DMA multi buffer transfer */
+//  if (HAL_DMAEx_MultiBufferStart_IT(hdcmi->DMA_Handle, (uint32_t)&hdcmi->Instance->DR,
+//              (uint32_t)pData, SecondMemAddress, hdcmi->XferSize) != HAL_OK) {
+//    /* Set Error Code */
+//    hdcmi->ErrorCode = HAL_DCMI_ERROR_DMA;
+//    /* Change DCMI state */
+//    hdcmi->State = HAL_DCMI_STATE_READY;
+//    /* Release Lock */
+//    __HAL_UNLOCK(hdcmi);
+//    /* Return function status */
+//    return HAL_ERROR;
+//  }
+//
+//  /* Enable Capture */
+//  hdcmi->Instance->CR |= DCMI_CR_CAPTURE;
+//
+//  /* Release Lock */
+//  __HAL_UNLOCK(hdcmi);
+//
+//  /* Return function status */
+//  return HAL_OK;
+//}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

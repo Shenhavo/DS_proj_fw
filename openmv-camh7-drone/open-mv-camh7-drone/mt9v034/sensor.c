@@ -101,7 +101,7 @@ static int extclk_config(int frequency)
     TIMOCHandle.OCMode      = TIM_OCMODE_PWM1;
     TIMOCHandle.OCPolarity  = TIM_OCPOLARITY_HIGH;
     TIMOCHandle.OCNPolarity = TIM_OCNPOLARITY_HIGH; // TODO: this was not in the original OMV code
-    TIMOCHandle.OCFastMode  = TIM_OCFAST_ENABLE; // TODO: was in disable
+    TIMOCHandle.OCFastMode  = TIM_OCFAST_DISABLE;
     TIMOCHandle.OCIdleState = TIM_OCIDLESTATE_RESET;
     TIMOCHandle.OCNIdleState = TIM_OCNIDLESTATE_RESET;  // TODO: this was not in the original OMV code
 
@@ -304,9 +304,9 @@ int sensor_init()
     switch (sensor.chip_id) {
     case MT9V034_ID:
         // TODO: this section contains a second initialization which causes problems
-//        if (extclk_config(MT9V034_XCLK_FREQ) != 0) {
-//            return -3;
-//        }
+        if (extclk_config(MT9V034_XCLK_FREQ) != 0) {
+            return -3;
+        }
         init_ret = mt9v034_init(&sensor);
         break;
     default:

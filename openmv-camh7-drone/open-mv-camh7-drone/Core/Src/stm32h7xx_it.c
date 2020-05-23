@@ -42,7 +42,13 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+uint8_t DcmiLineIrqEvent = 0;
+uint8_t DcmiVsyncIrqEvent = 0;
+uint8_t DcmiFrameIrqEvent = 0;
+uint8_t DcmiIrqEvent = 0;
+uint8_t DcmiDmaIrqEvent = 0;
+uint32_t VsyncCount = 0;
+uint32_t HsyncCount = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -58,7 +64,6 @@
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_dcmi;
 extern DCMI_HandleTypeDef hdcmi;
-extern DMA2D_HandleTypeDef hdma2d;
 extern I2C_HandleTypeDef hi2c1;
 extern MDMA_HandleTypeDef hmdma_jpeg_infifo_th;
 extern MDMA_HandleTypeDef hmdma_jpeg_outfifo_th;
@@ -316,17 +321,17 @@ void SDMMC1_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles DMA2 stream1 global interrupt.
+  * @brief This function handles DMA2 stream7 global interrupt.
   */
-void DMA2_Stream1_IRQHandler(void)
+void DMA2_Stream7_IRQHandler(void)
 {
-  /* USER CODE BEGIN DMA2_Stream1_IRQn 0 */
+  /* USER CODE BEGIN DMA2_Stream7_IRQn 0 */
 
-  /* USER CODE END DMA2_Stream1_IRQn 0 */
+  /* USER CODE END DMA2_Stream7_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_dcmi);
-  /* USER CODE BEGIN DMA2_Stream1_IRQn 1 */
+  /* USER CODE BEGIN DMA2_Stream7_IRQn 1 */
 
-  /* USER CODE END DMA2_Stream1_IRQn 1 */
+  /* USER CODE END DMA2_Stream7_IRQn 1 */
 }
 
 /**
@@ -339,22 +344,8 @@ void DCMI_IRQHandler(void)
   /* USER CODE END DCMI_IRQn 0 */
   HAL_DCMI_IRQHandler(&hdcmi);
   /* USER CODE BEGIN DCMI_IRQn 1 */
-
+  DcmiIrqEvent = 1;
   /* USER CODE END DCMI_IRQn 1 */
-}
-
-/**
-  * @brief This function handles DMA2D global interrupt.
-  */
-void DMA2D_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA2D_IRQn 0 */
-
-  /* USER CODE END DMA2D_IRQn 0 */
-  HAL_DMA2D_IRQHandler(&hdma2d);
-  /* USER CODE BEGIN DMA2D_IRQn 1 */
-
-  /* USER CODE END DMA2D_IRQn 1 */
 }
 
 /**
@@ -387,7 +378,61 @@ void MDMA_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+/**
+  * @brief  Line event callback
+  * @param  hdcmi  pointer to the DCMI handle
+  * @retval None
+  */
+void HAL_DCMI_LineEventCallback(DCMI_HandleTypeDef *hdcmi) //(DCMI_HandleTypeDef *hdcmi)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hdcmi);
+//	HAL_DCMI_LineEventCallback(&hdcmi);
+  DcmiLineIrqEvent = 1;
+  HsyncCount++;
+}
 
+/**
+  * @brief  Frame event callback
+  * @param  hdcmi pointer to the DCMI handle
+  * @retval None
+  */
+void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hdcmi);
+//	HAL_DCMI_FrameEventCallback(&hdcmi);
+  DcmiFrameIrqEvent = 1;
+
+}
+
+/**
+  * @brief  Vsync event callback
+  * @param  hdcmi pointer to the DCMI handle
+  * @retval None
+  */
+void HAL_DCMI_VsyncEventCallback(DCMI_HandleTypeDef *hdcmi)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hdcmi);
+//  HAL_DCMI_VsyncEventCallback(&hdcmi);
+  DcmiVsyncIrqEvent = 1;
+  VsyncCount++;
+}
+
+/**
+  * @brief  Error callback
+  * @param  hdcmi pointer to the DCMI handle
+  * @retval None
+  */
+void HAL_DCMI_ErrorCallback(DCMI_HandleTypeDef *hdcmi)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hdcmi);
+
+  Error_Handler();
+
+}
 
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

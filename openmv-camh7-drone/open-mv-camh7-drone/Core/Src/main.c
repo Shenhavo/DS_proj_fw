@@ -22,7 +22,6 @@
 #include "main.h"
 #include "dcmi.h"
 #include "dma.h"
-#include "dma2d.h"
 #include "fatfs.h"
 #include "i2c.h"
 #include "jpeg.h"
@@ -108,6 +107,24 @@ typedef struct
 }ImuSensorData;
 
 ImuSensorData ImuMockStruct = {0x00};
+#define OMV_AXI_SRAM_ORIGIN		0x24000000
+#define OMV_DMA_REGION_BASE     (OMV_AXI_SRAM_ORIGIN+(496*1024))
+#define OMV_DMA_REGION_SIZE     MPU_REGION_SIZE_16KB
+
+
+#define IMG_H			(160)
+#define IMG_W			(120)
+#define QQVGA_BUFF_SIZE  (IMG_H * IMG_W) // 19200 pixels = max(57KBytes)
+//ALIGN_32BYTES(uint32_t DummyFrameBuff[QQVGA_BUFF_SIZE] __attribute__((section(".sram_d2")));
+//uint32_t __attribute__((section(".sram_d2"))) DummyFrameBuff[QQVGA_BUFF_SIZE];
+ALIGN_32BYTES(uint8_t DummyFrameBuff[QQVGA_BUFF_SIZE]);
+//uint32_t DummyFrameBuff[QQVGA_BUFF_SIZE] = {0x00};
+// TODO: removed those flags
+extern uint8_t DcmiVsyncIrqEvent;
+extern uint8_t DcmiLineIrqEvent;
+extern uint8_t DcmiFrameIrqEvent;
+extern uint8_t DcmiIrqEvent;
+extern uint8_t DcmiDmaIrqEvent;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -161,16 +178,15 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DCMI_Init();
   MX_MDMA_Init();
   MX_JPEG_Init();
   MX_DMA_Init();
   MX_I2C1_Init();
+  MX_DCMI_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   MX_USART3_UART_Init();
   MX_TIM2_Init();
-  MX_DMA2D_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 	LED_Init();
@@ -218,19 +234,74 @@ int main(void)
 	}
 
 	// TODO: remove
-//	uint8_t DummyFrameBuff[1000] = {0x00};
-//	HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, DummyFrameBuff, 1000);
 
+//	sensor_reset();
+//	sensor_set_pixformat(PIXFORMAT_GRAYSCALE);
+	sensor_set_framesize(FRAMESIZE_QQVGA);
+//	HAL_Delay(100);
+//	SCB_InvalidateDCache_by_Addr((uint32_t*)DummyFrameBuff, QQVGA_BUFF_SIZE*4);
+	printf("DummyFrameBuff at address = 0x%x which is aligned with = %d to uint32_t\r\n", (uint32_t)DummyFrameBuff, ((uint32_t)DummyFrameBuff-D1_AXISRAM_BASE)%32 );
+
+	HAL_StatusTypeDef StartDmaRet;
+	StartDmaRet = HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)DummyFrameBuff, QQVGA_BUFF_SIZE); //QQVGA_BUFF_SIZE
+	printf("StartDmaRet = %d\r\n", StartDmaRet);
+
+	// TODO: revision this:
+	uint32_t length = (IMG_W * IMG_H * 1);
+//    // Start a multibuffer transfer (line by line)
+//    HAL_DCMI_Start_DMA_MB(&DCMIHandle,
+//            DCMI_MODE_SNAPSHOT, addr, length/4, h);
+
+//	DCMI_Start_DMA_MB(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)DummyFrameBuff, length/4, IMG_H);
+
+	// TODO: try take the jpeg example - to revise the cache coherence
+	//
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
 	while (1)
 	{
-		WifiMngr_HandleEvents();
+//		WifiMngr_HandleEvents();
 
 		if (TIM_IsImuTimeoutEvent() == true)
 		{
 //			ImuMockValues();
 		}
+
+		if ( DcmiVsyncIrqEvent == 1)
+		{
+			DcmiVsyncIrqEvent = 0;
+//			printf("DcmiVsyncIrqEvent\r\n");
+		}
+		if ( DcmiFrameIrqEvent == 1)
+		{
+			DcmiFrameIrqEvent = 0;
+//			printf("DcmiFrameIrqEvent\r\n");
+
+			while(1);
+		}
+		if ( DcmiLineIrqEvent == 1 )
+		{
+			DcmiLineIrqEvent = 0;
+//			printf("DcmiLineIrqEvent\r\n");
+		}
+		if ( DcmiIrqEvent == 1 )
+		{
+			DcmiIrqEvent = 0;
+//			printf("DcmiIrqEvent\r\n");
+		}
+
+		if (DummyFrameBuff[QQVGA_BUFF_SIZE-1] != 0)
+		{
+			HAL_DCMI_Stop(&hdcmi);
+
+
+		}
+//		if ( DcmiDmaIrqEvent == 1 )
+//		{
+//			DcmiDmaIrqEvent = 0;
+//			printf("DcmiDmaIrqEvent\r\n");
+//		}
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

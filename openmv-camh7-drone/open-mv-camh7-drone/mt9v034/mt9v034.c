@@ -214,8 +214,8 @@ static int set_framesize(sensor_t *sensor, framesize_t framesize)
     // must be increased.
     //
     // The STM32H7 needs more than 94+(752-640) clocks between rows otherwise it can't keep up with the pixel rate.
-//    ret |= cambus_writew(sensor->slv_addr, MT9V034_HORIZONTAL_BLANKING, // TODO: uncomment
-//            MT9V034_HORIZONTAL_BLANKING_DEF + (MT9V034_MAX_WIDTH - IM_MIN(width * read_mode_mul, 640)));
+    ret |= cambus_writew(sensor->slv_addr, MT9V034_HORIZONTAL_BLANKING,
+            MT9V034_HORIZONTAL_BLANKING_DEF + (MT9V034_MAX_WIDTH - IM_MIN(width * read_mode_mul, 640)));
 
     ret |= cambus_writew(sensor->slv_addr, MT9V034_READ_MODE, read_mode);
     ret |= cambus_writew(sensor->slv_addr, MT9V034_PIXEL_COUNT, (width * height) / 8);
