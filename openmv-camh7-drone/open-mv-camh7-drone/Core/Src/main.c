@@ -112,8 +112,9 @@ int main(void)
   MX_I2C1_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
-  MX_USART3_UART_Init();
   MX_TIM2_Init();
+  MX_I2C2_Init();
+  MX_UART4_Init();
   /* USER CODE BEGIN 2 */
 	LED_Init();
 	PacketMngr_Init();
