@@ -46,7 +46,7 @@
 #include "bsp/include/nm_bsp.h"
 #include "common/include/nm_debug.h"
 
-#define CONF_PERIPH // TODO: SO: maybe revert...
+#define CONF_PERIPH
 
 /**@defgroup  CommonDefines CommonDefines
  * @ingroup WlanDefines

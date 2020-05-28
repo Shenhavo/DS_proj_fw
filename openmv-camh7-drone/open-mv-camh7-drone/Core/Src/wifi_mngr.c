@@ -192,7 +192,7 @@ sint8	WifiMngr_HandleEvents(void)
 				if( eImgState >= eImgStates_finished )
 				{
 
-					if(  PacketMngr_GetState() == ePacketMngrState_NewFrame) //TODO: SO: instead of the sync clock..
+					if(  PacketMngr_GetState() == ePacketMngrState_NewFrame)
 					{
 						PacketMngr_GetNewImg(); // TODO: SO: restarting image structure, later bring a new image
 					}
