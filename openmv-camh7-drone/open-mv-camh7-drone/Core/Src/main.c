@@ -108,20 +108,7 @@ typedef struct
 
 ImuSensorData ImuMockStruct = {0x00};
 
-// 640 * 480 = 307200
-#define FRAME_SIZE		FRAMESIZE_VGA
-#define IMG_W			(640)
-#define IMG_H			(480)
 
-// 320 * 240 = 76800
-//#define FRAME_SIZE		FRAMESIZE_QVGA
-//#define IMG_W			(320)
-//#define IMG_H			(240)
-
-//// 160 * 120 = 19200
-//#define FRAME_SIZE		FRAMESIZE_QQVGA
-//#define IMG_W			(160)
-//#define IMG_H			(120)
 
 
 
@@ -145,6 +132,7 @@ static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
 void ImuMockValues(void);
+void WaitForFrame(void);
 
 /* USER CODE END PFP */
 
@@ -221,14 +209,14 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	if(BSP_SD_IsDetected())
-	{
-		FS_FileOperationsBmpCompressDma();
-	}
-	else
-	{
-		printf("sd not detected, skipping example\r\n");
-	}
+//	if(BSP_SD_IsDetected())
+//	{
+//		FS_FileOperationsBmpCompressDma();
+//	}
+//	else
+//	{
+//		printf("sd not detected, skipping example\r\n");
+//	}
 	TIM_StartImuTick();
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -248,7 +236,7 @@ int main(void)
 	// TODO: remove
 
 //	sensor_reset();
-//	sensor_set_pixformat(PIXFORMAT_GRAYSCALE);
+	sensor_set_pixformat(PIXFORMAT_GRAYSCALE); // only grayscale supported
 	sensor_set_framesize(FRAME_SIZE);
 
 	printf("DummyFrameBuff at address = 0x%x which is aligned with = %d to uint32_t\r\n", (uint32_t)DummyFrameBuff, ((uint32_t)DummyFrameBuff-D1_AXISRAM_BASE)%32 );
@@ -256,26 +244,24 @@ int main(void)
 
 	HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)DummyFrameBuff, FRAME_BUFF_SIZE);
 
-    // Wait for frame
-	uint32_t tick_start = HAL_GetTick();
+	WaitForFrame();
 
-    while ((DCMI->CR & DCMI_CR_CAPTURE) != 0) {
-        // Wait for interrupt
-        __WFI();
+	if(BSP_SD_IsDetected())
+	{
+//		FS_FileOperationsDcmiBmpCompressDma(DummyFrameBuff);
+		uint32_t tick_jpeg_start = HAL_GetTick();
 
+		FS_FileOperationsBmpCompressDma();
 
-        if ((HAL_GetTick() - tick_start) >= 3000) {
-            // Sensor timeout, most likely a HW issue.
-            // Abort the DMA request.
-//            HAL_DMA_Abort(&hdma_dcmi);
-        	HAL_DCMI_Stop(&hdcmi);
-            return -1;
-        }
-    }
-    uint32_t tick_end = HAL_GetTick();
-    uint32_t acq_duration_msec = tick_end - tick_start;
-    HAL_DCMI_Stop(&hdcmi);
-    printf("dcmi of %d X %d acq complete with %d[msec] \r\n", IMG_W, IMG_H, acq_duration_msec );
+		uint32_t tick_jpeg_end = HAL_GetTick();
+	    uint32_t jpeg_duration_msec = tick_jpeg_end - tick_jpeg_start;
+	    printf("jpeg compress complete with %d[msec] \r\n", IMG_W, IMG_H, jpeg_duration_msec );
+	}
+	else
+	{
+		printf("sd not detected, skipping example\r\n");
+	}
+
 
 
 	// TODO: try take the jpeg example - to revise the cache coherence
@@ -284,47 +270,14 @@ int main(void)
 
 	while (1)
 	{
-//		WifiMngr_HandleEvents();
+		WifiMngr_HandleEvents();
 
 		if (TIM_IsImuTimeoutEvent() == true)
 		{
 //			ImuMockValues();
 		}
 
-//		if ( DcmiVsyncIrqEvent == 1)
-//		{
-//			DcmiVsyncIrqEvent = 0;
-////			printf("DcmiVsyncIrqEvent\r\n");
-//		}
-//		if ( DcmiFrameIrqEvent == 1)
-//		{
-//			DcmiFrameIrqEvent = 0;
-//			printf("DcmiFrameIrqEvent\r\n");
-//
-//			while(1);
-//		}
-//		if ( DcmiLineIrqEvent == 1 )
-//		{
-//			DcmiLineIrqEvent = 0;
-////			printf("DcmiLineIrqEvent\r\n");
-//		}
-//		if ( DcmiIrqEvent == 1 )
-//		{
-//			DcmiIrqEvent = 0;
-////			printf("DcmiIrqEvent\r\n");
-//		}
-//
-//		if (DummyFrameBuff[FRAME_BUFF_SIZE-1] != 0)
-//		{
-//			HAL_DCMI_Stop(&hdcmi);
-//			printf("HAL_DCMI_Stop\r\n");
-//
-//		}
-//		if ( DcmiDmaIrqEvent == 1 )
-//		{
-//			DcmiDmaIrqEvent = 0;
-//			printf("DcmiDmaIrqEvent\r\n");
-//		}
+
 
     /* USER CODE END WHILE */
 
@@ -445,6 +398,36 @@ void ImuMockValues(void)
 	printf("mag_f.y =\t%f\r\n", ImuMockStruct.mag_f.y);
 	printf("mag_f.z =\t%f\r\n", ImuMockStruct.mag_f.z);
 }
+
+/**
+ * @brief  WaitForFrame
+ * @retval None
+ */
+void WaitForFrame(void)
+{
+    // Wait for frame
+	uint32_t TickStart = HAL_GetTick();
+
+    while ((DCMI->CR & DCMI_CR_CAPTURE) != 0)
+    {
+        // Wait for interrupt
+        __WFI();
+
+
+        if ((HAL_GetTick() - TickStart) >= 3000) {
+            // Sensor timeout, most likely a HW issue.
+            // Abort the DMA request.
+//            HAL_DMA_Abort(&hdma_dcmi);
+        	HAL_DCMI_Stop(&hdcmi);
+            return -1;
+        }
+    }
+    uint32_t TickEnd = HAL_GetTick();
+    uint32_t AcqDuration_msec = TickEnd - TickStart;
+    HAL_DCMI_Stop(&hdcmi);
+    printf("dcmi of %d X %d acq complete with %d[msec] \r\n", IMG_W, IMG_H, AcqDuration_msec );
+}
+
 
 
 // TODO: DB - define in cube and move to `stm32h7xx_it.h`

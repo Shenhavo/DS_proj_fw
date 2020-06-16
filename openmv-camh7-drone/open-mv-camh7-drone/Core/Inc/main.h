@@ -45,6 +45,24 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+#define JPEG_444_GS_MCU_SIZE        (64)
+// 640 * 480 = 307200
+#define FRAME_SIZE		FRAMESIZE_VGA
+#define IMG_W			(640)
+#define IMG_H			(480)
+
+// 320 * 240 = 76800
+//#define FRAME_SIZE		FRAMESIZE_QVGA
+//#define IMG_W			(320)
+//#define IMG_H			(240)
+
+//// 160 * 120 = 19200
+//#define FRAME_SIZE		FRAMESIZE_QQVGA
+//#define IMG_W			(160)
+//#define IMG_H			(120)
+
+
+
 /** Wi-Fi Settings */
 
 #define PROJ_SHA			"0x9611e9302e276efc81ca20e9bdeaf4a64f904753"

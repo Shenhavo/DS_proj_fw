@@ -88,11 +88,12 @@ uint32_t CurrentLine                = 1;
 JPEG_ConfTypeDef Conf;
 FIL *pBmpFile;
 FIL *pJpegFile;
-
+uint8_t* pFrameBuffOnSram;
 
 /* Private function prototypes -----------------------------------------------*/
 static void ReadBmpRgbLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
-
+static void ReadSramBayerLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
+static void ReadBmpGreyLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
 void BMP_GetInfo(FIL * Filename, JPEG_ConfTypeDef *pInfo);
 /* Private functions ---------------------------------------------------------*/
 
@@ -130,7 +131,8 @@ uint32_t JPEG_Encode_DMA(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *jpgfile)
 
 	/* Fill input Buffer */
 	/* Read and reorder MAX_INPUT_LINES lines from BMP file and fill data buffer */
-	ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
+	//ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
+	ReadBmpGreyLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
 
 	/* RGB to YCbCr Pre-Processing */
 	MCU_BlockIndex += pRGBToYCbCr_Convert_Function(Input_Data_Buffer, Jpeg_IN_BufferTab.DataBuffer, 0, dataBufferSize,(uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
@@ -141,11 +143,67 @@ uint32_t JPEG_Encode_DMA(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *jpgfile)
 
 	/* Start JPEG encoding with DMA method */
 	HAL_JPEG_Encode_DMA(hjpeg ,Jpeg_IN_BufferTab.DataBuffer ,Jpeg_IN_BufferTab.DataBufferSize ,Jpeg_OUT_BufferTab.DataBuffer ,CHUNK_SIZE_OUT);
-
+//	HAL_JPEG_Encode(hjpeg, /*mcu*/, JPEG_444_GS_MCU_SIZE, )
 	return 0;
 }
 
+/**
+ * @brief  JPEG_Encode_DMA_FromRam
+ * @param hjpeg: JPEG handle pointer
+ * @param  FrameBuff    : FrameBuff path for encode.
+ * @param  jpgfile    : jpg file path for encode.
+ * @retval None
+ */
+uint32_t JPEG_Encode_DMA_FromRam(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, FIL *jpgfile)
+{
+//	pBmpFile = bmpfile;
+	pFrameBuffOnSram = FrameBuff;
+	pJpegFile = jpgfile;
+	uint32_t dataBufferSize = 0;
 
+	/* Reset all Global variables */
+	MCU_TotalNb                = 0;
+	MCU_BlockIndex             = 0;
+	Jpeg_HWEncodingEnd         = 0;
+	Output_Is_Paused           = 0;
+	Input_Is_Paused            = 0;
+	CurrentLine                = 1;
+
+	/* BMP Header Parsing */
+//	BMP_GetInfo(pBmpFile, &Conf);
+	Conf.ImageHeight 		= IMG_H;
+	Conf.ImageWidth 		= IMG_W;
+	Conf.ColorSpace 		= JPEG_COLOR_SPACE;
+	Conf.ChromaSubsampling  = JPEG_CHROMA_SAMPLING;
+	Conf.ImageQuality       = JPEG_IMAGE_QUALITY;
+
+	JPEG_GetEncodeColorConvertFunc(&Conf, &pRGBToYCbCr_Convert_Function, &MCU_TotalNb);
+
+	printf("MCU_TotalNb\t%d\r\n", MCU_TotalNb);
+
+	/* Clear Output Buffer */
+	Jpeg_OUT_BufferTab.DataBufferSize = 0;
+	Jpeg_OUT_BufferTab.State = JPEG_BUFFER_EMPTY;
+
+
+	/* Fill input Buffer */
+	/* Read and reorder MAX_INPUT_LINES lines from BMP file and fill data buffer */
+//	ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
+//	ReadBayerLines(pBmpFile, Conf, FrameBuff /*Input_Data_Buffer */, Conf.ImageHeight*Conf.ImageWidth/*&dataBufferSize*/);
+
+	/* RGB to YCbCr Pre-Processing */
+//	MCU_BlockIndex += pRGBToYCbCr_Convert_Function(FrameBuff /*Input_Data_Buffer */, Jpeg_IN_BufferTab.DataBuffer, 0, Conf.ImageHeight*Conf.ImageWidth/*dataBufferSize*/,(uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
+	MCU_BlockIndex += pRGBToYCbCr_Convert_Function(FrameBuff /*Input_Data_Buffer */, Jpeg_IN_BufferTab.DataBuffer, 0, MAX_INPUT_LINES*Conf.ImageWidth/*dataBufferSize*/,(uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
+	Jpeg_IN_BufferTab.State = JPEG_BUFFER_FULL;
+
+	/* Fill Encoding Params */
+	HAL_JPEG_ConfigEncoding(hjpeg, &Conf);
+
+	/* Start JPEG encoding with DMA method */
+	HAL_JPEG_Encode_DMA(hjpeg ,Jpeg_IN_BufferTab.DataBuffer ,Jpeg_IN_BufferTab.DataBufferSize ,Jpeg_OUT_BufferTab.DataBuffer ,CHUNK_SIZE_OUT);
+
+	return 0;
+}
 
 /**
  * @brief JPEG Ouput Data BackGround processing .
@@ -190,11 +248,15 @@ void JPEG_EncodeInputHandler(JPEG_HandleTypeDef *hjpeg)
   if((Jpeg_IN_BufferTab.State == JPEG_BUFFER_EMPTY) && (MCU_BlockIndex <= MCU_TotalNb))  
   {
     /* Read and reorder 16 lines from BMP file and fill data buffer */
-    ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
+//    ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
+	  ReadBmpGreyLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
+	  //ReadSramBayerLines(pFrameBuffOnSram, Conf, Input_Data_Buffer, &dataBufferSize);
+
     if(dataBufferSize != 0)
     {
       /* Pre-Processing */
       MCU_BlockIndex += pRGBToYCbCr_Convert_Function(Input_Data_Buffer, Jpeg_IN_BufferTab.DataBuffer, 0, dataBufferSize, (uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
+      //MCU_BlockIndex += pRGBToYCbCr_Convert_Function(Input_Data_Buffer /*Input_Data_Buffer */, Jpeg_IN_BufferTab.DataBuffer, 0, MAX_INPUT_LINES*Conf.ImageWidth/*dataBufferSize*/,(uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
       Jpeg_IN_BufferTab.State = JPEG_BUFFER_FULL;
 
 			if(Input_Is_Paused == 1)
@@ -210,6 +272,8 @@ void JPEG_EncodeInputHandler(JPEG_HandleTypeDef *hjpeg)
 			MCU_BlockIndex++;
 		}
 	}
+
+  //printf("MCU_BlockIndex\t%d\r\n", MCU_BlockIndex);
 }
 
 /**
@@ -295,8 +359,81 @@ static void ReadBmpRgbLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuf
 		CurrentLine +=1 ;
 		CurrentBlockLine += 1;
 	}
+
+//	printf("BytesRead\t%d\r\n", BufferSize);
+//	printf("CurrentLine\t%d\r\n", CurrentLine);
+//	printf("CurrentBlockLine\t%d\r\n", CurrentBlockLine);
 }
 
+
+/*
+ * @brief modified func of ReadBmpRgbLines Read and reorder MAX_INPUT_LINES lines from BMP file and fill data buffer
+ * @param file: pointer to the source file name
+ * @param file: pointer to the Data Buffer Adress
+ * @param file: pointer to the Data Buffer Size
+ * @retval None
+ */
+static void ReadBmpGreyLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize)
+{
+	uint32_t bytesReadfile    = 1;
+	uint32_t CurrentBlockLine = 1;
+	*BufferSize = 0;
+	uint8_t workbuffer[MAX_INPUT_WIDTH];
+    int i;
+
+	while((CurrentLine <= Conf.ImageHeight) && (CurrentBlockLine <= MAX_INPUT_LINES))
+	{
+		f_lseek (file,BMP_HEADER_SIZE + Conf.ImageWidth *(Conf.ImageHeight - CurrentLine)*1);
+		f_read (file, workbuffer , Conf.ImageWidth*1 , (UINT*)(&bytesReadfile));
+
+		for (i = 0; i < Conf.ImageWidth; i++)
+		{
+		   *pDataBuffer++ = workbuffer[i];
+		   *pDataBuffer++ = workbuffer[i];
+		   *pDataBuffer++ = workbuffer[i];
+		}
+
+		*BufferSize += bytesReadfile * 3;
+		CurrentLine +=1 ;
+		CurrentBlockLine += 1;
+	}
+
+//	printf("BytesRead\t%d\r\n", BufferSize);
+//	printf("CurrentLine\t%d\r\n", CurrentLine);
+//	printf("CurrentBlockLine\t%d\r\n", CurrentBlockLine);
+}
+
+/*
+ * @brief Read and reorder MAX_INPUT_LINES lines from Sram buff and fill data buffer
+ * @param file: pointer to the source file name
+ * @param file: pointer to the Data Buffer Adress
+ * @param file: pointer to the Data Buffer Size
+ * @retval None
+ */
+static void ReadSramBayerLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize)
+{
+	uint32_t bytesReadfile    = 1;
+	uint32_t CurrentBlockLine = 1;
+	*BufferSize = 0;
+
+	while((CurrentLine <= Conf.ImageHeight) && (CurrentBlockLine <= MAX_INPUT_LINES))
+	{
+//		f_lseek (file,BMP_HEADER_SIZE + Conf.ImageWidth *(Conf.ImageHeight - CurrentLine)*3);
+//		f_read (file, pDataBuffer , Conf.ImageWidth*3 , (UINT*)(&bytesReadfile));
+
+		bytesReadfile = Conf.ImageWidth*3;
+		memcpy(pDataBuffer, pSrcBuffer, bytesReadfile);
+
+		pDataBuffer += bytesReadfile;
+		pSrcBuffer	+= bytesReadfile;
+		*BufferSize += bytesReadfile;
+		CurrentLine +=1 ;
+		CurrentBlockLine += 1;
+	}
+
+	printf("CurrentLine\t%d\r\n", CurrentLine);
+	printf("CurrentBlockLine\t%d\r\n", CurrentBlockLine);
+}
 
 /**
  * @brief  Get the images sizes from BMP header.

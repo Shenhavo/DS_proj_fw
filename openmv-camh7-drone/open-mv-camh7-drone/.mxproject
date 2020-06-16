@@ -58,6 +58,12 @@ HeaderFiles#19=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/
 SourceFiles#17=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Core/Src/stm32h7xx_hal_msp.c
 HeaderFiles#20=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Core/Inc/main.h
 SourceFiles#18=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Core/Src/main.c
-HeaderFiles#21=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Core/Inc/main.h
+HeaderFiles#21=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Core/Inc/usart.h
 SourceFiles#19=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Core/Src/main.c
+HeaderFiles#22=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Core/Inc/stm32h7xx_it.h
+HeaderFiles#23=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Core/Inc/stm32h7xx_hal_conf.h
+HeaderFiles#24=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/Core/Inc/main.h
+HeaderPath#3=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/LIBJPEG/App
+HeaderPath#4=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/LIBJPEG/Target
+SourcePath#3=C:/developments/drones-msc-project/DS_proj_fw/openmv-camh7-drone/open-mv-camh7-drone/LIBJPEG/App
 
