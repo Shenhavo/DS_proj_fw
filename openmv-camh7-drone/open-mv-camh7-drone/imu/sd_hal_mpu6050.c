@@ -143,7 +143,7 @@ SD_MPU6050_Result SD_MPU6050_Init(SD_MPU6050_Device DeviceNumber, SD_MPU6050_Acc
 	//------------------
 
 	/* Set sample rate to 1kHz */
-	SD_MPU6050_SetDataRate(SD_MPU6050_DataRate_1KHz);
+	SD_MPU6050_SetDataRate(SD_MPU6050_DataRate_200Hz); //SO: every 5 msec
 
 	/* Config accelerometer */
 	SD_MPU6050_SetAccelerometer(AccelerometerSensitivity);
@@ -270,9 +270,9 @@ SD_MPU6050_Result SD_MPU6050_ReadAccelerometer(void)
 	while(HAL_I2C_Master_Receive(pThis->m_pI2Cx,(uint16_t)pThis->Address, data, 6, 1000) != HAL_OK);
 
 	/* Format */
-	pThis->Accelerometer_X = (int16_t)(data[0] << 8 | data[1]);
-	pThis->Accelerometer_Y = (int16_t)(data[2] << 8 | data[3]);
-	pThis->Accelerometer_Z = (int16_t)(data[4] << 8 | data[5]);
+	pThis->m_stImuCall.Accelerometer_X = (int16_t)(data[0] << 8 | data[1]);
+	pThis->m_stImuCall.Accelerometer_Y = (int16_t)(data[2] << 8 | data[3]);
+	pThis->m_stImuCall.Accelerometer_Z = (int16_t)(data[4] << 8 | data[5]);
 
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
@@ -289,32 +289,32 @@ SD_MPU6050_Result SD_MPU6050_ReadGyroscope(void)
 	while(HAL_I2C_Master_Receive(pThis->m_pI2Cx,(uint16_t)pThis->Address, data, 6, 1000) != HAL_OK);
 
 	/* Format */
-	pThis->Gyroscope_X = (int16_t)(data[0] << 8 | data[1]);
-	pThis->Gyroscope_Y = (int16_t)(data[2] << 8 | data[3]);
-	pThis->Gyroscope_Z = (int16_t)(data[4] << 8 | data[5]);
+	pThis->m_stImuCall.Gyroscope_X = (int16_t)(data[0] << 8 | data[1]);
+	pThis->m_stImuCall.Gyroscope_Y = (int16_t)(data[2] << 8 | data[3]);
+	pThis->m_stImuCall.Gyroscope_Z = (int16_t)(data[4] << 8 | data[5]);
 
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
 }
-SD_MPU6050_Result SD_MPU6050_ReadTemperature(void)
-{
-	uint8_t data[2];
-	int16_t temp;
-	uint8_t reg = MPU6050_TEMP_OUT_H;
-	SD_MPU6050* pThis 	= &g_mpu1;
-
-	/* Read temperature */
-	while(HAL_I2C_Master_Transmit(pThis->m_pI2Cx,(uint16_t)pThis->Address, &reg, 1, 1000) != HAL_OK);
-
-	while(HAL_I2C_Master_Receive(pThis->m_pI2Cx,(uint16_t)pThis->Address, data, 2, 1000) != HAL_OK);
-
-	/* Format temperature */
-	temp = (data[0] << 8 | data[1]);
-	pThis->Temperature = (float)((int16_t)temp / (float)340.0 + (float)36.53);
-
-	/* Return OK */
-	return SD_MPU6050_Result_Ok;
-}
+//SD_MPU6050_Result SD_MPU6050_ReadTemperature(void)
+//{
+//	uint8_t data[2];
+//	int16_t temp;
+//	uint8_t reg = MPU6050_TEMP_OUT_H;
+//	SD_MPU6050* pThis 	= &g_mpu1;
+//
+//	/* Read temperature */
+//	while(HAL_I2C_Master_Transmit(pThis->m_pI2Cx,(uint16_t)pThis->Address, &reg, 1, 1000) != HAL_OK);
+//
+//	while(HAL_I2C_Master_Receive(pThis->m_pI2Cx,(uint16_t)pThis->Address, data, 2, 1000) != HAL_OK);
+//
+//	/* Format temperature */
+//	temp = (data[0] << 8 | data[1]);
+//	pThis->Temperature = (float)((int16_t)temp / (float)340.0 + (float)36.53);
+//
+//	/* Return OK */
+//	return SD_MPU6050_Result_Ok;
+//}
 SD_MPU6050_Result SD_MPU6050_ReadAll(void)
 {
 	uint8_t data[14];
@@ -328,18 +328,18 @@ SD_MPU6050_Result SD_MPU6050_ReadAll(void)
 	while(HAL_I2C_Master_Receive(pThis->m_pI2Cx,(uint16_t)pThis->Address, data, 14, 1000) != HAL_OK);
 
 	/* Format accelerometer data */
-	pThis->Accelerometer_X = (int16_t)(data[0] << 8 | data[1]);
-	pThis->Accelerometer_Y = (int16_t)(data[2] << 8 | data[3]);
-	pThis->Accelerometer_Z = (int16_t)(data[4] << 8 | data[5]);
+	pThis->m_stImuCall.Accelerometer_X = (int16_t)(data[0] << 8 | data[1]);
+	pThis->m_stImuCall.Accelerometer_Y = (int16_t)(data[2] << 8 | data[3]);
+	pThis->m_stImuCall.Accelerometer_Z = (int16_t)(data[4] << 8 | data[5]);
 
-	/* Format temperature */
-	temp = (data[6] << 8 | data[7]);
-	pThis->Temperature = (float)((float)((int16_t)temp) / (float)340.0 + (float)36.53);
+//	/* Format temperature */
+//	temp = (data[6] << 8 | data[7]);
+//	pThis->Temperature = (float)((float)((int16_t)temp) / (float)340.0 + (float)36.53);
 
 	/* Format gyroscope data */
-	pThis->Gyroscope_X = (int16_t)(data[8] << 8 | data[9]);
-	pThis->Gyroscope_Y = (int16_t)(data[10] << 8 | data[11]);
-	pThis->Gyroscope_Z = (int16_t)(data[12] << 8 | data[13]);
+	pThis->m_stImuCall.Gyroscope_X = (int16_t)(data[8] << 8 | data[9]);
+	pThis->m_stImuCall.Gyroscope_Y = (int16_t)(data[10] << 8 | data[11]);
+	pThis->m_stImuCall.Gyroscope_Z = (int16_t)(data[12] << 8 | data[13]);
 
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
@@ -393,4 +393,16 @@ SD_MPU6050_Result SD_MPU6050_ReadInterrupts(SD_MPU6050_Interrupt* InterruptsStru
 	InterruptsStruct->Status = read;
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
+}
+
+stImuCall* SD_MPU6050_GetImuCall(void)
+{
+	if(SD_MPU6050_ReadAll() != SD_MPU6050_Result_Ok)
+	{
+		printf("Error taking Imu Call\r\n");
+	}
+	else
+	{
+		return &g_mpu1.m_stImuCall;
+	}
 }

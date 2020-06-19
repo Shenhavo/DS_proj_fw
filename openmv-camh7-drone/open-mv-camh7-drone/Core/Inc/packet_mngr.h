@@ -11,7 +11,7 @@
 #endif
 
 #include "img_jpg_file.h"
-//#include "imu_mngr.h"
+#include "sd_hal_mpu6050.h"
 
 #define IMU_EVENT_CYCLE_MSEC	5
 #define IMU_CALLS_PER_PACKET	10
@@ -52,16 +52,7 @@ typedef struct stMidFrame_name {
 #pragma pack(pop)
 
 
-#pragma pack(push,1)
-typedef struct stImuCall_name {
-	int16_t	m_GyroX;
-	int16_t	m_GyroY;
-	int16_t	m_GyroZ;
-	int16_t	m_AccX;
-	int16_t	m_AccY;
-	int16_t	m_AccZ;
-} stImuCall;
-#pragma pack(pop)
+
 
 #pragma pack(push,1)
 typedef struct stImuPacket_name {

@@ -98,6 +98,18 @@ typedef enum {
 	SD_MPU6050_Gyroscope_2000s = 0x03  /*!< Range is +- 2000 degrees/s */
 } SD_MPU6050_Gyroscope;
 
+#pragma pack(push,1)
+typedef struct stImuCall_name {
+	int16_t	Gyroscope_X;
+	int16_t	Gyroscope_Y;
+	int16_t	Gyroscope_Z;
+	int16_t	Accelerometer_X;
+	int16_t	Accelerometer_Y;
+	int16_t	Accelerometer_Z;
+} stImuCall;
+#pragma pack(pop)
+
+
 /**
  * @brief  Main MPU6050 structure
  */
@@ -106,15 +118,11 @@ typedef struct  {
 	uint8_t Address;         /*!< I2C address of device. */
 	float Gyro_Mult;         /*!< Gyroscope corrector from raw data to "degrees/s". Only for private use */
 	float Acce_Mult;         /*!< Accelerometer corrector from raw data to "g". Only for private use */
-	/* Public */
-	int16_t Accelerometer_X; /*!< Accelerometer value X axis */
-	int16_t Accelerometer_Y; /*!< Accelerometer value Y axis */
-	int16_t Accelerometer_Z; /*!< Accelerometer value Z axis */
-	int16_t Gyroscope_X;     /*!< Gyroscope value X axis */
-	int16_t Gyroscope_Y;     /*!< Gyroscope value Y axis */
-	int16_t Gyroscope_Z;     /*!< Gyroscope value Z axis */
-	float   Temperature;       /*!< Temperature in degrees */
 	I2C_HandleTypeDef* m_pI2Cx;
+	/* Public */
+	stImuCall	m_stImuCall;
+//	float   Temperature;       /*!< Temperature in degrees */
+
 } SD_MPU6050;
 
 /**
@@ -233,17 +241,18 @@ SD_MPU6050_Result SD_MPU6050_ReadGyroscope(void);
  *            - SD_MPU6050_Result_Ok: everything is OK
  *            - Other: in other cases
  */
-SD_MPU6050_Result SD_MPU6050_ReadTemperature(void);
-
-/**
- * @brief  Reads accelerometer, gyroscope and temperature data from sensor
- * @param  *DataStruct: Pointer to @ref SD_MPU6050_t structure to store data to
- * @retval Member of @ref SD_MPU6050_Result_t:
- *            - SD_MPU6050_Result_Ok: everything is OK
- *            - Other: in other cases
- */
+//SD_MPU6050_Result SD_MPU6050_ReadTemperature(void);
+//
+///**
+// * @brief  Reads accelerometer, gyroscope and temperature data from sensor
+// * @param  *DataStruct: Pointer to @ref SD_MPU6050_t structure to store data to
+// * @retval Member of @ref SD_MPU6050_Result_t:
+// *            - SD_MPU6050_Result_Ok: everything is OK
+// *            - Other: in other cases
+// */
 SD_MPU6050_Result SD_MPU6050_ReadAll(void);
 
+ stImuCall* SD_MPU6050_GetImuCall(void);
 /**
  * @}
  */
