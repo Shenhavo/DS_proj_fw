@@ -15,9 +15,6 @@ extern "C" {
 #endif
 */
 
-#include "stm32f0xx_hal.h"
-#include "stm32f0xx_hal_i2c.h"
-
 /**
  * @defgroup SD_MPU6050_Macros
  * @brief    Library defines
@@ -170,7 +167,7 @@ SD_MPU6050_Result SD_MPU6050_Init( SD_MPU6050_Device DeviceNumber, SD_MPU6050_Ac
  * @param  GyroscopeSensitivity: Gyro sensitivity value. This parameter can be a value of @ref SD_MPU6050_Gyroscope_t enumeration
  * @retval Member of @ref SD_MPU6050_Result_t enumeration
  */
-SD_MPU6050_Result SD_MPU6050_SetGyroscope(I2C_HandleTypeDef* I2Cx,SD_MPU6050* DataStruct, SD_MPU6050_Gyroscope GyroscopeSensitivity);
+SD_MPU6050_Result SD_MPU6050_SetGyroscope(SD_MPU6050_Gyroscope GyroscopeSensitivity);
 
 /**
  * @brief  Sets accelerometer sensitivity
@@ -178,7 +175,7 @@ SD_MPU6050_Result SD_MPU6050_SetGyroscope(I2C_HandleTypeDef* I2Cx,SD_MPU6050* Da
  * @param  AccelerometerSensitivity: Gyro sensitivity value. This parameter can be a value of @ref SD_MPU6050_Accelerometer_t enumeration
  * @retval Member of @ref SD_MPU6050_Result_t enumeration
  */
-SD_MPU6050_Result SD_MPU6050_SetAccelerometer(I2C_HandleTypeDef* I2Cx,SD_MPU6050* DataStruct, SD_MPU6050_Accelerometer AccelerometerSensitivity);
+SD_MPU6050_Result SD_MPU6050_SetAccelerometer( SD_MPU6050_Accelerometer AccelerometerSensitivity);
 
 /**
  * @brief  Sets output data rate
@@ -186,7 +183,7 @@ SD_MPU6050_Result SD_MPU6050_SetAccelerometer(I2C_HandleTypeDef* I2Cx,SD_MPU6050
  * @param  rate: Data rate value. An 8-bit value for prescaler value
  * @retval Member of @ref SD_MPU6050_Result_t enumeration
  */
-SD_MPU6050_Result SD_MPU6050_SetDataRate(I2C_HandleTypeDef* I2Cx,SD_MPU6050* DataStruct, uint8_t rate);
+SD_MPU6050_Result SD_MPU6050_SetDataRate( uint8_t rate);
 
 
 /**
@@ -194,14 +191,14 @@ SD_MPU6050_Result SD_MPU6050_SetDataRate(I2C_HandleTypeDef* I2Cx,SD_MPU6050* Dat
  * @param  *DataStruct: Pointer to @ref SD_MPU6050_t structure indicating MPU6050 device
  * @retval Member of @ref SD_MPU6050_Result_t enumeration
  */
-SD_MPU6050_Result SD_MPU6050_EnableInterrupts(I2C_HandleTypeDef* I2Cx,SD_MPU6050* DataStruct);
+SD_MPU6050_Result SD_MPU6050_EnableInterrupts(void);
 
 /**
  * @brief  Disables interrupts
  * @param  *DataStruct: Pointer to @ref SD_MPU6050_t structure indicating MPU6050 device
  * @retval Member of @ref SD_MPU6050_Result_t enumeration
  */
-SD_MPU6050_Result SD_MPU6050_DisableInterrupts(I2C_HandleTypeDef* I2Cx,SD_MPU6050* DataStruct);
+SD_MPU6050_Result SD_MPU6050_DisableInterrupts(void);
 
 /**
  * @brief  Reads and clears interrupts
@@ -209,7 +206,7 @@ SD_MPU6050_Result SD_MPU6050_DisableInterrupts(I2C_HandleTypeDef* I2Cx,SD_MPU605
  * @param  *InterruptsStruct: Pointer to @ref SD_MPU6050_Interrupt_t structure to store status in
  * @retval Member of @ref SD_MPU6050_Result_t enumeration
  */
-SD_MPU6050_Result SD_MPU6050_ReadInterrupts(I2C_HandleTypeDef* I2Cx,SD_MPU6050* DataStruct, SD_MPU6050_Interrupt* InterruptsStruct);
+SD_MPU6050_Result SD_MPU6050_ReadInterrupts( SD_MPU6050_Interrupt* InterruptsStruct);
 
 /**
  * @brief  Reads accelerometer data from sensor
@@ -218,7 +215,7 @@ SD_MPU6050_Result SD_MPU6050_ReadInterrupts(I2C_HandleTypeDef* I2Cx,SD_MPU6050* 
  *            - SD_MPU6050_Result_Ok: everything is OK
  *            - Other: in other cases
  */
-SD_MPU6050_Result SD_MPU6050_ReadAccelerometer(I2C_HandleTypeDef* I2Cx,SD_MPU6050* DataStruct);
+SD_MPU6050_Result SD_MPU6050_ReadAccelerometer(void);
 
 /**
  * @brief  Reads gyroscope data from sensor
@@ -227,7 +224,7 @@ SD_MPU6050_Result SD_MPU6050_ReadAccelerometer(I2C_HandleTypeDef* I2Cx,SD_MPU605
  *            - SD_MPU6050_Result_Ok: everything is OK
  *            - Other: in other cases
  */
-SD_MPU6050_Result SD_MPU6050_ReadGyroscope(I2C_HandleTypeDef* I2Cx,SD_MPU6050* DataStruct);
+SD_MPU6050_Result SD_MPU6050_ReadGyroscope(void);
 
 /**
  * @brief  Reads temperature data from sensor
@@ -236,7 +233,7 @@ SD_MPU6050_Result SD_MPU6050_ReadGyroscope(I2C_HandleTypeDef* I2Cx,SD_MPU6050* D
  *            - SD_MPU6050_Result_Ok: everything is OK
  *            - Other: in other cases
  */
-SD_MPU6050_Result SD_MPU6050_ReadTemperature(I2C_HandleTypeDef* I2Cx,SD_MPU6050* DataStruct);
+SD_MPU6050_Result SD_MPU6050_ReadTemperature(void);
 
 /**
  * @brief  Reads accelerometer, gyroscope and temperature data from sensor
@@ -245,7 +242,7 @@ SD_MPU6050_Result SD_MPU6050_ReadTemperature(I2C_HandleTypeDef* I2Cx,SD_MPU6050*
  *            - SD_MPU6050_Result_Ok: everything is OK
  *            - Other: in other cases
  */
-SD_MPU6050_Result SD_MPU6050_ReadAll(I2C_HandleTypeDef* I2Cx,SD_MPU6050* DataStruct);
+SD_MPU6050_Result SD_MPU6050_ReadAll(void);
 
 /**
  * @}
