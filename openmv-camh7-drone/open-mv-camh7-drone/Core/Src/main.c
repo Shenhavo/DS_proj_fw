@@ -113,37 +113,15 @@ int main(void)
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   MX_TIM2_Init();
-  MX_I2C2_Init(); // IMU communication bus SO: to be upgraded to 400KHz
+  MX_I2C2_Init();
   MX_UART4_Init();
   /* USER CODE BEGIN 2 */
 	LED_Init();
-//	PacketMngr_Init();
-//	WifiMngr_Init();
+	PacketMngr_Init();
+	WifiMngr_Init();
 	TIM_StartImuTick();
 	printf("~~ init finished ~~\r\n");
   /* USER CODE END 2 */
-
-//	uint8_t	reg_add = 0;
-	uint8_t RxBuff[100] = {NULL};
-
-	//SO: I2C add is 0x96 = 150
-
-	while(1)
-	{
-//		for( uint16_t add = 0x4A; add<=0x4B; add++)
-//		{
-			HAL_Delay(20);
-			HAL_StatusTypeDef x = HAL_I2C_Master_Receive(&hi2c2, 150, RxBuff, 100, 1000);
-
-			if ( x != HAL_ERROR)
-			{
-				printf("%d,%d,%d\r\n",RxBuff[0],RxBuff[1],RxBuff[2]);
-			}
-//		}
-
-//		reg_add++;
-	}
-
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
