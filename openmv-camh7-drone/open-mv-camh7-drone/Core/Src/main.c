@@ -39,6 +39,7 @@
 #include "driver/include/m2m_types.h"
 #include "wifi_mngr.h"
 #include "led.h"
+#include "sd_hal_mpu6050.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -120,6 +121,7 @@ int main(void)
 	PacketMngr_Init();
 	WifiMngr_Init();
 	TIM_StartImuTick();
+	SD_MPU6050_Init(SD_MPU6050_Device_0,SD_MPU6050_Accelerometer_2G,SD_MPU6050_Gyroscope_250s );
 	printf("~~ init finished ~~\r\n");
   /* USER CODE END 2 */
 
