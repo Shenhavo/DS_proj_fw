@@ -70,7 +70,7 @@ void FS_Init(void)
 		}
 
 		/* Create FAT volume */
-//		FATFS_LinkDriver(&SD_Driver, SDPath); // this exists in `MX_FATFS_Init()`
+		//		FATFS_LinkDriver(&SD_Driver, SDPath); // this exists in `MX_FATFS_Init()`
 
 	}
 
@@ -312,7 +312,7 @@ void FS_FileOperationsBmpCompressDma(void)
 		printf("compressing file: %s\r\n", BMP_FILE_NAME_ON_SD);
 
 		FIL DestJpegImg, SrcBmpFile;     /* File object */
-		uint32_t BytesWritten, BytesRead = 0;
+		//uint32_t BytesWritten, BytesRead = 0;
 		uint32_t JpegEncodeProcessingEnd = 0;
 
 		/*##-6- Open the file with read access #############################*/
@@ -366,58 +366,59 @@ void FS_FileOperationsBmpCompressDma(void)
 
 
 /**
- * @brief  compress bayer from dcmi to jpeg
+ * @brief  compress from dcmi ram to jpeg
  * please read the file documentation
  * @retval None
  */
-void FS_FileOperationsDcmiBmpCompressDma(uint8_t *pDataToCompress)
+void FS_FileOperationsDcmiRamCompressDma(uint8_t *pDataToCompress)
 {
 	FRESULT res;			/* FatFs function common result code */
-
 
 	/* Register the file system object to the FatFs module */
 	if(f_mount(&SDFatFS, (TCHAR const*)SDPath, 0) == FR_OK)
 	{
-		printf("compressing dcmi frame\r\n");
+		printf("compressing dcmi sram frame\r\n");
 
 		FIL DestJpegImg;     /* File object */
 		uint32_t BytesWritten, BytesRead = 0;
 		uint32_t JpegEncodeProcessingEnd = 0;
 
 		/*##-6- Open the file with read access #############################*/
-			if((res = f_open(&DestJpegImg, JPEG_FILE_NAME_ON_SD, FA_WRITE | FA_CREATE_ALWAYS)) == FR_OK)
+		uint8_t JpegFname[39] = {0x00};
+		sprintf(JpegFname, "gray_%d_%d_sram_compress_q%d_ch%d.jpg", IMG_W, IMG_H, JPEG_IMAGE_QUALITY, JPEG_CHROMA_SAMPLING);
+		if((res = f_open(&DestJpegImg, JpegFname, FA_WRITE | FA_CREATE_ALWAYS)) == FR_OK)
+		{
+			printf("compression starting ..\r\n");
+
+			JPEG_ConfTypeDef SrcBmpInfo;
+			//				BMP_GetInfo(&SrcBmpFile, &SrcBmpInfo);
+			SrcBmpInfo.ImageWidth = IMG_W;
+			SrcBmpInfo.ImageHeight = IMG_H;
+			printf("SrcBmp Params: W=%d H=%d\r\n", SrcBmpInfo.ImageWidth, SrcBmpInfo.ImageHeight);
+
+			/*##-8- JPEG Encoding with DMA (Not Blocking ) Method ################*/
+			JPEG_Encode_DMA_FromRam(&hjpeg, pDataToCompress, &DestJpegImg);
+
+			/*##-9- Wait till end of JPEG encoding and perform Input/Output Processing in BackGround  #*/
+			do
 			{
-				printf("file compression starting ..\r\n");
+				JPEG_EncodeInputHandler(&hjpeg);
+				JpegEncodeProcessingEnd = JPEG_EncodeOutputHandler(&hjpeg);
 
-				JPEG_ConfTypeDef SrcBmpInfo;
-//				BMP_GetInfo(&SrcBmpFile, &SrcBmpInfo);
-				SrcBmpInfo.ImageWidth = IMG_W;
-				SrcBmpInfo.ImageHeight = IMG_H; // TODO: What else?
-				printf("SrcBmp Params: W=%d H=%d\r\n", SrcBmpInfo.ImageWidth, SrcBmpInfo.ImageHeight);
+			}while(JpegEncodeProcessingEnd == 0);
 
-				/*##-8- JPEG Encoding with DMA (Not Blocking ) Method ################*/
-				JPEG_Encode_DMA_FromRam(&hjpeg, pDataToCompress, &DestJpegImg);
+			/*##-10- Close the JPEG file #######################################*/
 
-				/*##-9- Wait till end of JPEG encoding and perform Input/Output Processing in BackGround  #*/
-				do
-				{
-					JPEG_EncodeInputHandler(&hjpeg);
-					JpegEncodeProcessingEnd = JPEG_EncodeOutputHandler(&hjpeg);
+			//				uint32_t SrcBmpImgFileSize = f_size(&SrcBmpFile);
+			uint32_t DestJpegImgFileSize = f_size(&DestJpegImg);
+			printf("source file size = %d [bits]\r\n", SrcBmpInfo.ImageWidth * SrcBmpInfo.ImageHeight);
+			printf("converted file: %s\r\n size = %d [bits]\r\n", JpegFname, DestJpegImgFileSize);
 
-				}while(JpegEncodeProcessingEnd == 0);
-
-				/*##-10- Close the JPEG file #######################################*/
-
-//				uint32_t SrcBmpImgFileSize = f_size(&SrcBmpFile);
-				uint32_t DestJpegImgFileSize = f_size(&DestJpegImg);
-				printf("source file size = %d [bits]\r\n", SrcBmpInfo.ImageWidth * SrcBmpInfo.ImageHeight);
-				printf("converted file size = %d [bits]\r\n", DestJpegImgFileSize);
-
-				if ( (res = f_close(&DestJpegImg)) == FR_OK )
-				{
-					printf("DestJpegImg close OK\r\n");
-				}
+			if ( (res = f_close(&DestJpegImg)) == FR_OK )
+			{
+				printf("DestJpegImg close OK\r\n");
 			}
+		}
 
 	}
 
