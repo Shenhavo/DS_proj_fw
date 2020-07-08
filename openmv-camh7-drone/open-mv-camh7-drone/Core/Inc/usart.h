@@ -29,14 +29,23 @@
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
-
 extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart4;
+
 
 /* USER CODE BEGIN Private defines */
+#define USE_DEBUG_UART
+
+#ifdef IMU_SETUP
+
+#define DEBUG_UART_HANDLER		huart4
+#else
 #define DEBUG_UART_HANDLER		huart3
+#endif
 /* USER CODE END Private defines */
 
 void MX_USART3_UART_Init(void);
+void MX_UART4_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 

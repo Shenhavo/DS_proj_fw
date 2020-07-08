@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 
- #ifdef USE_UART_DEBUG
+#ifdef USE_UART_DEBUG
 #include "usart.h"
 #endif //USE_UART_DEBUG
 

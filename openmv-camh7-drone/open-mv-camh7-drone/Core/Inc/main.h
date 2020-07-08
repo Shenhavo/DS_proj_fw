@@ -17,8 +17,6 @@
   *
   ******************************************************************************
   */
-
-// TODO: DB - after finishing using ImuPrintMock - disable the `use float print` in tool settings
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/

@@ -94,7 +94,7 @@ uint8_t* pFrameBuffOnSram;
 
 /* Private function prototypes -----------------------------------------------*/
 static void ReadBmpRgbLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
-static void ReadSramGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
+static void ReadRamGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
 static void ReadBmpGrayLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
 void BMP_GetInfo(FIL * Filename, JPEG_ConfTypeDef *pInfo);
 /* Private functions ---------------------------------------------------------*/
@@ -134,7 +134,7 @@ uint32_t JPEG_Encode_DMA(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *jpgfile)
 	/* Fill input Buffer */
 	/* Read and reorder MAX_INPUT_LINES lines from BMP file and fill data buffer */
 	//ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
-	ReadBmpGreyLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
+	ReadBmpGrayLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
 
 	/* RGB to YCbCr Pre-Processing */
 	MCU_BlockIndex += pRGBToYCbCr_Convert_Function(Input_Data_Buffer, Jpeg_IN_BufferTab.DataBuffer, 0, dataBufferSize,(uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
@@ -172,7 +172,6 @@ uint32_t JPEG_Encode_DMA_FromRam(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, 
 	CurrentLine                = 1;
 
 	/* BMP Header Parsing */
-//	BMP_GetInfo(pBmpFile, &Conf);
 	Conf.ImageHeight 		= IMG_H;
 	Conf.ImageWidth 		= IMG_W;
 	Conf.ColorSpace 		= JPEG_COLOR_SPACE;
@@ -192,7 +191,7 @@ uint32_t JPEG_Encode_DMA_FromRam(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, 
 	/* Read and reorder MAX_INPUT_LINES lines from BMP file and fill data buffer */
 //	ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
 //	ReadBayerLines(pBmpFile, Conf, FrameBuff /*Input_Data_Buffer */, Conf.ImageHeight*Conf.ImageWidth/*&dataBufferSize*/);
-	ReadSramGrayLines(FrameBuff, Conf, Input_Data_Buffer ,&dataBufferSize);
+	ReadRamGrayLines(FrameBuff, Conf, Input_Data_Buffer ,&dataBufferSize);
 
 
 
@@ -251,10 +250,11 @@ void JPEG_EncodeInputHandler(JPEG_HandleTypeDef *hjpeg)
 
   if((Jpeg_IN_BufferTab.State == JPEG_BUFFER_EMPTY) && (MCU_BlockIndex <= MCU_TotalNb))  
   {
+	  // TODO: this function is hard coded. make this flixble
     /* Read and reorder 16 lines from BMP file and fill data buffer */
 //    ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
 	  //ReadBmpGrayLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
-	  ReadSramGrayLines(pFrameBuffOnSram, Conf, Input_Data_Buffer, &dataBufferSize);
+	  ReadRamGrayLines(pFrameBuffOnSram, Conf, Input_Data_Buffer, &dataBufferSize);
 
     if(dataBufferSize != 0)
     {
@@ -411,7 +411,7 @@ static void ReadBmpGrayLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBu
  * @param file: pointer to the Data Buffer Size
  * @retval None
  */
-static void ReadSramGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize)
+static void ReadRamGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize)
 {
 	uint32_t bytesReadfile    = 1;
 	uint32_t CurrentBlockLine = 1;

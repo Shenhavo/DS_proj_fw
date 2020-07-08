@@ -391,7 +391,6 @@ void FS_FileOperationsDcmiRamCompressDma(uint8_t *pDataToCompress)
 			printf("compression starting ..\r\n");
 
 			JPEG_ConfTypeDef SrcBmpInfo;
-			//				BMP_GetInfo(&SrcBmpFile, &SrcBmpInfo);
 			SrcBmpInfo.ImageWidth = IMG_W;
 			SrcBmpInfo.ImageHeight = IMG_H;
 			printf("SrcBmp Params: W=%d H=%d\r\n", SrcBmpInfo.ImageWidth, SrcBmpInfo.ImageHeight);

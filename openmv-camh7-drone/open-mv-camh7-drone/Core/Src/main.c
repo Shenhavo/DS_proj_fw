@@ -45,7 +45,7 @@
 #include "jpeg_utils.h"
 #include "encode_dma.h"
 
-#include "bno055.h"
+#include "sd_hal_mpu6050.h"
 
 #include "sensor.h"
 /* USER CODE END Includes */
@@ -71,59 +71,12 @@
 /*!
  * @brief struct for Accel-output data of precision float
  */
-typedef struct
-{
-	float x; /**< accel x float data */
-	float y; /**< accel y float data */
-	float z; /**< accel z float data */
-}bno055_accel_float_t_mock;
-
-/*!
- * @brief struct for Gyro-output data of precision float
- */
-typedef struct
-{
-	float x; /**< Gyro x float data */
-	float y; /**< Gyro y float data */
-	float z; /**< Gyro z float data */
-}bno055_gyro_float_t_mock;
-
-/*!
- * @brief struct for Mag-output data of precision float
- */
-typedef struct
-{
-	float x; /**< Mag x float data */
-	float y; /**< Mag y float data */
-	float z; /**< Mag z float data */
-}bno055_mag_float_t_mock;
-
-#pragma pack(1)
-typedef struct
-{
-	bno055_accel_float_t_mock 	accl_f;
-	bno055_gyro_float_t_mock	gyro_f;
-	bno055_mag_float_t_mock		mag_f;
-}ImuSensorData;
-
-ImuSensorData ImuMockStruct = {0x00};
-
-
-
-
-
 
 #define FRAME_BUFF_SIZE  (IMG_H * IMG_W) // 19200 pixels = max(57KBytes)
 //ALIGN_32BYTES(uint32_t DummyFrameBuff[FRAME_BUFF_SIZE] __attribute__((section(".sram_d2")));
 //uint32_t __attribute__((section(".sram_d2"))) DummyFrameBuff[FRAME_BUFF_SIZE];
 ALIGN_32BYTES(uint8_t DcmiFrameBuff[FRAME_BUFF_SIZE]);
 
-// TODO: removed those flags
-//extern uint8_t DcmiVsyncIrqEvent;
-//extern uint8_t DcmiLineIrqEvent;
-//extern uint8_t DcmiFrameIrqEvent;
-//extern uint8_t DcmiIrqEvent;
-//extern uint8_t DcmiDmaIrqEvent;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -131,7 +84,6 @@ void SystemClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
-void ImuMockValues(void);
 void WaitForFrame(void);
 void DcmiFrameAcqDma(uint32_t a_Buff, uint32_t a_BuffSize);
 
@@ -183,14 +135,16 @@ int main(void)
 	MX_JPEG_Init();
 	MX_DMA_Init();
 	MX_I2C1_Init();
+	MX_I2C2_Init();
 	MX_DCMI_Init();
 	MX_SDMMC1_SD_Init();
 	MX_FATFS_Init();
-	MX_USART3_UART_Init();
-	MX_TIM2_Init();
-	MX_TIM1_Init();
+  	MX_TIM2_Init();
+  	MX_USART3_UART_Init();
+  	MX_UART4_Init();
 	/* USER CODE BEGIN 2 */
 	LED_Init();
+	PacketMngr_Init();
 	WifiMngr_Init();
 	FS_Init();
 
@@ -202,7 +156,11 @@ int main(void)
 	{
 		printf("FATFS Link Driver ERR\r\n");
 	}
+	
 
+	SD_MPU6050_Init(SD_MPU6050_Device_0,SD_MPU6050_Accelerometer_2G,SD_MPU6050_Gyroscope_250s );
+	
+	
 	printf("~~ init finished ~~\r\n");
 	printf("GIT REV SHA: %s\r\n", PROJ_SHA);
 
@@ -210,11 +168,6 @@ int main(void)
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-
-	TIM_StartImuTick();
-
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
 	sensor_init();
 	int CamId = sensor_get_id();
 	printf("camera id = %d\r\n", CamId);
@@ -236,8 +189,12 @@ int main(void)
 
 	printf("img dim = W=%d\tH=%d\r\n", IMG_W, IMG_H);
 
-	DcmiFrameAcqDma((uint32_t)DcmiFrameBuff, FRAME_BUFF_SIZE);
+	DcmiFrameAcqDma((uint32_t)DcmiFrameBuff, FRAME_BUFF_SIZE); // TODO: DB - wrap in func after socket init
 
+	TIM_StartImuTick();
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 	if(BSP_SD_IsDetected())
 	{
 		//		FS_FileOperationsDcmiBmpCompressDma(DcmiFrameBuff);
@@ -254,27 +211,16 @@ int main(void)
 	{
 		printf("sd not detected, skipping example\r\n");
 	}
-
-
-
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-	while (1)
+	
+	while (true)
 	{
 		WifiMngr_HandleEvents();
 
-		if (TIM_IsImuTimeoutEvent() == true)
-		{
-//			ImuMockValues();
-		}
+    /* USER CODE END WHILE */
 
-
-
-		/* USER CODE END WHILE */
-
-		/* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 	}
-	/* USER CODE END 3 */
+  /* USER CODE END 3 */
 }
 
 /**
@@ -332,7 +278,7 @@ void SystemClock_Config(void)
 		Error_Handler();
 	}
 	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_SPI2
-			|RCC_PERIPHCLK_SDMMC|RCC_PERIPHCLK_I2C1;
+			|RCC_PERIPHCLK_SDMMC|RCC_PERIPHCLK_I2C2|RCC_PERIPHCLK_I2C1;
 	PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL;
 	PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
 	PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
@@ -345,50 +291,7 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
-/**
- * @brief  print a demo of imu data
- * @retval None
- */
-void ImuMockValues(void)
-{
-	uint32_t CurrTick = HAL_GetTick();
 
-	// accl values [m^2/sec] ~ ( -20, +20 )
-	// sanity check : accl_f.x^2 + accl_f.y^2 = 1
-	ImuMockStruct.accl_f.x = sin(CurrTick);
-	ImuMockStruct.accl_f.y = cos(CurrTick);
-	ImuMockStruct.accl_f.z = CurrTick;
-
-	// gyro in dps ~ ( -500 , + 500 )
-	// sanity check : gyro_f.y^2 + gyro_f.z = 1
-	ImuMockStruct.gyro_f.x = CurrTick*2;
-	ImuMockStruct.gyro_f.y = 500 * -sin(CurrTick);
-	ImuMockStruct.gyro_f.z = 500 * -cos(CurrTick);
-
-	// microTesla data of mag xyz (???)
-	// this is not mandatory
-	ImuMockStruct.mag_f.x = 1;
-	ImuMockStruct.mag_f.y = 2;
-	ImuMockStruct.mag_f.z = 3;
-
-	// send payload here
-
-	// note the printf adds delay to the code
-	printf("~~~~ imu mock ~~~~\r\n");
-
-
-	printf("accl_f.x =\t%f\r\n", ImuMockStruct.accl_f.x);
-	printf("accl_f.y =\t%f\r\n", ImuMockStruct.accl_f.y);
-	printf("accl_f.z =\t%f\r\n", ImuMockStruct.accl_f.z);
-
-	printf("gyro_f.x =\t%f\r\n", ImuMockStruct.gyro_f.x);
-	printf("gyro_f.y =\t%f\r\n", ImuMockStruct.gyro_f.y);
-	printf("gyro_f.z =\t%f\r\n", ImuMockStruct.gyro_f.z);
-
-	printf("mag_f.x =\t%f\r\n", ImuMockStruct.mag_f.x);
-	printf("mag_f.y =\t%f\r\n", ImuMockStruct.mag_f.y);
-	printf("mag_f.z =\t%f\r\n", ImuMockStruct.mag_f.z);
-}
 
 /**
  * @brief  WaitForFrame
