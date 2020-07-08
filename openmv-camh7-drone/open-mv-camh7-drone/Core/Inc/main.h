@@ -63,7 +63,7 @@ extern "C" {
 
 /** Wi-Fi Settings */
 
-#define PROJ_SHA			"0x9611e9302e276efc81ca20e9bdeaf4a64f904753"
+#define PROJ_SHA			"0x4741bc8ce987f30aa87e27b1a7dd7f02af1598ef"
 
 
 #define USE_UART_DEBUG

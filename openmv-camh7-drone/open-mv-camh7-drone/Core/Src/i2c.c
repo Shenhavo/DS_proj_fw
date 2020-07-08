@@ -123,9 +123,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
   /* USER CODE BEGIN I2C1_MspInit 1 */
 
   /* USER CODE END I2C1_MspInit 1 */
-  
-  
-    }
+  }
   else if(i2cHandle->Instance==I2C2)
   {
   /* USER CODE BEGIN I2C2_MspInit 0 */

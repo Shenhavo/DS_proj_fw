@@ -72,7 +72,6 @@ extern JPEG_HandleTypeDef hjpeg;
 extern SD_HandleTypeDef hsd1;
 extern SPI_HandleTypeDef hspi2;
 extern TIM_HandleTypeDef htim2;
-extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
 /* USER CODE BEGIN EV */
 
@@ -334,20 +333,6 @@ void SDMMC1_IRQHandler(void)
   /* USER CODE BEGIN SDMMC1_IRQn 1 */
 
   /* USER CODE END SDMMC1_IRQn 1 */
-}
-
-/**
-  * @brief This function handles USART3 global interrupt.
-  */
-void USART3_IRQHandler(void)
-{
-  /* USER CODE BEGIN USART3_IRQn 0 */
-
-  /* USER CODE END USART3_IRQn 0 */
-  HAL_UART_IRQHandler(&huart3);
-  /* USER CODE BEGIN USART3_IRQn 1 */
-
-  /* USER CODE END USART3_IRQn 1 */
 }
 
 /**
