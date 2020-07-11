@@ -24,7 +24,9 @@ FATFS SDFatFS;    /* File system object for SD logical drive */
 FIL SDFile;       /* File object for SD */
 
 /* USER CODE BEGIN Variables */
+static uint8_t isInitialized = 0;
 
+void FS_Init(void);
 /* USER CODE END Variables */    
 
 void MX_FATFS_Init(void) 
@@ -35,7 +37,7 @@ void MX_FATFS_Init(void)
   /* USER CODE BEGIN Init */
   /* additional user code for init */     
 
-
+  FS_Init();
   /* USER CODE END Init */
 }
 
@@ -56,6 +58,63 @@ uint8_t Fatfs_GetRetSD(void)
 {
 	return retSD;
 }
+
+/**
+ * @brief  FS init and creating of filesystem
+ * @retval None
+ */
+void FS_Init(void)
+{
+	if(BSP_SD_IsDetected())
+	{
+		FRESULT res;
+
+		if (IS_NEED_SD_FORAMT)
+		{
+			printf("formatting SD\r\n");
+			res = f_mkfs(SDPath, FM_FAT32, 0, workBuffer, sizeof(workBuffer));
+			if (res != FR_OK)
+			{
+				Error_Handler();
+			}
+
+		}
+		else
+		{
+			printf("no SD format\r\n");
+		}
+	}
+
+
+	if (Fatfs_GetRetSD() == 0)
+	{
+		printf("FATFS Link Driver OK\r\n");
+	}
+	else
+	{
+		printf("FATFS Link Driver ERR\r\n");
+	}
+}
+
+
+/**
+ * @brief  SD init with BSP
+ * @retval None
+ */
+void SD_Initialize(void)
+{
+	if (isInitialized == 0)
+	{
+		BSP_SD_Init();
+
+		if(BSP_SD_IsDetected())
+		{
+			isInitialized = 1;
+		}
+	}
+}
+
+
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

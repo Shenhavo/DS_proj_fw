@@ -43,27 +43,11 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-#define JPEG_444_GS_MCU_SIZE        (64)
-// 640 * 480 = 307200
-#define FRAME_SIZE		FRAMESIZE_VGA
-#define IMG_W			(640)
-#define IMG_H			(480)
-
-// 320 * 240 = 76800
-//#define FRAME_SIZE		FRAMESIZE_QVGA
-//#define IMG_W			(320)
-//#define IMG_H			(240)
-
-//// 160 * 120 = 19200
-//#define FRAME_SIZE		FRAMESIZE_QQVGA
-//#define IMG_W			(160)
-//#define IMG_H			(120)
-
 
 
 /** Wi-Fi Settings */
 
-#define PROJ_SHA			"0x4741bc8ce987f30aa87e27b1a7dd7f02af1598ef"
+#define PROJ_SHA			"0x8bfa5bdba05441266b6b99480b92a7451eabff47"
 
 
 #define USE_UART_DEBUG
@@ -89,9 +73,6 @@ extern "C" {
 #define MAIN_WLAN_SSID                 "WINC1500_AP" /* < SSID */
 #define MAIN_WLAN_AUTH                 M2M_WIFI_SEC_OPEN /* < Security manner */
 #define MAIN_WLAN_CHANNEL              (6) /* < Channel number */
-
-#define OMV_ENABLE_MT9V034
-
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

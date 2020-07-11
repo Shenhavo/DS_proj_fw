@@ -20,10 +20,12 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "fatfs.h"
+#include "camera_mngr.h" // frame size defs
 #include "jpeg.h"
 #include "jpeg_utils_conf.h"
 #include "jpeg_utils.h"
 #include <string.h>
+#include <stdio.h>
 
 #include "encode_dma.h"
 
@@ -96,7 +98,7 @@ uint8_t* pFrameBuffOnSram;
 static void ReadBmpRgbLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
 static void ReadRamGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
 static void ReadBmpGrayLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
-void BMP_GetInfo(FIL * Filename, JPEG_ConfTypeDef *pInfo);
+
 /* Private functions ---------------------------------------------------------*/
 
 
@@ -145,7 +147,7 @@ uint32_t JPEG_Encode_DMA(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *jpgfile)
 
 	/* Start JPEG encoding with DMA method */
 	HAL_JPEG_Encode_DMA(hjpeg ,Jpeg_IN_BufferTab.DataBuffer ,Jpeg_IN_BufferTab.DataBufferSize ,Jpeg_OUT_BufferTab.DataBuffer ,CHUNK_SIZE_OUT);
-//	HAL_JPEG_Encode(hjpeg, /*mcu*/, JPEG_444_GS_MCU_SIZE, )
+
 	return 0;
 }
 
@@ -180,7 +182,7 @@ uint32_t JPEG_Encode_DMA_FromRam(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, 
 
 	JPEG_GetEncodeColorConvertFunc(&Conf, &pRGBToYCbCr_Convert_Function, &MCU_TotalNb);
 
-	printf("MCU_TotalNb\t%d\r\n", MCU_TotalNb);
+	printf("MCU_TotalNb\t%ld\r\n", MCU_TotalNb);
 
 	/* Clear Output Buffer */
 	Jpeg_OUT_BufferTab.DataBufferSize = 0;

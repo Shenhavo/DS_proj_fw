@@ -28,7 +28,7 @@
 #include "sd_diskio.h" /* defines SD_Driver as external */
 
 /* USER CODE BEGIN Includes */
-
+#define IS_NEED_SD_FORAMT	0
 /* USER CODE END Includes */
 
 extern uint8_t retSD; /* Return value for SD */
@@ -39,6 +39,8 @@ extern FIL SDFile; /* File object for SD */
 void MX_FATFS_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+uint8_t workBuffer[_MAX_SS];
+
 uint8_t Fatfs_GetRetSD(void);
 /* USER CODE END Prototypes */
 #ifdef __cplusplus
