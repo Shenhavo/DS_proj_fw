@@ -79,11 +79,13 @@ eImgStates PacketMngr_IterateImg( int8_t a_Socket)
 		{
 			stNewFrame* p_stNewFrame 	= (stNewFrame*)(p_stPacketMngr->m_PacketBytes);
 			p_stNewFrame->m_NewFrameSOF	=	NEW_FRAME_SOF;
-			p_stNewFrame->m_FrameSize	=	p_stImg->m_SizeB;
+			//p_stNewFrame->m_FrameSize	=	p_stImg->m_SizeB; // TODO: DB - revert
+			p_stNewFrame->m_FrameSize	=	CameraMngr_GetJpegFrameBuffSize(); // p_stImg->m_SizeB;
 			p_stNewFrame->m_SysTick		=	HAL_GetTick();
 
 			uint16_t 	packet_data_size_b 	= 	0;
-			uint8_t*	pData				=	p_stImg->m_pImg;
+			p_stImg->m_pImg					= CameraMngr_GetJpegFrameBuff(); // TODO: DB - revert
+			uint8_t*	pData				=   p_stImg->m_pImg;
 
 			if( p_stImg->m_SizeB > NEW_FRAME_DATA_SIZE_B)
 			{
@@ -106,6 +108,7 @@ eImgStates PacketMngr_IterateImg( int8_t a_Socket)
 
 			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stNewFrame , NEW_FRAME_HEADER_SIZE_B + packet_data_size_b, 0);
 		}
+		break;
 		case eImgStates_sending:
 		{
 			stMidFrame* p_stMidFrame 	= (stMidFrame*)(p_stPacketMngr->m_PacketBytes);

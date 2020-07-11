@@ -8,6 +8,8 @@
 #ifndef DRIVERS_MYLIB_SD_HAL_MPU6050_H_
 #define DRIVERS_MYLIB_SD_HAL_MPU6050_H_
 
+#define MPU6050_I2C_TIMEOUT_MSEC	1
+
 /*
  C++ detection
 #ifdef __cplusplus

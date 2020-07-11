@@ -43,8 +43,7 @@
 
 #include "jpeg_utils_conf.h"
 #include "jpeg_utils.h"
-#include "encode_dma.h"
-
+#include "jpeg_encode_dma.h"
 #include "f_op_playground.h"
 
 #include "sd_hal_mpu6050.h"
@@ -151,29 +150,13 @@ int main(void)
 
 
 	CameraMngr_DcmiFrameAcqDma(); // TODO: DB - wrap in func after socket init
+	CameraMngr_Compress();
+
 
 	TIM_StartImuTick();
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	if (BSP_SD_IsDetected())
-	{
-		//		FS_FileOperationsDcmiBmpCompressDma(DcmiFrameBuff);
-		uint32_t tick_jpeg_start = HAL_GetTick();
-
-//		FS_FileOperationsBmpCompressDma();
-//		FS_FileOperationsDcmiRamCompressDma( CameraMngr_GetFrameBuff() );
-
-		CameraMngr_Compress();
-
-		uint32_t tick_jpeg_end = HAL_GetTick();
-		uint32_t jpeg_duration_msec = tick_jpeg_end - tick_jpeg_start;
-		printf("jpeg compress complete with %d[msec] \r\n", jpeg_duration_msec);
-	}
-	else
-	{
-		printf("sd not detected, skipping example\r\n");
-	}
 
 	while( true )
 	{
@@ -183,7 +166,7 @@ int main(void)
 		{
 			// TODO: DB - start compress
 		}
-		else if ( CamerMngr_GetJpegFrameBuff() )
+		else if ( CameraMngr_GetJpegFrameBuff() )
 		{
 			// TODO: DB - start the sending
 			// TODO: DB - raise a mutex

@@ -27,7 +27,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "encode_dma.h"
+#include "jpeg_encode_dma.h"
 
 
 /** @addtogroup STM32H7xx_HAL_Examples
@@ -99,22 +99,23 @@ uint8_t* pFrameJpegBuff;
 uint8_t* pFrameBuffOnSram;
 
 /* Private function prototypes -----------------------------------------------*/
-static void ReadBmpRgbLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
-static void ReadRamGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
-static void ReadBmpGrayLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
+static void JpegEncodeDma_ReadBmpRgbLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
+static void JpegEncodeDma_ReadRamGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
+static void JpegEncodeDma_ReadBmpGrayLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize);
 
 /* Private functions ---------------------------------------------------------*/
 
 
 
+
 /**
- * @brief  Encode_DMA
+ * @brief  JpegEncodeDMA_FromSdToSd
  * @param hjpeg: JPEG handle pointer
  * @param  bmpfile    : bmp file path for encode.
  * @param  jpgfile    : jpg file path for encode.
  * @retval None
  */
-uint32_t JPEG_Encode_DMA(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *jpgfile)
+uint32_t JpegEncodeDMA_FromSdToSd(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *jpgfile)
 {
 	pBmpFile = bmpfile;
 	pJpegFile = jpgfile;
@@ -140,7 +141,7 @@ uint32_t JPEG_Encode_DMA(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *jpgfile)
 	/* Fill input Buffer */
 	/* Read and reorder MAX_INPUT_LINES lines from BMP file and fill data buffer */
 	//ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
-	ReadBmpGrayLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
+	JpegEncodeDma_ReadBmpGrayLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
 
 	/* RGB to YCbCr Pre-Processing */
 	MCU_BlockIndex += pRGBToYCbCr_Convert_Function(Input_Data_Buffer, Jpeg_IN_BufferTab.DataBuffer, 0, dataBufferSize,(uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
@@ -156,13 +157,13 @@ uint32_t JPEG_Encode_DMA(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *jpgfile)
 }
 
 /**
- * @brief  JPEG_Encode_DMA_FromRam
+ * @brief  JpegEncodeDMA_FromRamToSd
  * @param hjpeg: JPEG handle pointer
  * @param  FrameBuff    : FrameBuff path for encode.
  * @param  jpgfile    : jpg file path for encode.
  * @retval None
  */
-uint32_t JPEG_Encode_DMA_FromRam(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, FIL *jpgfile)
+uint32_t JpegEncodeDMA_FromRamToSd(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, FIL *jpgfile)
 {
 //	pBmpFile = bmpfile;
 	pFrameBuffOnSram = FrameBuff;
@@ -186,7 +187,6 @@ uint32_t JPEG_Encode_DMA_FromRam(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, 
 
 	JPEG_GetEncodeColorConvertFunc(&Conf, &pRGBToYCbCr_Convert_Function, &MCU_TotalNb);
 
-	printf("MCU_TotalNb\t%ld\r\n", MCU_TotalNb);
 
 	/* Clear Output Buffer */
 	Jpeg_OUT_BufferTab.DataBufferSize = 0;
@@ -197,7 +197,7 @@ uint32_t JPEG_Encode_DMA_FromRam(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, 
 	/* Read and reorder MAX_INPUT_LINES lines from BMP file and fill data buffer */
 //	ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
 //	ReadBayerLines(pBmpFile, Conf, FrameBuff /*Input_Data_Buffer */, Conf.ImageHeight*Conf.ImageWidth/*&dataBufferSize*/);
-	ReadRamGrayLines(FrameBuff, Conf, Input_Data_Buffer ,&dataBufferSize);
+	JpegEncodeDma_ReadRamGrayLines(FrameBuff, Conf, Input_Data_Buffer ,&dataBufferSize);
 
 
 
@@ -224,9 +224,8 @@ uint32_t JPEG_Encode_DMA_FromRam(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, 
  */
 uint32_t JpegEncodeDMA_FromRamToRam(JPEG_HandleTypeDef *hjpeg, uint8_t* InFrameBuff, uint8_t* OutFrameBuff)
 {
-//	pBmpFile = bmpfile;
 	pFrameBuffOnSram = InFrameBuff; // this is a static ptr for JPEG_EncodeInputHandler
-	pFrameJpegBuff = OutFrameBuff;		// this is a static ptr for JPEG_EncodeOutputHandler
+	pFrameJpegBuff = OutFrameBuff;	// this is a static ptr for JPEG_EncodeOutputHandler
 	uint32_t dataBufferSize = 0;
 
 	/* Reset all Global variables */
@@ -257,7 +256,7 @@ uint32_t JpegEncodeDMA_FromRamToRam(JPEG_HandleTypeDef *hjpeg, uint8_t* InFrameB
 
 	/* Fill input Buffer */
 	/* Read and reorder MAX_INPUT_LINES lines from BMP file and fill data buffer */
-	ReadRamGrayLines(InFrameBuff, Conf, Input_Data_Buffer ,&dataBufferSize);
+	JpegEncodeDma_ReadRamGrayLines(InFrameBuff, Conf, Input_Data_Buffer ,&dataBufferSize);
 
 
 
@@ -331,7 +330,7 @@ void JPEG_EncodeInputHandler(JPEG_HandleTypeDef *hjpeg)
     /* Read and reorder 16 lines from BMP file and fill data buffer */
 //    ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
 	  //ReadBmpGrayLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
-	  ReadRamGrayLines(pFrameBuffOnSram, Conf, Input_Data_Buffer, &dataBufferSize);
+	  JpegEncodeDma_ReadRamGrayLines(pFrameBuffOnSram, Conf, Input_Data_Buffer, &dataBufferSize);
 
     if(dataBufferSize != 0)
     {
@@ -424,7 +423,7 @@ void HAL_JPEG_EncodeCpltCallback(JPEG_HandleTypeDef *hjpeg)
  * @param file: pointer to the Data Buffer Size
  * @retval None
  */
-static void ReadBmpRgbLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize)
+static void JpegEncodeDma_ReadBmpRgbLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize)
 {
 	uint32_t bytesReadfile    = 1;
 	uint32_t CurrentBlockLine = 1;
@@ -451,7 +450,7 @@ static void ReadBmpRgbLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuf
  * @param file: pointer to the Data Buffer Size
  * @retval None
  */
-static void ReadBmpGrayLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize)
+static void JpegEncodeDma_ReadBmpGrayLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize)
 {
 	uint32_t bytesReadfile    = 1;
 	uint32_t CurrentBlockLine = 1;
@@ -485,7 +484,7 @@ static void ReadBmpGrayLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBu
  * @param file: pointer to the Data Buffer Size
  * @retval None
  */
-static void ReadRamGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize)
+static void JpegEncodeDma_ReadRamGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize)
 {
 	uint32_t bytesReadfile    = 1;
 	uint32_t CurrentBlockLine = 1;
@@ -502,16 +501,14 @@ static void ReadRamGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t
 		//pSrcBuffer	+= bytesReadfile;
 
 		// TODO: optimize!!
-		// triplicate for RGB
+		// triple for RGB
 		for (ColIdx = 0; ColIdx < bytesReadfile; ColIdx++)
 		{
-//			*pDataBuffer++ = 255; // A
 		   *pDataBuffer++ = TmpBuff[ColIdx]; // R
 		   *pDataBuffer++ = TmpBuff[ColIdx]; // G
 		   *pDataBuffer++ = TmpBuff[ColIdx]; // B
 		}
 
-//		*BufferSize += bytesReadfile * 4; // ARGB
 		*BufferSize += bytesReadfile * 3;
 		CurrentLine +=1 ;
 		CurrentBlockLine += 1;
@@ -554,7 +551,6 @@ void BMP_GetInfo(FIL * MyFile, JPEG_ConfTypeDef *pInfo)
 			(((pInfo->ImageWidth % 16) != 0 ) && (pInfo->ColorSpace == JPEG_YCBCR_COLORSPACE) && (pInfo->ChromaSubsampling != JPEG_444_SUBSAMPLING)) || \
 			(((pInfo->ImageHeight % 16) != 0 ) && (pInfo->ColorSpace == JPEG_YCBCR_COLORSPACE) && (pInfo->ChromaSubsampling == JPEG_420_SUBSAMPLING)))
 	{
-		//    LCD_SizesErrorDisplay();
 		Error_Handler();
 	}
 

@@ -18,8 +18,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __ENCODE_DMA_H
-#define __ENCODE_DMA_H
+#ifndef INC_JPEG_ENCODE_DMA_H_
+#define INC_JPEG_ENCODE_DMA_H_
 
 /* Includes ------------------------------------------------------------------*/
 //#include "main.h"
@@ -29,11 +29,11 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-//uint32_t JPEG_Encode_DMA(JPEG_HandleTypeDef *hjpeg, uint32_t RGBImageBufferAddress, uint32_t RGBImageSize_Bytes, FIL *jpgfile);
+
 void BMP_GetInfo(FIL * Filename, JPEG_ConfTypeDef *pInfo);
 
-uint32_t JPEG_Encode_DMA(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *jpgfile);
-uint32_t JPEG_Encode_DMA_FromRam(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, FIL *jpgfile);
+uint32_t JpegEncodeDMA_FromSdToSd(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *jpgfile);
+uint32_t JpegEncodeDMA_FromRamToSd(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, FIL *jpgfile);
 
 uint32_t JpegEncodeDMA_GetOutBuffSize(void);
 
@@ -42,6 +42,6 @@ void JPEG_EncodeInputHandler(JPEG_HandleTypeDef *hjpeg);
 
 
 
-#endif /* __ENCODE_DMA_H */
+#endif /* INC_JPEG_ENCODE_DMA_H_ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

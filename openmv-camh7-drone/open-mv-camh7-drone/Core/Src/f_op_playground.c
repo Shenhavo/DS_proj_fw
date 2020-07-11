@@ -6,6 +6,7 @@
  */
 
 
+
 #include "fatfs.h"
 
 #include <stdio.h>
@@ -14,8 +15,7 @@
 #include "jpeg.h"
 #include "jpeg_utils_conf.h"
 #include "jpeg_utils.h"
-#include "encode_dma.h"
-
+#include "jpeg_encode_dma.h"
 #include "f_op_playground.h"
 
 
@@ -106,7 +106,7 @@ void FS_FileOperationsBmpCompressDma(void)
 				printf("SrcBmp Params: W=%ld H=%ld\r\n", SrcBmpInfo.ImageWidth, SrcBmpInfo.ImageHeight);
 
 				/*##-8- JPEG Encoding with DMA (Not Blocking ) Method ################*/
-				JPEG_Encode_DMA(&hjpeg, &SrcBmpFile, &DestJpegImg);
+				JpegEncodeDMA_FromSdToSd(&hjpeg, &SrcBmpFile, &DestJpegImg);
 
 				/*##-9- Wait till end of JPEG encoding and perform Input/Output Processing in BackGround  #*/
 				do
@@ -174,7 +174,7 @@ void FS_FileOperationsDcmiRamCompressDma(uint8_t *pDataToCompress)
 			printf("SrcBmp Params: W=%ld H=%ld\r\n", SrcBmpInfo.ImageWidth, SrcBmpInfo.ImageHeight);
 
 			/*##-8- JPEG Encoding with DMA (Not Blocking ) Method ################*/
-			JPEG_Encode_DMA_FromRam(&hjpeg, pDataToCompress, &DestJpegImg);
+			JpegEncodeDMA_FromRamToSd(&hjpeg, pDataToCompress, &DestJpegImg);
 
 			/*##-9- Wait till end of JPEG encoding and perform Input/Output Processing in BackGround  #*/
 			do
