@@ -34,8 +34,13 @@ void BMP_GetInfo(FIL * Filename, JPEG_ConfTypeDef *pInfo);
 
 uint32_t JPEG_Encode_DMA(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *jpgfile);
 uint32_t JPEG_Encode_DMA_FromRam(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, FIL *jpgfile);
+
+uint32_t JpegEncodeDMA_GetOutBuffSize(void);
+
 uint32_t JPEG_EncodeOutputHandler(JPEG_HandleTypeDef *hjpeg);
 void JPEG_EncodeInputHandler(JPEG_HandleTypeDef *hjpeg);
+
+
 
 #endif /* __ENCODE_DMA_H */
 

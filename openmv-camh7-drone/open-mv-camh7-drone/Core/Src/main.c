@@ -162,7 +162,9 @@ int main(void)
 		uint32_t tick_jpeg_start = HAL_GetTick();
 
 //		FS_FileOperationsBmpCompressDma();
-		FS_FileOperationsDcmiRamCompressDma( CameraMngr_GetFrameBuff() );
+//		FS_FileOperationsDcmiRamCompressDma( CameraMngr_GetFrameBuff() );
+
+		CameraMngr_Compress();
 
 		uint32_t tick_jpeg_end = HAL_GetTick();
 		uint32_t jpeg_duration_msec = tick_jpeg_end - tick_jpeg_start;

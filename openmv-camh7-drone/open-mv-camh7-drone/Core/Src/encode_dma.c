@@ -89,9 +89,13 @@ __IO uint32_t Output_Is_Paused      = 0;
 __IO uint32_t Input_Is_Paused       = 0;
 uint32_t CurrentLine                = 1;
 
+uint32_t OutBuffSize				= 0;
+
 JPEG_ConfTypeDef Conf;
 FIL *pBmpFile;
 FIL *pJpegFile;
+
+uint8_t* pFrameJpegBuff;
 uint8_t* pFrameBuffOnSram;
 
 /* Private function prototypes -----------------------------------------------*/
@@ -210,6 +214,71 @@ uint32_t JPEG_Encode_DMA_FromRam(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, 
 	return 0;
 }
 
+
+/**
+ * @brief  JpegEncodeDMA_FromRamToRam
+ * @param hjpeg: JPEG handle pointer
+ * @param  InFrameBuff    : FrameBuff path for encode.
+ * @param  OutFrameBuff    : jpg file path for encode.
+ * @retval None
+ */
+uint32_t JpegEncodeDMA_FromRamToRam(JPEG_HandleTypeDef *hjpeg, uint8_t* InFrameBuff, uint8_t* OutFrameBuff)
+{
+//	pBmpFile = bmpfile;
+	pFrameBuffOnSram = InFrameBuff; // this is a static ptr for JPEG_EncodeInputHandler
+	pFrameJpegBuff = OutFrameBuff;		// this is a static ptr for JPEG_EncodeOutputHandler
+	uint32_t dataBufferSize = 0;
+
+	/* Reset all Global variables */
+	MCU_TotalNb                = 0;
+	MCU_BlockIndex             = 0;
+	Jpeg_HWEncodingEnd         = 0;
+	Output_Is_Paused           = 0;
+	Input_Is_Paused            = 0;
+	CurrentLine                = 1;
+	OutBuffSize				   = 0;
+
+	/* BMP Header Parsing */
+	// TODO: make this static
+	Conf.ImageHeight 		= IMG_H;
+	Conf.ImageWidth 		= IMG_W;
+	Conf.ColorSpace 		= JPEG_COLOR_SPACE;
+	Conf.ChromaSubsampling  = JPEG_CHROMA_SAMPLING;
+	Conf.ImageQuality       = JPEG_IMAGE_QUALITY;
+
+	JPEG_GetEncodeColorConvertFunc(&Conf, &pRGBToYCbCr_Convert_Function, &MCU_TotalNb);
+
+	//printf("MCU_TotalNb\t%ld\r\n", MCU_TotalNb);
+
+	/* Clear Output Buffer */
+	Jpeg_OUT_BufferTab.DataBufferSize = 0;
+	Jpeg_OUT_BufferTab.State = JPEG_BUFFER_EMPTY;
+
+
+	/* Fill input Buffer */
+	/* Read and reorder MAX_INPUT_LINES lines from BMP file and fill data buffer */
+	ReadRamGrayLines(InFrameBuff, Conf, Input_Data_Buffer ,&dataBufferSize);
+
+
+
+	/* RGB to YCbCr Pre-Processing */
+	MCU_BlockIndex += pRGBToYCbCr_Convert_Function(InFrameBuff , Jpeg_IN_BufferTab.DataBuffer, 0, dataBufferSize, (uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
+	Jpeg_IN_BufferTab.State = JPEG_BUFFER_FULL;
+
+	/* Fill Encoding Params */
+	HAL_JPEG_ConfigEncoding(hjpeg, &Conf);
+
+	/* Start JPEG encoding with DMA method */
+	HAL_JPEG_Encode_DMA(hjpeg ,Jpeg_IN_BufferTab.DataBuffer ,Jpeg_IN_BufferTab.DataBufferSize ,Jpeg_OUT_BufferTab.DataBuffer, CHUNK_SIZE_OUT);
+
+	return 0;
+}
+
+uint32_t JpegEncodeDMA_GetOutBuffSize(void)
+{
+	return OutBuffSize;
+}
+
 /**
  * @brief JPEG Ouput Data BackGround processing .
  * @param hjpeg: JPEG handle pointer
@@ -221,7 +290,13 @@ uint32_t JPEG_EncodeOutputHandler(JPEG_HandleTypeDef *hjpeg)
 
 	if(Jpeg_OUT_BufferTab.State == JPEG_BUFFER_FULL)
 	{
-		f_write (pJpegFile, Jpeg_OUT_BufferTab.DataBuffer ,Jpeg_OUT_BufferTab.DataBufferSize, (UINT*)(&bytesWritefile)) ;
+		// if saving tp fatfs
+		//f_write (pJpegFile, Jpeg_OUT_BufferTab.DataBuffer ,Jpeg_OUT_BufferTab.DataBufferSize, (UINT*)(&bytesWritefile)) ;
+
+		// if saving to ram
+		memcpy(pFrameJpegBuff, Jpeg_OUT_BufferTab.DataBuffer ,Jpeg_OUT_BufferTab.DataBufferSize);
+		pFrameJpegBuff += Jpeg_OUT_BufferTab.DataBufferSize;
+		OutBuffSize += Jpeg_OUT_BufferTab.DataBufferSize;
 
 		Jpeg_OUT_BufferTab.State = JPEG_BUFFER_EMPTY;
 		Jpeg_OUT_BufferTab.DataBufferSize = 0;
@@ -230,7 +305,7 @@ uint32_t JPEG_EncodeOutputHandler(JPEG_HandleTypeDef *hjpeg)
 		{
 			return 1;
 		}
-    else if(Output_Is_Paused == 1)
+		else if(Output_Is_Paused == 1)
 		{
 			Output_Is_Paused = 0;
 			HAL_JPEG_Resume(hjpeg, JPEG_PAUSE_RESUME_OUTPUT);
@@ -366,9 +441,6 @@ static void ReadBmpRgbLines(FIL *file, JPEG_ConfTypeDef Conf, uint8_t * pDataBuf
 		CurrentBlockLine += 1;
 	}
 
-//	printf("BytesRead\t%d\r\n", BufferSize);
-//	printf("CurrentLine\t%d\r\n", CurrentLine);
-//	printf("CurrentBlockLine\t%d\r\n", CurrentBlockLine);
 }
 
 

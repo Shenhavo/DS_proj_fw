@@ -200,3 +200,5 @@ void FS_FileOperationsDcmiRamCompressDma(uint8_t *pDataToCompress)
 	}
 
 }
+
+
