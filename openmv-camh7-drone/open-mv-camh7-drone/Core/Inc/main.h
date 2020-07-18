@@ -51,7 +51,10 @@ extern "C" {
 
 
 #define USE_UART_DEBUG
-#define USE_SWV_DEBUG
+//#define USE_SWV_DEBUG
+
+#define DCMI_ACQ_TIMEOUT_MSEC				25
+
 
 //#define MAIN_WIFI_M2M_PRODUCT_NAME        "NMCTemp"
 //#define MAIN_WIFI_M2M_SERVER_IP           0xC0A80079 /* 255.255.255.255 */

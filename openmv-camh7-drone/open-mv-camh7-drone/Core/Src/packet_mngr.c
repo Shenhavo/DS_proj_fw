@@ -5,7 +5,9 @@
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
 #include <stdbool.h>
+#include <stdio.h>
 #include "main.h"
+#include "camera_mngr.h"
 #include "wifi_mngr.h"
 #include "packet_mngr.h"
 
@@ -77,36 +79,45 @@ eImgStates PacketMngr_IterateImg( int8_t a_Socket)
 	{
 		case eImgStates_start:
 		{
-			stNewFrame* p_stNewFrame 	= (stNewFrame*)(p_stPacketMngr->m_PacketBytes);
-			p_stNewFrame->m_NewFrameSOF	=	NEW_FRAME_SOF;
-			//p_stNewFrame->m_FrameSize	=	p_stImg->m_SizeB; // TODO: DB - revert
-			p_stNewFrame->m_FrameSize	=	CameraMngr_GetJpegFrameBuffSize(); // p_stImg->m_SizeB;
-			p_stNewFrame->m_SysTick		=	HAL_GetTick();
-
-			uint16_t 	packet_data_size_b 	= 	0;
-			p_stImg->m_pImg					= CameraMngr_GetJpegFrameBuff(); // TODO: DB - revert
-			uint8_t*	pData				=   p_stImg->m_pImg;
-
-			if( p_stImg->m_SizeB > NEW_FRAME_DATA_SIZE_B)
+			if ( CameraMngr_GetCompressedImgState() == eCompressedImgState_WaitForSend )
 			{
-				packet_data_size_b  += NEW_FRAME_DATA_SIZE_B;
-				p_stImg->m_SizeB 	-= NEW_FRAME_DATA_SIZE_B;
-				p_stImg->m_pImg		+= NEW_FRAME_DATA_SIZE_B;
-				p_stImg->m_eNextImgStates = eImgStates_sending;
-				PacketMngr_SetState(ePacketMngrState_MidFrame);
+				CameraMngr_SetCompressedImgState( eCompressedImgState_SendStart );
+
+				stNewFrame* p_stNewFrame 	= (stNewFrame*)(p_stPacketMngr->m_PacketBytes);
+				p_stNewFrame->m_NewFrameSOF	=	NEW_FRAME_SOF;
+				p_stNewFrame->m_FrameSize	=	CameraMngr_GetCompressedImgSize(); // p_stImg->m_SizeB;
+				p_stNewFrame->m_SysTick		=	HAL_GetTick();
+
+				uint16_t 	packet_data_size_b 	= 	0;
+				p_stImg->m_pImg					= 	CameraMngr_GetCompressedImg();
+				uint8_t*	pData				=   p_stImg->m_pImg;
+
+				if( p_stImg->m_SizeB > NEW_FRAME_DATA_SIZE_B)
+				{
+					packet_data_size_b  += NEW_FRAME_DATA_SIZE_B;
+					p_stImg->m_SizeB 	-= NEW_FRAME_DATA_SIZE_B;
+					p_stImg->m_pImg		+= NEW_FRAME_DATA_SIZE_B;
+					p_stImg->m_eNextImgStates = eImgStates_sending;
+					PacketMngr_SetState(ePacketMngrState_MidFrame);
+				}
+				else
+				{
+					packet_data_size_b  += p_stImg->m_SizeB;
+					p_stImg->m_SizeB 	-= p_stImg->m_SizeB;
+					p_stImg->m_pImg		+= p_stImg->m_SizeB;
+					p_stImg->m_eNextImgStates = eImgStates_finished;
+					PacketMngr_SetState(ePacketMngrState_off);
+					CameraMngr_SetCompressedImgState( eCompressedImgState_SendCmplt );
+				}
+
+				memcpy(p_stNewFrame->m_Data, pData, packet_data_size_b);
+
+				Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stNewFrame , NEW_FRAME_HEADER_SIZE_B + packet_data_size_b, 0);
 			}
 			else
 			{
-				packet_data_size_b  += p_stImg->m_SizeB;
-				p_stImg->m_SizeB 	-= p_stImg->m_SizeB;
-				p_stImg->m_pImg		+= p_stImg->m_SizeB;
-				p_stImg->m_eNextImgStates = eImgStates_finished;
-				PacketMngr_SetState(ePacketMngrState_off);
+				printf("img not ready\r\n");
 			}
-
-			memcpy(p_stNewFrame->m_Data, pData, packet_data_size_b);
-
-			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stNewFrame , NEW_FRAME_HEADER_SIZE_B + packet_data_size_b, 0);
 		}
 		break;
 		case eImgStates_sending:
@@ -133,6 +144,7 @@ eImgStates PacketMngr_IterateImg( int8_t a_Socket)
 				p_stImg->m_pImg		+= p_stImg->m_SizeB;
 				p_stImg->m_eNextImgStates = eImgStates_finished;
 				PacketMngr_SetState(ePacketMngrState_off);
+				CameraMngr_SetCompressedImgState( eCompressedImgState_SendCmplt );
 			}
 
 			memcpy(p_stMidFrame->m_Data, pData, packet_data_size_b);

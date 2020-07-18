@@ -2,6 +2,7 @@
  * camera_mngr.c
  */
 #include <stdio.h>
+#include <stdbool.h>
 #include "dcmi.h"
 #include "jpeg.h"
 #include "ff.h" // TODO: DB - fix this. only jpeg_encode_dma needs this
@@ -9,10 +10,10 @@
 #include "jpeg_encode_dma.h"
 #include "camera_mngr.h"
 
-stCameraMngr g_CameraMngr = {0x00};
+static stCameraMngr g_CameraMngr = {0x00};
 
+void CameraMngr_DcmiAcqBenchmark(void);
 
-bool CameraMngr_isDcmiAcqRunning( void );
 
 /**
  * @brief  CameraMngr_Init
@@ -40,20 +41,25 @@ void CameraMngr_Init(void)
 	sensor_set_pixformat(PIXFORMAT_GRAYSCALE); // only grayscale supported
 	sensor_set_framesize(FRAME_SIZE);
 
-	pThis->m_FrameWidth 	= IMG_W;
-	pThis->m_FrameHeight 	= IMG_H;
-	pThis->m_isFrameReady 	= false;
-	pThis->m_pFrameBuff		= CameraFrameBuff;
-	pThis->m_FrameBuffSize	= FRAME_BUFF_SIZE;
-	pThis->m_pJpegFrameBuff = JpegFrameBuff;
-	pThis->m_JpegFrameBuffSize = 0;
-	pThis->m_JpegFrameBuffConvSize = 0;
-	pThis->m_isJpegReady 	= false;
+	pThis->m_FrameWidth 			= IMG_W;
+	pThis->m_FrameHeight 			= IMG_H;
+
+	pThis->m_pFrameBuff				= CameraFrameBuff;
+	pThis->m_FrameBuffSize			= FRAME_BUFF_SIZE;
+	pThis->m_pJpegFrameBuff 		= JpegFrameBuff;
+	pThis->m_JpegFrameBuffSize		= 0;
+	pThis->m_JpegFrameBuffConvSize	= 0;
+
+	pThis->m_pCompressedImg			= CompressedImg;
+
+	pThis->m_eCamImgState			= eCamImgState_Init;
+	pThis->m_eCompressedImgState	= eCompressedImgState_Init;
+
+	pThis->m_DcmiFrameAcqStartTick		= 0;
 
 #ifdef CAMERA_BENCHMARK
 	pThis->m_JpegConvStartTick			= 0;
 	pThis->m_JpegConvDuration_msec		= 0;
-	pThis->m_DcmiFrameAcqStartTick		= 0;
 	pThis->m_DcmiFrameAcqDuration_msec 	= 0;
 
 	printf( "CameraFrameBuff\t@ 0x%x  aligned with = %ld to uint32_t\r\n",
@@ -96,39 +102,57 @@ uint8_t* CameraMngr_GetFrameBuff(void)
 }
 
 /**
- * @brief  CamerMngr_GetJpegFrameBuff
+ * @brief  CameraMngr_GetCompressedImg
  * @retval Jpeg Buff ptr
  */
-uint8_t* CameraMngr_GetJpegFrameBuff(void)
+uint8_t* CameraMngr_GetCompressedImg(void)
 {
-	return g_CameraMngr.m_pJpegFrameBuff;
+	return g_CameraMngr.m_pCompressedImg;
 }
 
 /**
  * @brief  CameraMngr_GetJpegFrameBuffSize
  * @retval
  */
-uint32_t CameraMngr_GetJpegFrameBuffSize(void)
+uint32_t CameraMngr_GetCompressedImgSize(void)
 {
-	return g_CameraMngr.m_JpegFrameBuffConvSize;
+	return g_CameraMngr.m_CompressedImgSize;
 }
 
 /**
- * @brief  CamerMngr_isFrameReady
- * @retval
+ * @brief  CameraMngr_GetCamImgState
+ * @retval CamImgState
  */
-bool CamerMngr_isFrameReady(void)
+eCamImgState CameraMngr_GetCamImgState(void)
 {
-	return g_CameraMngr.m_isFrameReady;
+	return g_CameraMngr.m_eCamImgState;
 }
 
 /**
- * @brief  CameraMngr_isJpegReady
- * @retval
+ * @brief  CameraMngr_SetCamImgState
+ * @retval void
  */
-bool CameraMngr_isJpegReady(void)
+void CameraMngr_SetCamImgState(eCamImgState a_eCamImgState)
 {
-	return g_CameraMngr.m_isJpegReady;
+	g_CameraMngr.m_eCamImgState = a_eCamImgState;
+}
+
+/**
+ * @brief  CameraMngr_GetCompressedImgState
+ * @retval CompressedImgState
+ */
+eCompressedImgState CameraMngr_GetCompressedImgState(void)
+{
+	return g_CameraMngr.m_eCompressedImgState;
+}
+
+/**
+ * @brief  CameraMngr_GetCompressedImgState
+ * @retval none
+ */
+void CameraMngr_SetCompressedImgState(eCompressedImgState a_eCompressedImgState)
+{
+	g_CameraMngr.m_eCompressedImgState = a_eCompressedImgState;
 }
 
 /**
@@ -145,8 +169,10 @@ void CameraMngr_WaitForFrame(void)
 		// Wait for interrupt
 		__WFI();
 
-		if ((HAL_GetTick() - TickStart) >= 3000)
+		if ((HAL_GetTick() - TickStart) >= DCMI_ACQ_TIMEOUT_MSEC)
 		{
+			printf("dcmi timeout!\r\n");
+
 			HAL_DCMI_Stop(&hdcmi);
 			break;
 		}
@@ -154,9 +180,36 @@ void CameraMngr_WaitForFrame(void)
 
 }
 
+/**
+ * @brief  CameraMngr_isDcmiAcqRunning
+ * @retval isDcmiAcqRunning
+ */
 bool CameraMngr_isDcmiAcqRunning( void )
 {
 	return ( (DCMI->CR & DCMI_CR_CAPTURE) != 0 );
+}
+
+/**
+ * @brief  CameraMngr_isDcmiAcqEndded
+ * @retval isDcmiAcqEndded
+ */
+bool CameraMngr_isDcmiAcqEndded( void )
+{
+	stCameraMngr* pThis = &g_CameraMngr;
+
+	bool AcqRunning = ( (DCMI->CR & DCMI_CR_CAPTURE) != 0 );
+	bool AcqStarted = ( pThis->m_eCamImgState == eCamImgState_AcqStart );
+
+	if ( (HAL_GetTick() - pThis->m_DcmiFrameAcqStartTick) >= DCMI_ACQ_TIMEOUT_MSEC )
+	{
+		printf("dcmi timeout!\r\n");
+
+		HAL_DCMI_Stop(&hdcmi);
+
+		AcqRunning = false;
+	}
+
+	return ( (!AcqRunning) && AcqStarted );
 }
 
 /**
@@ -169,35 +222,41 @@ void CameraMngr_DcmiFrameAcqDma( void )
 
 	printf("dcmi acq starting ..\r\n");
 
+	pThis->m_eCamImgState = eCamImgState_AcqStart;
+
+
 #ifdef CAMERA_BENCHMARK
 	pThis->m_DcmiFrameAcqDuration_msec = 0;
-	pThis->m_DcmiFrameAcqStartTick = HAL_GetTick();
 #endif // CAMERA_BENCHMARK
+	pThis->m_DcmiFrameAcqStartTick = HAL_GetTick();
 
 
 	// start capture
 	HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)g_CameraMngr.m_pFrameBuff, g_CameraMngr.m_FrameBuffSize);
 
-	// dummy loop poll on dcmi capture complete
-	CameraMngr_WaitForFrame(); // TODO: DB - make this non-blocking
-
-#ifdef CAMERA_BENCHMARK
-	pThis->m_DcmiFrameAcqDuration_msec = HAL_GetTick() - pThis->m_DcmiFrameAcqStartTick;
-	printf("dcmi frame acq duration %ld[msec] \r\n", pThis->m_DcmiFrameAcqDuration_msec );
-#endif // CAMERA_BENCHMARK
+//	// dummy loop poll on dcmi capture complete
+//	CameraMngr_WaitForFrame(); // TODO: DB - make this non-blocking
+//	pThis->m_eCamImgState = eCamImgState_AcqCmplt;
+//
+//#ifdef CAMERA_BENCHMARK
+//	pThis->m_DcmiFrameAcqDuration_msec = HAL_GetTick() - pThis->m_DcmiFrameAcqStartTick;
+//	printf("dcmi frame acq duration %ld[msec] \r\n", pThis->m_DcmiFrameAcqDuration_msec );
+//#endif // CAMERA_BENCHMARK
 
 }
 
 /**
- * @brief  CameraMngr_Compress
+ * @brief  CameraMngr_CompressStart
  * @retval None
  */
-void CameraMngr_Compress(void)
+void CameraMngr_CompressStart(void)
 {
 	stCameraMngr* pThis = &g_CameraMngr;
-	uint32_t JpegEncodeProcessingEnd = 0;
+//	uint32_t JpegEncodeProcessingEnd = 0;
 
 	printf("compression starting ..\r\n");
+
+	pThis->m_eCamImgState = eCamImgState_CompressStart;
 
 #ifdef CAMERA_BENCHMARK
 	pThis->m_JpegConvDuration_msec = 0;
@@ -209,15 +268,58 @@ void CameraMngr_Compress(void)
 
 	JpegEncodeDMA_FromRamToRam(&hjpeg, pThis->m_pFrameBuff, pThis->m_pJpegFrameBuff);
 
-	do
-	{
+	CameraMngr_CompressProc();
+}
+
+/**
+ * @brief  CameraMngr_CompressProc
+ * @retval None
+ */
+void CameraMngr_CompressProc(void)
+{
+	stCameraMngr* pThis = &g_CameraMngr;
+	uint32_t JpegEncodeProcessingEnd = 0;
+
+//	do
+//	{
 		JPEG_EncodeInputHandler(&hjpeg);
 		JpegEncodeProcessingEnd = JPEG_EncodeOutputHandler(&hjpeg);
 
-	} while(JpegEncodeProcessingEnd == 0);
+//	} while(JpegEncodeProcessingEnd == 0);
+
+// TODO: impl a timeout system
+	if ( JpegEncodeProcessingEnd != 0 )
+	{
+		pThis->m_eCamImgState = eCamImgState_CompressCmplt;
+	}
+
+}
+
+
+/**
+ * @brief  CameraMngr_CompressEnd
+ * @retval None
+ */
+void CameraMngr_CompressEnd(void)
+{
+	stCameraMngr* pThis = &g_CameraMngr;
 
 	pThis->m_JpegFrameBuffConvSize = JpegEncodeDMA_GetOutBuffSize();
 
+//	pThis->m_eCamImgState	= eCamImgState_CompressCmplt;
+
+	if ( pThis->m_eCompressedImgState == eCompressedImgState_SendStart )
+	{
+		printf("img OVR"); // overrun
+		// TODO: decide what to do, youd miss this frame here
+		Error_Handler();
+	}
+	else
+	{
+		pThis->m_CompressedImgSize = pThis->m_JpegFrameBuffConvSize;
+		pThis->m_eCompressedImgState = eCompressedImgState_WaitForSend;
+		memcpy(pThis->m_pJpegFrameBuff, pThis->m_pCompressedImg, pThis->m_CompressedImgSize);
+	}
 
 #ifdef CAMERA_BENCHMARK
 	//printf("src size = %ld [b]\r\n", pThis->m_FrameBuffSize);
@@ -226,4 +328,64 @@ void CameraMngr_Compress(void)
 	pThis->m_JpegConvDuration_msec = HAL_GetTick() - pThis->m_JpegConvStartTick;
 	printf("jpeg compress duration %ld[msec] \r\n", pThis->m_JpegConvDuration_msec );
 #endif // CAMERA_BENCHMARK
+
 }
+
+/**
+ * @brief  CameraMngr_HandleEvents
+ * @retval None
+ */
+void CameraMngr_HandleEvents(void)
+{
+	switch (CameraMngr_GetCamImgState())
+	{
+	case eCamImgState_Init:
+	case eCamImgState_CompressCmplt:
+	{
+		// start the machine
+		CameraMngr_DcmiFrameAcqDma(); // TODO: DB - wrap in func after socket init
+	}
+	break;
+	case eCamImgState_AcqStart:
+	{
+		if ( CameraMngr_isDcmiAcqEndded() )
+		{
+			CameraMngr_SetCamImgState( eCamImgState_AcqCmplt );
+			CameraMngr_DcmiAcqBenchmark();
+			CameraMngr_CompressStart();
+		}
+	}
+	break;
+	case eCamImgState_AcqCmplt:
+	case eCamImgState_CompressStart:
+	{
+		CameraMngr_CompressProc();
+
+		if ( CameraMngr_GetCamImgState() == eCamImgState_CompressCmplt  )
+		{
+			CameraMngr_CompressEnd();
+		}
+	}
+	break;
+	default:
+	{
+		Error_Handler();
+	}
+	break;
+	}
+}
+
+/**
+ * @brief  CameraMngr_DcmqAcqBenchmark
+ * @retval None
+ */
+void CameraMngr_DcmiAcqBenchmark(void)
+{
+#ifdef CAMERA_BENCHMARK
+	stCameraMngr* pThis = &g_CameraMngr;
+
+	pThis->m_DcmiFrameAcqDuration_msec = HAL_GetTick() - pThis->m_DcmiFrameAcqStartTick;
+	printf("dcmi frame acq duration %ld[msec] \r\n", pThis->m_DcmiFrameAcqDuration_msec );
+#endif // CAMERA_BENCHMARK
+}
+

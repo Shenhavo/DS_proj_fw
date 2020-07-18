@@ -26,9 +26,29 @@
 #define FRAME_BUFF_SIZE  ( IMG_H * IMG_W )
 ALIGN_32BYTES( uint8_t CameraFrameBuff[FRAME_BUFF_SIZE] );
 
-#define JPEG_BUFF_MAX_SIZE	20000
-ALIGN_32BYTES( uint8_t JpegFrameBuff[JPEG_BUFF_MAX_SIZE	] ); // TODO: define something!!!
+#define JPEG_BUFF_MAX_SIZE	15000
+ALIGN_32BYTES( uint8_t JpegFrameBuff[JPEG_BUFF_MAX_SIZE	] );
 
+ALIGN_32BYTES( uint8_t CompressedImg[JPEG_BUFF_MAX_SIZE	] );
+
+typedef enum CamImgState
+{
+	eCamImgState_Init			= 0,
+	eCamImgState_AcqStart,
+	eCamImgState_AcqCmplt,
+	eCamImgState_CompressStart,
+	eCamImgState_CompressCmplt,
+	eCamImgState_MaxVal
+}eCamImgState;
+
+typedef enum CompressedImgState
+{
+	eCompressedImgState_Init			= 0,
+	eCompressedImgState_WaitForSend,
+	eCompressedImgState_SendStart,
+	eCompressedImgState_SendCmplt,
+	eCompressedImgState_MaxVal
+}eCompressedImgState;
 
 typedef struct stCameraMngr_name {
 
@@ -41,8 +61,11 @@ typedef struct stCameraMngr_name {
 	uint32_t			m_JpegFrameBuffSize;
 	uint32_t			m_JpegFrameBuffConvSize;
 
-	bool				m_isFrameReady;
-	bool				m_isJpegReady;
+	uint8_t*			m_pCompressedImg;
+	uint32_t			m_CompressedImgSize;
+	eCompressedImgState	m_eCompressedImgState;
+
+	eCamImgState		m_eCamImgState;
 
 #ifdef CAMERA_BENCHMARK
 	uint32_t			m_JpegConvStartTick;
@@ -61,13 +84,22 @@ void CameraMngr_Init(void);
 void CameraMngr_WaitForFrame(void);
 void CameraMngr_DcmiFrameAcqDma(void);
 
-bool CamerMngr_isFrameReady(void);
-bool CameraMngr_isJpegReady(void);
+eCamImgState CameraMngr_GetCamImgState(void);
+void CameraMngr_SetCamImgState(eCamImgState a_eCamImgState);
+eCompressedImgState CameraMngr_GetCompressedImgState(void);
+void CameraMngr_SetCompressedImgState(eCompressedImgState a_eCompressedImgState);
 
 uint8_t* CameraMngr_GetFrameBuff(void);
-uint8_t* CameraMngr_GetJpegFrameBuff(void);
-uint32_t CameraMngr_GetJpegFrameBuffSize(void);
+uint8_t* CameraMngr_GetCompressedImg(void);
+uint32_t CameraMngr_GetCompressedImgSize(void);
 
-void CameraMngr_Compress(void);
+bool CameraMngr_isDcmiAcqRunning( void );
+bool CameraMngr_isDcmiAcqEndded( void );
+
+void CameraMngr_CompressStart(void);
+void CameraMngr_CompressProc(void);
+void CameraMngr_CompressEnd(void);
+
+void CameraMngr_HandleEvents(void);
 
 #endif /* INC_CAMERA_MNGR_H_ */

@@ -149,9 +149,6 @@ int main(void)
 	/* USER CODE BEGIN WHILE */
 
 
-	CameraMngr_DcmiFrameAcqDma(); // TODO: DB - wrap in func after socket init
-	CameraMngr_Compress();
-
 
 	TIM_StartImuTick();
 
@@ -160,17 +157,9 @@ int main(void)
 
 	while( true )
 	{
-		WifiMngr_HandleEvents();
+		CameraMngr_HandleEvents();
 
-		if ( CamerMngr_isFrameReady() )
-		{
-			// TODO: DB - start compress
-		}
-		else if ( CameraMngr_GetJpegFrameBuff() )
-		{
-			// TODO: DB - start the sending
-			// TODO: DB - raise a mutex
-		}
+		WifiMngr_HandleEvents();
 
 		/* USER CODE END WHILE */
 
