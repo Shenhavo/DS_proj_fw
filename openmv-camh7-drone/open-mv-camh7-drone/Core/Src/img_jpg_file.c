@@ -127,6 +127,7 @@ void	 	Img_jpg_GetNewImg(void)
 	stImg* pstImg				= &g_stImg;
 	pstImg->m_pImg				= img_jpg_file_a;
 	pstImg->m_SizeB				= IMG_JPG_SIZE_B;
+	pstImg->m_SysTick			= 0;
 	pstImg->m_eCurrImgStates	= eImgStates_start;
 	pstImg->m_eNextImgStates	= eImgStates_start;
 }

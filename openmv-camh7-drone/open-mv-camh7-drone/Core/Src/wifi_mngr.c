@@ -14,7 +14,7 @@
 
 #include "wifi_mngr.h"
 // debug stuff
-#include "img_jpg_file.h"
+
 #include "packet_mngr.h"
 #include "usart.h"
 
@@ -187,19 +187,7 @@ sint8	WifiMngr_HandleEvents(void)
 		{
 			if(p_stWifiMngr->m_IsTxPhase == true)
 			{
-
-				eImgStates eImgState = PacketMngr_IterateImg(p_stWifiMngr->m_tcp_client_socket);
-				if( eImgState >= eImgStates_finished )
-				{
-
-					if(  PacketMngr_GetState() == ePacketMngrState_NewFrame)
-					{
-						PacketMngr_GetNewImg(); // TODO: SO: restarting image structure, later bring a new image
-					}
-				}
-
-				PacketMngr_IterateImu(p_stWifiMngr->m_tcp_client_socket);
-
+				PacketMngr_TxRoutine(p_stWifiMngr->m_tcp_client_socket);
 			}
 			else
 			{
