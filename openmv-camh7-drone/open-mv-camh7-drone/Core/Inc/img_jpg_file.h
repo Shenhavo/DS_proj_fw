@@ -51,6 +51,7 @@ typedef enum eImgStates_name
 typedef struct stImg_name {
    uint8_t* 	m_pImg;
    uint16_t 	m_SizeB;
+   uint32_t		m_SysTick;
    eImgStates	m_eCurrImgStates;
    eImgStates	m_eNextImgStates;
 } stImg;

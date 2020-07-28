@@ -13,9 +13,13 @@
 #include "img_jpg_file.h"
 #include "sd_hal_mpu6050.h"
 
+//#define USING_IMU
+#define USING_FRAME
+
+
 #define IMU_EVENT_CYCLE_MSEC	5
 #define IMU_CALLS_PER_PACKET	10
-#define FRAME_EVENT_CYCLE_MSEC	50
+#define FRAME_EVENT_CYCLE_MSEC	100
 
 #define UPDATE_IMU_EVENT_CTR(x)			(x)++;\
 										(x)=((x)%IMU_EVENT_CYCLE_MSEC)
@@ -25,34 +29,24 @@
 										(x)=((x)%FRAME_EVENT_CYCLE_MSEC)
 #define COUNTING_ENDED_VAL				0
 
-#define NEW_FRAME_SOF	'!'
-#define MID_FRAME_SOF	'A'
-#define IMU_SOF			'i'
+#define FRAME_SOF	'!'
+
+#define IMU_SOF		'i'
 
 #define	FULL_PACKET_SIZE_B				1024
-#define NEW_FRAME_DATA_SIZE_B			1017
+#define FRAME_DATA_SIZE_B				1017
 #define NEW_FRAME_HEADER_SIZE_B			7
-#define MID_FRAME_DATA_SIZE_B			1023
-#define MID_FRAME_HEADER_SIZE_B			1
+
 
 #pragma pack(push,1)
-typedef struct stNewFrame_name {
-	uint8_t		m_NewFrameSOF;
-	uint16_t	m_FrameSize;
+typedef struct stFrame_name {
+	uint8_t		m_FrameSOF;
+//	uint8_t		m_PacketIdx;
 	uint32_t	m_SysTick;
-	uint8_t		m_Data[NEW_FRAME_DATA_SIZE_B];
-} stNewFrame;
+	uint16_t	m_FrameSize;
+	uint8_t		m_Data[FRAME_DATA_SIZE_B];
+} stFrame;
 #pragma pack(pop)
-
-#pragma pack(push,1)
-typedef struct stMidFrame_name {
-	uint8_t		m_MidFrameSOF;
-	uint8_t		m_Data[MID_FRAME_DATA_SIZE_B];
-} stMidFrame;
-#pragma pack(pop)
-
-
-
 
 #pragma pack(push,1)
 typedef struct stImuPacket_name {
@@ -67,8 +61,7 @@ typedef struct stImuPacket_name {
 typedef enum eFrameState_name
 {
 	ePacketMngrState_off = 0,
-	ePacketMngrState_NewFrame,
-	ePacketMngrState_MidFrame,
+	ePacketMngrState_Frame,
 	ePacketMngrState_IMU,
 }ePacketMngrState;
 
@@ -84,19 +77,18 @@ typedef struct stPacketMngr_name {
 	uint32_t			m_ImuCallsPerPacket;
 	bool				m_IsImuCallReady;
 	bool				m_IsImuPacketReady;
+	bool				m_IsFramePacketReady;
+
 } stPacketMngr;
 
 
 void PacketMngr_Init(void);
+void PacketMngr_Start(void);
+void PacketMngr_TxRoutine(int8_t a_Socket);
 void PacketMngr_Update(void);
-eImgStates PacketMngr_IterateImg(int8_t a_Socket);
-ePacketMngrState PacketMngr_GetState(void);
-void PacketMngr_SetState(ePacketMngrState a_ePacketMngrState);
-void PacketMngr_GetNewImg(void);
-void PacketMngr_GetNewImuCall(void);
-void PacketMngr_IterateImu(int8_t a_Socket);
-//bool PacketMngr_GetIsImuPacketReady(void);
-//void PacketMngr_SetIsImuPacketReady( bool a_IsImuPacketReady);
+void PacketMngr_GetNewImg( void );
+
+
 #ifdef __cplusplus
 }
 #endif

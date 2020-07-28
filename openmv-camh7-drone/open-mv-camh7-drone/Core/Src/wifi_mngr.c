@@ -6,7 +6,6 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #include <string.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include "main.h"
 #include "led.h"
 #include "driver/include/m2m_types.h"
@@ -15,7 +14,7 @@
 
 #include "wifi_mngr.h"
 // debug stuff
-#include "img_jpg_file.h"
+
 #include "packet_mngr.h"
 #include "usart.h"
 
@@ -188,20 +187,7 @@ sint8	WifiMngr_HandleEvents(void)
 		{
 			if(p_stWifiMngr->m_IsTxPhase == true)
 			{
-
-				eImgStates eImgState = PacketMngr_IterateImg(p_stWifiMngr->m_tcp_client_socket);
-				if( eImgState >= eImgStates_finished )
-				{
-
-					if(  PacketMngr_GetState() == ePacketMngrState_NewFrame )
-					{
-						PacketMngr_GetNewImg(); // TODO: SO: restarting image structure, later bring a new image
-						// TODO: nothing. the main loop would trigger the camera
-					}
-				}
-
-				PacketMngr_IterateImu(p_stWifiMngr->m_tcp_client_socket);
-
+				PacketMngr_TxRoutine(p_stWifiMngr->m_tcp_client_socket);
 			}
 			else
 			{
@@ -218,6 +204,7 @@ sint8	WifiMngr_HandleEvents(void)
 						}
 
 						p_stWifiMngr->m_IsTxPhase = true;
+						PacketMngr_Start();
 
 					}
 				}

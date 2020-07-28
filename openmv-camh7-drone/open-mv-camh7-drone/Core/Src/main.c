@@ -137,9 +137,8 @@ int main(void)
 	CameraMngr_Init();
 	PacketMngr_Init();
 	WifiMngr_Init();
-
-	SD_MPU6050_Init(SD_MPU6050_Device_0, SD_MPU6050_Accelerometer_2G, SD_MPU6050_Gyroscope_250s);
-
+	TIM_StartImuTick();
+	SD_MPU6050_Init(SD_MPU6050_Device_0,SD_MPU6050_Accelerometer_2G,SD_MPU6050_Gyroscope_250s );
 	printf("~~ init finished ~~\r\n");
 	printf("GIT REV SHA: %s\r\n", PROJ_SHA);
 
@@ -150,7 +149,6 @@ int main(void)
 
 
 
-	TIM_StartImuTick();
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
