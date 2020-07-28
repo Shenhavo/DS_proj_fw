@@ -6,9 +6,11 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdio.h>
 #include "main.h"
 #include "camera_mngr.h"
 #include "wifi_mngr.h"
+#include "tim.h"
 #include "packet_mngr.h"
 
 
@@ -33,7 +35,7 @@ void PacketMngr_Init(void)
 	p_stPacketMngr->m_ImuCallsPerPacket		=	0;
 	p_stPacketMngr->m_IsImuCallReady		= false;
 	p_stPacketMngr->m_IsImuPacketReady		= false;
-	p_stPacketMngr->m_IsFramePacketReady	= false;
+	p_stPacketMngr->m_IsImgSendEvent		= false;
 	memset((&p_stPacketMngr->m_stImuPacket),0,sizeof(stImuPacket));
 }
 
@@ -46,6 +48,8 @@ void PacketMngr_Start(void)
 	stImg*			p_stImg			=	p_stPacketMngr->m_p_stImg;
 	p_stImg->m_eCurrImgStates		= 	eImgStates_finished;
 	p_stImg->m_eNextImgStates		= 	eImgStates_finished;
+
+	TIM_StartImuTick();
 }
 
 
@@ -62,20 +66,31 @@ void PacketMngr_TxRoutine(int8_t a_Socket)
 	case ePacketMngrState_off:
 	{
 #ifdef USING_FRAME
-		if(p_stPacketMngr->m_IsFramePacketReady	== true) // SO: it prioritizes frames over imu packets
+		if( p_stPacketMngr->m_IsImgSendEvent	== true) // SO: it prioritizes frames over imu packets
 		{
-			p_stPacketMngr->m_IsFramePacketReady = false;
-			if(Img_jpg_GetCurrImgState() == eImgStates_finished)
-			{
+			p_stPacketMngr->m_IsImgSendEvent = false;
 
-				PacketMngr_SetState(ePacketMngrState_Frame);
-				PacketMngr_GetNewImg(); // TODO: SO: restarting image structure, later bring a new image
-				PacketMngr_IterateImg(a_Socket);
-			}
-			else
+			if ( CameraMngr_GetCompressedImgState() == eCompressedImgState_WaitForSend )
 			{
-				printf("##M\r\n");
+				CameraMngr_SetCompressedImgState(eCompressedImgState_SendStart);
+
+				if(Img_jpg_GetCurrImgState() == eImgStates_finished)
+				{
+
+					PacketMngr_SetState(ePacketMngrState_Frame);
+					PacketMngr_GetNewImg(); // TODO: SO: restarting image structure, later bring a new image
+					PacketMngr_IterateImg(a_Socket);
+				}
+				else
+				{
+					printf("##M\r\n");
+				}
 			}
+//			else
+//			{
+//				printf("img not ready for send\r\n");
+//			}
+
 		}
 		else // SO: case imu
 		{
@@ -136,7 +151,7 @@ void PacketMngr_Update(void)
 	UPDATE_FRAME_EVENT_CTR(p_stPacketMngr->m_FrameEventCtr);
 	if(p_stPacketMngr->m_FrameEventCtr == COUNTING_ENDED_VAL)	// SO: new frame packet
 	{
-		p_stPacketMngr->m_IsFramePacketReady	= true;
+		p_stPacketMngr->m_IsImgSendEvent	= true;
 //		printf("1->%d\r\n", HAL_GetTick());
 	}
 #endif
@@ -186,6 +201,8 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 				p_stImg->m_pImg		+= p_stImg->m_SizeB;
 				p_stImg->m_eNextImgStates = eImgStates_finished;
 				PacketMngr_SetState(ePacketMngrState_off);
+
+				CameraMngr_SetCompressedImgState(eCompressedImgState_SendCmplt);
 			}
 
 			memcpy(p_stFrame->m_Data, pData, packet_data_size_b);
@@ -269,6 +286,14 @@ void PacketMngr_GetNewImg( void )
 void PacketMngr_GetNewImg( void )
 {
 	Img_jpg_GetNewImg();
+}
+
+/* ================
+bool PacketMngr_GetIsImgSendEvent( void )
+================ */
+bool PacketMngr_GetIsImgSendEvent( void )
+{
+	return g_stPacketMngr.m_IsImgSendEvent;
 }
 
 /* ================

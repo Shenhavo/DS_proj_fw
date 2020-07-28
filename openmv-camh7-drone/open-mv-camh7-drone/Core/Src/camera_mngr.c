@@ -3,6 +3,7 @@
  */
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "dcmi.h"
 #include "jpeg.h"
 #include "ff.h" // TODO: DB - fix this. only jpeg_encode_dma needs this
@@ -320,7 +321,7 @@ void CameraMngr_CompressEnd(void)
 	{
 		pThis->m_CompressedImgSize = pThis->m_JpegFrameBuffConvSize;
 		pThis->m_eCompressedImgState = eCompressedImgState_WaitForSend;
-		memcpy(pThis->m_pJpegFrameBuff, pThis->m_pCompressedImg, pThis->m_CompressedImgSize);
+		memcpy(pThis->m_pCompressedImg, pThis->m_pJpegFrameBuff, pThis->m_CompressedImgSize);
 	}
 
 }
@@ -355,7 +356,10 @@ void CameraMngr_HandleEvents(void)
 	case eCamImgState_CompressCmplt:
 	{
 		// start the machine
-		CameraMngr_DcmiFrameAcqDma(); // TODO: DB - wrap in func after socket init
+		if ( PacketMngr_GetIsImgSendEvent())
+		{
+			CameraMngr_DcmiFrameAcqDma();
+		}
 	}
 	break;
 	case eCamImgState_AcqStart:

@@ -77,7 +77,7 @@ typedef struct stPacketMngr_name {
 	uint32_t			m_ImuCallsPerPacket;
 	bool				m_IsImuCallReady;
 	bool				m_IsImuPacketReady;
-	bool				m_IsFramePacketReady;
+	bool				m_IsImgSendEvent;
 
 } stPacketMngr;
 
@@ -87,6 +87,7 @@ void PacketMngr_Start(void);
 void PacketMngr_TxRoutine(int8_t a_Socket);
 void PacketMngr_Update(void);
 void PacketMngr_GetNewImg( void );
+bool PacketMngr_GetIsImgSendEvent( void );
 
 
 #ifdef __cplusplus
