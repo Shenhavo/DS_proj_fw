@@ -9,14 +9,14 @@
 
 //#define JPEG_444_GS_MCU_SIZE        (64)
 // 640 * 480 = 307200
-#define FRAME_SIZE		FRAMESIZE_VGA
-#define IMG_W			(640)
-#define IMG_H			(480)
+//#define FRAME_SIZE		FRAMESIZE_VGA
+//#define IMG_W			(640)
+//#define IMG_H			(480)
 
 // 320 * 240 = 76800
-//#define FRAME_SIZE		FRAMESIZE_QVGA
-//#define IMG_W			(320)
-//#define IMG_H			(240)
+#define FRAME_SIZE		FRAMESIZE_QVGA
+#define IMG_W			(320)
+#define IMG_H			(240)
 
 //// 160 * 120 = 19200
 //#define FRAME_SIZE		FRAMESIZE_QQVGA
@@ -99,6 +99,7 @@ bool CameraMngr_isDcmiAcqEndded( void );
 void CameraMngr_CompressStart(void);
 void CameraMngr_CompressProc(void);
 void CameraMngr_CompressEnd(void);
+void CameraMngr_CompressBenchmark(void);
 
 void CameraMngr_HandleEvents(void);
 

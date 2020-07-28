@@ -200,9 +200,11 @@ bool CameraMngr_isDcmiAcqEndded( void )
 	bool AcqRunning = ( (DCMI->CR & DCMI_CR_CAPTURE) != 0 );
 	bool AcqStarted = ( pThis->m_eCamImgState == eCamImgState_AcqStart );
 
-	if ( (HAL_GetTick() - pThis->m_DcmiFrameAcqStartTick) >= DCMI_ACQ_TIMEOUT_MSEC )
+	uint32_t CurrAcqTime_msec = HAL_GetTick() - pThis->m_DcmiFrameAcqStartTick;
+
+	if ( CurrAcqTime_msec >= DCMI_ACQ_TIMEOUT_MSEC )
 	{
-		printf("dcmi timeout!\r\n");
+		printf("dcmi timeout, took=%d[msec]!\r\n", CurrAcqTime_msec);
 
 		HAL_DCMI_Stop(&hdcmi);
 
@@ -321,7 +323,17 @@ void CameraMngr_CompressEnd(void)
 		memcpy(pThis->m_pJpegFrameBuff, pThis->m_pCompressedImg, pThis->m_CompressedImgSize);
 	}
 
+}
+
+/**
+ * @brief  CameraMngr_CompressBenchmark
+ * @retval None
+ */
+void CameraMngr_CompressBenchmark(void)
+{
 #ifdef CAMERA_BENCHMARK
+	stCameraMngr* pThis = &g_CameraMngr;
+
 	//printf("src size = %ld [b]\r\n", pThis->m_FrameBuffSize);
 	printf("out size = %ld [b]\r\n", pThis->m_JpegFrameBuffConvSize);
 
@@ -364,6 +376,10 @@ void CameraMngr_HandleEvents(void)
 		if ( CameraMngr_GetCamImgState() == eCamImgState_CompressCmplt  )
 		{
 			CameraMngr_CompressEnd();
+			CameraMngr_CompressBenchmark();
+
+			HAL_DCMI_DeInit(&hdcmi); // TODO: remove
+			HAL_DCMI_Init(&hdcmi); // TODO: remove
 		}
 	}
 	break;

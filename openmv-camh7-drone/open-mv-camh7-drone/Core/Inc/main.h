@@ -53,7 +53,7 @@ extern "C" {
 #define USE_UART_DEBUG
 //#define USE_SWV_DEBUG
 
-#define DCMI_ACQ_TIMEOUT_MSEC				25
+#define DCMI_ACQ_TIMEOUT_MSEC				40
 
 
 //#define MAIN_WIFI_M2M_PRODUCT_NAME        "NMCTemp"
@@ -73,7 +73,7 @@ extern "C" {
 #define IPV4_BYTE(val, index)          ((val >> (index * 8)) & 0xFF)
 
 /** AP mode Settings */
-#define MAIN_WLAN_SSID                 "WINC1500_AP" /* < SSID */
+#define MAIN_WLAN_SSID                 "WINC1500_AP_D" /* < SSID */
 #define MAIN_WLAN_AUTH                 M2M_WIFI_SEC_OPEN /* < Security manner */
 #define MAIN_WLAN_CHANNEL              (6) /* < Channel number */
 /* USER CODE END EC */
