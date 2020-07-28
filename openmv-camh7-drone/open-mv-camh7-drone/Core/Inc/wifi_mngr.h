@@ -34,7 +34,7 @@ typedef tenuSocketCallbackMsgType	eSocketCbState;
 
 typedef SOCKET	socketIdx_t;
 
-typedef struct stWifiMngr_name { // TODO: add also stImg...
+typedef struct stWifiMngr_name {
    uint8_t* 		m_pTxBuff;
    uint8_t* 		m_pRxBuff;
    bool	   			m_IsRxReady;
@@ -44,8 +44,6 @@ typedef struct stWifiMngr_name { // TODO: add also stImg...
    socketIdx_t 		m_tcp_server_socket;
    socketIdx_t 		m_tcp_client_socket;
    bool				m_IsHardFault;
-//   uint32_t 	m_SizeB;
-
 } stWifiMngr;
 
 

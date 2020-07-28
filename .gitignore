@@ -15,3 +15,5 @@ openmv-camh7-drone/open-mv-camh7-drone/Debug/open-mv-camh7-drone.list
 /openmv-camh7-drone/open-mv-camh7-drone/.settings
 /openmv-camh7-drone/open-mv-camh7-drone/Debug
 /openmv-camh7-drone/open-mv-camh7-drone/Release
+/openmv-camh7-drone/open-mv-camh7-drone/Core/Src/jpeg_utils-bak.c
+/openmv-camh7-drone/open-mv-camh7-drone/Core/Inc/jpeg_utils-bak.h

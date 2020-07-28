@@ -14,23 +14,23 @@
 
 #include "wifi_mngr.h"
 // debug stuff
-#include "img_jpg_file.h"
 
+#include "packet_mngr.h"
 #include "usart.h"
 
 // ============= statics & consts =============
 
 #define IMG_JPG_SIZE_B	sizeof(img_jpg_file_a)
 
-static char g_Start_cmd[7] 	= "Start\r\n";
-static stImg g_stImg		= {NULL};
+#define SIZE_OF_START_CMD_B		7
+static char g_Start_cmd[SIZE_OF_START_CMD_B] 	= "Start\r\n";
+
 
 static uint8_t g_WifiTxBuff[MAIN_WIFI_M2M_BUFFER_SIZE] = DEFAULT_TX_ARR;
 /** Receive buffer definition. */
 static uint8_t g_WifiRxBuff[MAIN_WIFI_M2M_BUFFER_SIZE];
 
 static stWifiMngr g_stWifiMngr = {NULL};
-
 
 /** Wi-Fi connection state */
 //static uint8_t wifi_connected;
@@ -49,8 +49,7 @@ static void WifiMngr_WifiCB(uint8_t u8MsgType, void *pvMsg);
 static void WifiMngr_SocketCB(socketIdx_t sock, uint8_t u8Msg, void *pvMsg);
 
 static void WifiMngr_InitStruct(stWifiMngr* a_p_stWifiMngr);
-static eImgStates	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr, stImg* a_pstImg);
-static void	WifiMngr_CloseSocket(void);
+//static void	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr);
 
 /*  ============= public functions implementation section  =============*/
 /* ================
@@ -106,9 +105,8 @@ int8_t WifiMngr_Init(void)
 	stWifiMngr* p_stWifiMngr 		= &g_stWifiMngr;
 	WifiMngr_InitStruct(p_stWifiMngr);
 
-
 	// TODO: SO: remove later
-	Img_jpg_get_example_struct(&g_stImg);
+	PacketMngr_GetNewImg();
 
 	return ret;
 }
@@ -158,7 +156,7 @@ int8_t WifiMngr_ReInit(void)
 
 
 	// TODO: SO: remove later
-	Img_jpg_get_example_struct(&g_stImg);
+	PacketMngr_GetNewImg();
 
 	return ret;
 }
@@ -176,46 +174,46 @@ sint8	WifiMngr_HandleEvents(void)
 	if(p_stWifiMngr->m_IsHardFault == false)
 	{
 		if (p_stWifiMngr->m_tcp_server_socket < 0) {
-				/* Open TCP server socket */
-				if ((p_stWifiMngr->m_tcp_server_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		//			printf("main: failed to create TCP server socket error!\r\n");
-					return ret;
-				}
+			/* Open TCP server socket */
+			if ((p_stWifiMngr->m_tcp_server_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+				//			printf("main: failed to create TCP server socket error!\r\n");
+				return ret;
+			}
 
-				/* Bind service*/
-				bind(p_stWifiMngr->m_tcp_server_socket, (struct sockaddr *)&g_stSockAdd, sizeof(struct sockaddr_in));
+			/* Bind service*/
+			bind(p_stWifiMngr->m_tcp_server_socket, (struct sockaddr *)&g_stSockAdd, sizeof(struct sockaddr_in));
+		}
+		else
+		{
+			if(p_stWifiMngr->m_IsTxPhase == true)
+			{
+				PacketMngr_TxRoutine(p_stWifiMngr->m_tcp_client_socket);
 			}
 			else
 			{
-				if(p_stWifiMngr->m_IsTxPhase == true)
+				if(p_stWifiMngr->m_IsRxReady == true) // got new incoming data
 				{
-					stImg* p_stImg = &g_stImg;
-					p_stImg = Img_jpg_Iterate( p_stImg );
-					eImgStates ImgState =  WifiMngr_SendImage(p_stWifiMngr, p_stImg);
-					if( ImgState >= eImgStates_finished )
+					p_stWifiMngr->m_IsRxReady = false;
+					if( strcmp(p_stWifiMngr->m_pRxBuff,g_Start_cmd) == 0)
 					{
-						Img_jpg_get_example_struct(&g_stImg); // TODO: SO: restarting image structure, later bring new image
+						memset(p_stWifiMngr->m_pRxBuff,0, SIZE_OF_START_CMD_B);
+						printf("Got Start\r\n");
+						if( LED_GetState() != eLedStates_blue_green)
+						{
+							LED_SetState(eLedStates_blue_green);
+						}
+
+						p_stWifiMngr->m_IsTxPhase = true;
+						PacketMngr_Start();
+
 					}
 				}
 				else
 				{
-					if(p_stWifiMngr->m_IsRxReady == true) // got new incoming data
-					{
-						p_stWifiMngr->m_IsRxReady = false;
-						if( strcmp(p_stWifiMngr->m_pRxBuff,g_Start_cmd) == 0)
-						{
-							memset(p_stWifiMngr->m_pRxBuff,0, sizeof(p_stWifiMngr->m_pRxBuff)); // TODO: SO: see if it is still required
-							printf("Got Start\r\n");
-							memcpy(g_WifiTxBuff,(uint8_t*)(&g_stImg.m_SizeB),sizeof(uint32_t)); // sending Image size so that ground station will know
-							send(p_stWifiMngr->m_tcp_client_socket, g_WifiTxBuff, 1024, 0);
-						}
-					}
-					else
-					{
-						recv(p_stWifiMngr->m_tcp_client_socket, g_WifiRxBuff, sizeof(g_WifiRxBuff), 0);
-					}
+					recv(p_stWifiMngr->m_tcp_client_socket, g_WifiRxBuff, sizeof(g_WifiRxBuff), 0);
 				}
 			}
+		}
 	}
 	else
 	{
@@ -277,7 +275,6 @@ static void WifiMngr_SocketCB(socketIdx_t sock, uint8_t u8Msg, void *pvMsg)
 			listen(p_stWifiMngr->m_tcp_server_socket, 0);
 		} else {
 			printf("socket_cb: bind error!\r\n");
-//			WifiMngr_CloseSocket();
 		}
 	}
 	break;
@@ -291,7 +288,6 @@ static void WifiMngr_SocketCB(socketIdx_t sock, uint8_t u8Msg, void *pvMsg)
 			accept(p_stWifiMngr->m_tcp_server_socket, NULL, NULL);
 		} else {
 			printf("socket_cb: listen error!\r\n");
-//			WifiMngr_CloseSocket();
 		}
 	}
 	break;
@@ -304,11 +300,9 @@ static void WifiMngr_SocketCB(socketIdx_t sock, uint8_t u8Msg, void *pvMsg)
 		if (pstrAccept) {
 			accept(p_stWifiMngr->m_tcp_server_socket, NULL, NULL);
 			p_stWifiMngr->m_tcp_client_socket = pstrAccept->sock;
-//			printf("socket_cb: Client socket is created.\r\n");
 			recv(p_stWifiMngr->m_tcp_client_socket, g_WifiRxBuff, sizeof(g_WifiRxBuff), 0);
 		} else {
 			printf("socket_cb: accept error!\r\n");
-//			WifiMngr_CloseSocket();
 		}
 	}
 	break;
@@ -328,21 +322,17 @@ static void WifiMngr_SocketCB(socketIdx_t sock, uint8_t u8Msg, void *pvMsg)
 		{
 			printf("socket_cb: recv error!\r\n");
 			p_stWifiMngr->m_IsHardFault		= true;
-//			p_stWifiMngr->m_eIsWifiConnected = M2M_WIFI_DISCONNECTED;
-//			Img_jpg_get_example_struct(&g_stImg);
-//			WifiMngr_InitStruct(p_stWifiMngr);
-//			WifiMngr_CloseSocket();
 		}
 	}
 	break;
 	case SOCKET_MSG_SEND:
 	{
-		if( LED_GetState() != eLedStates_blue_green)
-		{
-			LED_SetState(eLedStates_blue_green);
-		}
-
-		p_stWifiMngr->m_IsTxPhase = true;
+//		if( LED_GetState() != eLedStates_blue_green)
+//		{
+//			LED_SetState(eLedStates_blue_green);
+//		}
+//
+//		p_stWifiMngr->m_IsTxPhase = true;
 	}
 	break;
 	default:
@@ -369,6 +359,68 @@ static void WifiMngr_InitStruct(stWifiMngr* a_p_stWifiMngr)
 	a_p_stWifiMngr->m_IsHardFault		= false;
 }
 
+///* ================
+//void	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr)
+//================ */
+//void WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr)
+//{
+//
+//
+//
+//	eImgStates eOldImgState =  Img_jpg_GetImgState();// SO: taking old ImgState since Iterating changes it
+//
+//
+//	// SO: split IterateImge into two functions: 1. prepares the msg
+//
+//	stImg* p_stImg = PacketMngr_IterateImg();
+//
+//	switch (eOldImgState)
+//	{
+//		case eImgStates_start:
+//		{
+//			send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, PACKET_DATA_LEN_B, 0);
+//		}
+//		case eImgStates_sending:
+//		{
+//			send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, PACKET_DATA_LEN_B, 0);
+//		}
+//		break;
+//		case eImgStates_last_packet:
+//		{
+//			send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, p_stImg->m_SizeB, 0);
+//		}
+//		break;
+//		case eImgStates_finished:
+//		{
+//		}
+//		break;
+//		default:
+//			break;
+//	}
+//}
+
+
+
+///* ================  ATWINC API =================
+///* ================
+// sint8 WifiMngr_ScanReq(tenuM2mScanCh a_e_tenuM2mScanCh)
+//================ */
+//sint8 WifiMngr_ScanReq(tenuM2mScanCh a_e_tenuM2mScanCh)
+//{
+//	return m2m_wifi_request_scan(a_e_tenuM2mScanCh);
+//}
+
+
+/* ================
+WifiMngr_Connect(tenuM2mScanCh a_e_tenuM2mScanCh) //: SO: so far it's unused
+================ */
+//sint8 WifiMngr_Connect(tenuM2mScanCh a_e_tenuM2mScanCh)
+//{
+/*	return m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID),\
+							MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK,\
+						a_e_tenuM2mScanCh);
+*/
+//}
 
 #ifdef CALC_TX_AVG_TIME
 /* ================
@@ -400,72 +452,5 @@ void WifiMngr_Calc(void)
 //	  	printf("c");
 
 #endif // CALC_TX_AVG_TIME
-
-/* ================
-static void	WifiMngr_CloseSocket(void)
-================ */
-static void	WifiMngr_CloseSocket(void)
-{
-//	close(tcp_server_socket);
-//	socketDeinit();
-//	tcp_server_socket 	= -1;
-//	tcp_client_socket	= -1;
-}
-
-/* ================
-eImgStates	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr, stImg* a_pstImg)
-================ */
-eImgStates	WifiMngr_SendImage( stWifiMngr* a_p_stWifiMngr, stImg* a_pstImg)
-{
-	stImg* p_stImg = a_pstImg;
-	if( p_stImg != NULL)
-	{
-		switch (p_stImg->m_eImgStates)
-		{
-			case eImgStates_start:
-			{
-				send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, PACKET_DATA_LEN_B, 0);
-			}
-			case eImgStates_sending:
-			{
-				send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, PACKET_DATA_LEN_B, 0);
-			}
-			break;
-			case eImgStates_last_packet:
-			{
-				send(a_p_stWifiMngr->m_tcp_client_socket, p_stImg->m_pImg, p_stImg->m_SizeB, 0);
-			}
-			break;
-			case eImgStates_finished:
-			{
-			}
-			break;
-			default:
-				break;
-		}
-	}
-	return p_stImg->m_eImgStates;
-}
-
-///* ================
-// sint8 WifiMngr_ScanReq(tenuM2mScanCh a_e_tenuM2mScanCh)
-//================ */
-//sint8 WifiMngr_ScanReq(tenuM2mScanCh a_e_tenuM2mScanCh)
-//{
-//	return m2m_wifi_request_scan(a_e_tenuM2mScanCh);
-//}
-
-
-/* ================
-WifiMngr_Connect(tenuM2mScanCh a_e_tenuM2mScanCh) //: SO: so far it's unused
-================ */
-//sint8 WifiMngr_Connect(tenuM2mScanCh a_e_tenuM2mScanCh)
-//{
-/*	return m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID),\
-							MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK,\
-						a_e_tenuM2mScanCh);
-*/
-//}
-
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

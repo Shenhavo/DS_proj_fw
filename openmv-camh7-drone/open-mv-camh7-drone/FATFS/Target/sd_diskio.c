@@ -22,6 +22,8 @@
 
 /* USER CODE BEGIN firstSection */
 /* can be used to modify / undefine following code or add new definitions */
+// this is modified here due to cubemx bug
+#define ENABLE_SD_DMA_CACHE_MAINTENANCE  1
 /* USER CODE END firstSection*/
 
 /* Includes ------------------------------------------------------------------*/

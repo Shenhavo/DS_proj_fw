@@ -33,7 +33,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-//#include "jpeg_utils.h" // TODO: move from here
+#include "stdbool.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -43,7 +43,17 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+
+
 /** Wi-Fi Settings */
+
+#define PROJ_SHA			"0xd462888ec8efe5d503a8ea5ccacb3c39ee226114"
+
+
+#define USE_UART_DEBUG
+//#define USE_SWV_DEBUG
+
+#define DCMI_ACQ_TIMEOUT_MSEC				40
 
 
 //#define MAIN_WIFI_M2M_PRODUCT_NAME        "NMCTemp"
@@ -66,7 +76,6 @@ extern "C" {
 #define MAIN_WLAN_SSID                 "WINC1500_AP" /* < SSID */
 #define MAIN_WLAN_AUTH                 M2M_WIFI_SEC_OPEN /* < Security manner */
 #define MAIN_WLAN_CHANNEL              (6) /* < Channel number */
-
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -97,8 +106,14 @@ void Error_Handler(void);
 #define WIFI_INT_N_Pin GPIO_PIN_13
 #define WIFI_INT_N_GPIO_Port GPIOD
 #define WIFI_INT_N_EXTI_IRQn EXTI15_10_IRQn
+#define DCMI_PCLK_Pin GPIO_PIN_8
+#define DCMI_PCLK_GPIO_Port GPIOA
+#define DCMI_RESET_Pin GPIO_PIN_10
+#define DCMI_RESET_GPIO_Port GPIOA
 #define SD_CD_Pin GPIO_PIN_0
 #define SD_CD_GPIO_Port GPIOD
+#define DCMI_PWDN_Pin GPIO_PIN_7
+#define DCMI_PWDN_GPIO_Port GPIOD
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
