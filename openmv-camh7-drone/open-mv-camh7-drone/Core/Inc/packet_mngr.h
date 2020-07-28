@@ -30,16 +30,16 @@
 #define IMU_SOF		'i'
 
 #define	FULL_PACKET_SIZE_B				1024
-#define FRAME_DATA_SIZE_B				1016
-#define NEW_FRAME_HEADER_SIZE_B			8
+#define FRAME_DATA_SIZE_B				1017
+#define NEW_FRAME_HEADER_SIZE_B			7
 
 
 #pragma pack(push,1)
 typedef struct stFrame_name {
 	uint8_t		m_FrameSOF;
-	uint8_t		m_PacketIdx;
-	uint16_t	m_FrameSize;
+//	uint8_t		m_PacketIdx;
 	uint32_t	m_SysTick;
+	uint16_t	m_FrameSize;
 	uint8_t		m_Data[FRAME_DATA_SIZE_B];
 } stFrame;
 #pragma pack(pop)
@@ -78,6 +78,7 @@ typedef struct stPacketMngr_name {
 
 
 void PacketMngr_Init(void);
+void PacketMngr_Start(void);
 void PacketMngr_TxRoutine(int8_t a_Socket);
 void PacketMngr_Update(void);
 void PacketMngr_GetNewImg( void );

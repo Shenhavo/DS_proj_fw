@@ -204,6 +204,7 @@ sint8	WifiMngr_HandleEvents(void)
 						}
 
 						p_stWifiMngr->m_IsTxPhase = true;
+						PacketMngr_Start();
 
 					}
 				}
