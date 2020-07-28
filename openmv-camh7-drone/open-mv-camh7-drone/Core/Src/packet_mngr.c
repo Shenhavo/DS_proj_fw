@@ -33,7 +33,6 @@ void PacketMngr_Init(void)
 	p_stPacketMngr->m_IsImuPacketReady		= false;
 	p_stPacketMngr->m_IsFramePacketReady	= false;
 	memset((&p_stPacketMngr->m_stImuPacket),0,sizeof(stImuPacket));
-
 }
 
 /* ================
@@ -54,17 +53,19 @@ void PacketMngr_TxRoutine(void)
 void PacketMngr_TxRoutine(int8_t a_Socket)
 {
 	stPacketMngr* p_stPacketMngr = &g_stPacketMngr;
-
-//	PacketMngr_IterateImu();
-
+#ifdef USING_IMU
+	PacketMngr_IterateImu();
+#endif
 	switch (p_stPacketMngr->m_ePacketMngrState) {
 	case ePacketMngrState_off:
 	{
+#ifdef USING_FRAME
 		if(p_stPacketMngr->m_IsFramePacketReady	== true) // SO: it prioritizes frames over imu packets
 		{
 			p_stPacketMngr->m_IsFramePacketReady = false;
 			if(Img_jpg_GetCurrImgState() == eImgStates_finished)
 			{
+
 				PacketMngr_SetState(ePacketMngrState_Frame);
 				PacketMngr_GetNewImg(); // TODO: SO: restarting image structure, later bring a new image
 				PacketMngr_IterateImg(a_Socket);
@@ -76,11 +77,16 @@ void PacketMngr_TxRoutine(int8_t a_Socket)
 		}
 		else // SO: case imu
 		{
-//			if(p_stPacketMngr->m_IsImuPacketReady == true)
-//			{
-//				PacketMngr_SendImu(a_Socket);
-//			}
+#endif
+#ifdef USING_IMU
+			if(p_stPacketMngr->m_IsImuPacketReady == true)
+			{
+				PacketMngr_SendImu(a_Socket);
+			}
+#endif
+#ifdef USING_FRAME
 		}
+#endif
 	}
 	break;
 	case ePacketMngrState_Frame:
@@ -108,29 +114,30 @@ void PacketMngr_Update(void)
 {
 	stPacketMngr* p_stPacketMngr = &g_stPacketMngr;
 
-	UPDATE_FRAME_EVENT_CTR(p_stPacketMngr->m_FrameEventCtr);
+#ifdef USING_IMU
 	UPDATE_IMU_EVENT_CTR(p_stPacketMngr->m_ImuEventCtr);
-//	printf("Imu %d\r\n",p_stPacketMngr->m_ImuEventCtr);
-//	printf("frame %d\r\n",p_stPacketMngr->m_FrameEventCtr);
 
-//	if(p_stPacketMngr->m_ImuEventCtr == COUNTING_ENDED_VAL) // SO: new IMU call Event
-//	{
-//
-////		printf("new imu call\r\n");
-//		p_stPacketMngr->m_IsImuCallReady	=	true;
-//
-//		if(p_stPacketMngr->m_ImuCallsPerPacket == COUNTING_ENDED_VAL) // SO: new IMU packet
-//		{
-//			p_stPacketMngr->m_IsImuPacketReady = true;
-////			printf("new imu packet\r\n");
-//		}
-//	}
+	if(p_stPacketMngr->m_ImuEventCtr == COUNTING_ENDED_VAL) // SO: new IMU call Event
+	{
 
+//		printf("new imu call\r\n");
+		p_stPacketMngr->m_IsImuCallReady	=	true;
+
+		if(p_stPacketMngr->m_ImuCallsPerPacket == COUNTING_ENDED_VAL) // SO: new IMU packet
+		{
+			p_stPacketMngr->m_IsImuPacketReady = true;
+//			printf("new imu packet\r\n");
+		}
+	}
+#endif
+#ifdef USING_FRAME
+	UPDATE_FRAME_EVENT_CTR(p_stPacketMngr->m_FrameEventCtr);
 	if(p_stPacketMngr->m_FrameEventCtr == COUNTING_ENDED_VAL)	// SO: new frame packet
 	{
 		p_stPacketMngr->m_IsFramePacketReady	= true;
 //		printf("1->%d\r\n", HAL_GetTick());
 	}
+#endif
 }
 
 /* ================
@@ -141,6 +148,9 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 
 	stPacketMngr* 	p_stPacketMngr 	= 	&g_stPacketMngr;
 	stImg*			p_stImg			=	p_stPacketMngr->m_p_stImg;
+	stFrame* 		p_stFrame 		= (stFrame*)(p_stPacketMngr->m_PacketBytes);
+	uint16_t 	packet_data_size_b 	= 	0;
+	uint8_t*	pData				=	p_stImg->m_pImg;
 
 	int8_t Result = SOCK_ERR_NO_ERROR;
 
@@ -154,11 +164,6 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 		}
 		case eImgStates_sending:
 		{
-
-			uint16_t 	packet_data_size_b 	= 	0;
-			uint8_t*	pData				=	p_stImg->m_pImg;
-
-			stFrame* p_stFrame 	= (stFrame*)(p_stPacketMngr->m_PacketBytes);
 			p_stFrame->m_FrameSOF	=	FRAME_SOF;
 			p_stFrame->m_SysTick	=	p_stImg->m_SysTick;
 			p_stFrame->m_FrameSize	=	p_stImg->m_SizeB;
@@ -182,25 +187,23 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 			}
 
 			memcpy(p_stFrame->m_Data, pData, packet_data_size_b);
-			printf("(%d)\r\n", p_stFrame->m_FrameSize);
-			printf("->%d\r\n", p_stFrame->m_SysTick);
+
 			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stFrame , NEW_FRAME_HEADER_SIZE_B + packet_data_size_b, 0);
 		}
 		break;
 		case eImgStates_finished:
 		{
+			printf("F\r\n");
 		}
 		break;
 		default:
 			break;
 	}
 
-	if(Result == SOCK_ERR_BUFFER_FULL) //SO: SOCK_ERR_BUFFER_FULL is received whenever user clicks on wifi connections
+	if(Result == SOCK_ERR_BUFFER_FULL)
 	{
-		printf("Socket err: %d\r\n", Result);
-		HAL_Delay(2);
-//		p_stImg->m_eCurrImgStates = eImgStates_finished; // TODO: see if the reinit is required and what it might cause to ground station
-//		p_stImg->m_eNextImgStates = eImgStates_finished;
+
+		printf("Socket err frame: %d\r\n", Result);
 	}
 
 
@@ -238,22 +241,12 @@ void PacketMngr_SendImu(int8_t a_Socket)
 		PacketMngr_SetState(ePacketMngrState_IMU);
 		p_stPacketMngr->m_IsImuPacketReady =	false;
 		int8_t Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stImuPacket , sizeof(stImuPacket), 0);
-
+		printf("I\r\n");
 		if(Result == SOCK_ERR_BUFFER_FULL) //SO: SOCK_ERR_BUFFER_FULL is received whenever user clicks on wifi connections
 		{
 			printf("Socket err imu: %d\r\n", Result);
-			HAL_Delay(1);
-			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stImuPacket , sizeof(stImuPacket), 0);
-			if(Result == SOCK_ERR_BUFFER_FULL) //SO: SOCK_ERR_BUFFER_FULL is received whenever user clicks on wifi connections
-			{
-				printf("Socket2 err imu: %d\r\n", Result);
-				HAL_Delay(1);
-				Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stImuPacket , sizeof(stImuPacket), 0);
-				if(Result == SOCK_ERR_BUFFER_FULL) //SO: SOCK_ERR_BUFFER_FULL is received whenever user clicks on wifi connections
-				{
-					Error_Handler();
-				}
-			}
+//			HAL_Delay(1);
+//			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stImuPacket , sizeof(stImuPacket), 0);
 		}
 		PacketMngr_SetState(ePacketMngrState_off);
 	}

@@ -83,39 +83,40 @@ void SystemClock_Config(void);
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
-  
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* USER CODE BEGIN Init */
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE END Init */
+	/* USER CODE BEGIN Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* USER CODE END Init */
 
-  /* USER CODE BEGIN SysInit */
+	/* Configure the system clock */
+	SystemClock_Config();
+
+	/* USER CODE BEGIN SysInit */
+
+	/* USER CODE END SysInit */
+
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_DCMI_Init();
+	MX_JPEG_Init();
+	//  MX_SPI2_Init(); // TODO: DB - this conflicts with the nm_bus init of WifiMngr_Init
+	MX_DMA_Init();
+	MX_I2C1_Init();
+	MX_SDMMC1_SD_Init();
+	MX_FATFS_Init();
+	MX_TIM2_Init();
+	MX_I2C2_Init();
+	MX_UART4_Init();
 	
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DCMI_Init();
-  MX_JPEG_Init();
-//  MX_SPI2_Init(); // TODO: DB - this conflicts with the nm_bus init of WifiMngr_Init
-  MX_DMA_Init();
-  MX_I2C1_Init();
-  MX_SDMMC1_SD_Init();
-  MX_FATFS_Init();
-  MX_TIM2_Init();
-  MX_I2C2_Init();
-  MX_UART4_Init();
   /* USER CODE BEGIN 2 */
 	LED_Init();
 	PacketMngr_Init();
@@ -123,19 +124,19 @@ int main(void)
 	TIM_StartImuTick();
 	SD_MPU6050_Init(SD_MPU6050_Device_0,SD_MPU6050_Accelerometer_2G,SD_MPU6050_Gyroscope_250s );
 	printf("~~ init finished ~~\r\n");
-  /* USER CODE END 2 */
+	/* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
 	while (true)
 	{
 		WifiMngr_HandleEvents();
 
-    /* USER CODE END WHILE */
+	/* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+	/* USER CODE BEGIN 3 */
 	}
-  /* USER CODE END 3 */
+	/* USER CODE END 3 */
 }
 
 /**

@@ -13,9 +13,13 @@
 #include "img_jpg_file.h"
 #include "sd_hal_mpu6050.h"
 
+//#define USING_IMU
+#define USING_FRAME
+
+
 #define IMU_EVENT_CYCLE_MSEC	5
 #define IMU_CALLS_PER_PACKET	10
-#define FRAME_EVENT_CYCLE_MSEC	50
+#define FRAME_EVENT_CYCLE_MSEC	100
 
 #define UPDATE_IMU_EVENT_CTR(x)			(x)++;\
 										(x)=((x)%IMU_EVENT_CYCLE_MSEC)
@@ -74,6 +78,7 @@ typedef struct stPacketMngr_name {
 	bool				m_IsImuCallReady;
 	bool				m_IsImuPacketReady;
 	bool				m_IsFramePacketReady;
+
 } stPacketMngr;
 
 
