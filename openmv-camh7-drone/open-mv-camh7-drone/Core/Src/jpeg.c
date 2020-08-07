@@ -53,7 +53,7 @@ void HAL_JPEG_MspInit(JPEG_HandleTypeDef* jpegHandle)
   /* USER CODE END JPEG_MspInit 0 */
     /* JPEG clock enable */
     __HAL_RCC_JPEG_CLK_ENABLE();
-  
+
     /* JPEG MDMA Init */
     /* JPEG_INFIFO_TH Init */
     hmdma_jpeg_infifo_th.Instance = MDMA_Channel7;
@@ -72,6 +72,11 @@ void HAL_JPEG_MspInit(JPEG_HandleTypeDef* jpegHandle)
     hmdma_jpeg_infifo_th.Init.SourceBlockAddressOffset = 0;
     hmdma_jpeg_infifo_th.Init.DestBlockAddressOffset = 0;
     if (HAL_MDMA_Init(&hmdma_jpeg_infifo_th) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    if (HAL_MDMA_ConfigPostRequestMask(&hmdma_jpeg_infifo_th, 0, 0) != HAL_OK)
     {
       Error_Handler();
     }
@@ -95,6 +100,11 @@ void HAL_JPEG_MspInit(JPEG_HandleTypeDef* jpegHandle)
     hmdma_jpeg_outfifo_th.Init.SourceBlockAddressOffset = 0;
     hmdma_jpeg_outfifo_th.Init.DestBlockAddressOffset = 0;
     if (HAL_MDMA_Init(&hmdma_jpeg_outfifo_th) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    if (HAL_MDMA_ConfigPostRequestMask(&hmdma_jpeg_outfifo_th, 0, 0) != HAL_OK)
     {
       Error_Handler();
     }
@@ -209,7 +219,7 @@ void HAL_JPEG_MspDeInit(JPEG_HandleTypeDef* jpegHandle)
 
   /* USER CODE END JPEG_MspDeInit 1 */
   }
-} 
+}
 
 /* USER CODE BEGIN 1 */
 

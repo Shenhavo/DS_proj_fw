@@ -41,7 +41,6 @@
 #pragma pack(push,1)
 typedef struct stFrame_name {
 	uint8_t		m_FrameSOF;
-//	uint8_t		m_PacketIdx;
 	uint32_t	m_SysTick;
 	uint16_t	m_FrameSize;
 	uint8_t		m_Data[FRAME_DATA_SIZE_B];
@@ -77,7 +76,10 @@ typedef struct stPacketMngr_name {
 	uint32_t			m_ImuCallsPerPacket;
 	bool				m_IsImuCallReady;
 	bool				m_IsImuPacketReady;
-	bool				m_IsImgSendEvent;
+
+	bool				m_IsImgTickCam;
+
+	uint32_t			m_Tick;
 
 } stPacketMngr;
 
@@ -87,7 +89,7 @@ void PacketMngr_Start(void);
 void PacketMngr_TxRoutine(int8_t a_Socket);
 void PacketMngr_Update(void);
 void PacketMngr_GetNewImg( void );
-bool PacketMngr_GetIsImgSendEvent( void );
+bool PacketMngr_GetIsImgTickCam( void );
 
 
 #ifdef __cplusplus

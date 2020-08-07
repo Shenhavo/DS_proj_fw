@@ -32,10 +32,10 @@
 
 /* USER CODE END 1 */
 
-/** 
+/**
   * Enable MDMA controller clock
   */
-void MX_MDMA_Init(void) 
+void MX_MDMA_Init(void)
 {
 
   /* MDMA controller clock enable */

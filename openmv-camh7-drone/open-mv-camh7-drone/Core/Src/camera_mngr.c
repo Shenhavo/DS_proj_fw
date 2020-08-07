@@ -223,7 +223,7 @@ void CameraMngr_DcmiFrameAcqDma( void )
 {
 	stCameraMngr* pThis = &g_CameraMngr;
 
-	printf("dcmi acq starting ..\r\n");
+	printf("%d\tacq s\r\n", HAL_GetTick());
 
 	pThis->m_eCamImgState = eCamImgState_AcqStart;
 
@@ -257,7 +257,7 @@ void CameraMngr_CompressStart(void)
 	stCameraMngr* pThis = &g_CameraMngr;
 //	uint32_t JpegEncodeProcessingEnd = 0;
 
-	printf("compression starting ..\r\n");
+	printf("%d\tcs\r\n", HAL_GetTick());
 
 	pThis->m_eCamImgState = eCamImgState_CompressStart;
 
@@ -336,10 +336,11 @@ void CameraMngr_CompressBenchmark(void)
 	stCameraMngr* pThis = &g_CameraMngr;
 
 	//printf("src size = %ld [b]\r\n", pThis->m_FrameBuffSize);
-	printf("out size = %ld [b]\r\n", pThis->m_JpegFrameBuffConvSize);
+//	printf("out size = %ld [b]\r\n", pThis->m_JpegFrameBuffConvSize);
 
-	pThis->m_JpegConvDuration_msec = HAL_GetTick() - pThis->m_JpegConvStartTick;
-	printf("jpeg compress duration %ld[msec] \r\n", pThis->m_JpegConvDuration_msec );
+//	pThis->m_JpegConvDuration_msec = HAL_GetTick() - pThis->m_JpegConvStartTick;
+	printf("%d\tjcmp %ld[msec]\r\n", HAL_GetTick(), pThis->m_JpegConvDuration_msec );
+//	printf("%d\r\n", HAL_GetTick());
 #endif // CAMERA_BENCHMARK
 
 }
@@ -356,7 +357,7 @@ void CameraMngr_HandleEvents(void)
 	case eCamImgState_CompressCmplt:
 	{
 		// start the machine
-		if ( PacketMngr_GetIsImgSendEvent())
+		if ( PacketMngr_GetIsImgTickCam())
 		{
 			CameraMngr_DcmiFrameAcqDma();
 		}
@@ -405,7 +406,7 @@ void CameraMngr_DcmiAcqBenchmark(void)
 	stCameraMngr* pThis = &g_CameraMngr;
 
 	pThis->m_DcmiFrameAcqDuration_msec = HAL_GetTick() - pThis->m_DcmiFrameAcqStartTick;
-	printf("dcmi frame acq duration %ld[msec] \r\n", pThis->m_DcmiFrameAcqDuration_msec );
+	printf("%d\tacq dur %ld[msec]\r\n", HAL_GetTick(), pThis->m_DcmiFrameAcqDuration_msec );
 #endif // CAMERA_BENCHMARK
 }
 

@@ -35,7 +35,8 @@ void PacketMngr_Init(void)
 	p_stPacketMngr->m_ImuCallsPerPacket		=	0;
 	p_stPacketMngr->m_IsImuCallReady		= false;
 	p_stPacketMngr->m_IsImuPacketReady		= false;
-	p_stPacketMngr->m_IsImgSendEvent		= false;
+	p_stPacketMngr->m_IsImgTickCam			= false;
+	p_stPacketMngr->m_Tick					= 0;
 	memset((&p_stPacketMngr->m_stImuPacket),0,sizeof(stImuPacket));
 }
 
@@ -49,7 +50,7 @@ void PacketMngr_Start(void)
 	p_stImg->m_eCurrImgStates		= 	eImgStates_finished;
 	p_stImg->m_eNextImgStates		= 	eImgStates_finished;
 
-	TIM_StartImuTick();
+	TIM_StartTimer2();
 }
 
 
@@ -66,34 +67,25 @@ void PacketMngr_TxRoutine(int8_t a_Socket)
 	case ePacketMngrState_off:
 	{
 #ifdef USING_FRAME
-		if( p_stPacketMngr->m_IsImgSendEvent	== true) // SO: it prioritizes frames over imu packets
-		{
-			p_stPacketMngr->m_IsImgSendEvent = false;
 
-			if ( CameraMngr_GetCompressedImgState() == eCompressedImgState_WaitForSend )
+
+		if ( CameraMngr_GetCompressedImgState() == eCompressedImgState_WaitForSend )
+		{
+			CameraMngr_SetCompressedImgState(eCompressedImgState_SendStart);
+
+			if(Img_jpg_GetCurrImgState() == eImgStates_finished)
 			{
-				CameraMngr_SetCompressedImgState(eCompressedImgState_SendStart);
-
-				if(Img_jpg_GetCurrImgState() == eImgStates_finished)
-				{
-
-					PacketMngr_SetState(ePacketMngrState_Frame);
-					PacketMngr_GetNewImg(); // TODO: SO: restarting image structure, later bring a new image
-					PacketMngr_IterateImg(a_Socket);
-				}
-				else
-				{
-					printf("##M\r\n");
-				}
+				printf("%d\tSOF\r\n",HAL_GetTick());
+				PacketMngr_SetState(ePacketMngrState_Frame);
+				PacketMngr_GetNewImg();
+				PacketMngr_IterateImg(a_Socket);
 			}
-//			else
-//			{
-//				printf("img not ready for send\r\n");
-//			}
-
+			else
+			{
+				printf("##M\r\n");
+			}
 		}
-		else // SO: case imu
-		{
+
 #endif
 #ifdef USING_IMU
 			if(p_stPacketMngr->m_IsImuPacketReady == true)
@@ -102,7 +94,7 @@ void PacketMngr_TxRoutine(int8_t a_Socket)
 			}
 #endif
 #ifdef USING_FRAME
-		}
+
 #endif
 	}
 	break;
@@ -151,8 +143,11 @@ void PacketMngr_Update(void)
 	UPDATE_FRAME_EVENT_CTR(p_stPacketMngr->m_FrameEventCtr);
 	if(p_stPacketMngr->m_FrameEventCtr == COUNTING_ENDED_VAL)	// SO: new frame packet
 	{
-		p_stPacketMngr->m_IsImgSendEvent	= true;
-//		printf("1->%d\r\n", HAL_GetTick());
+		p_stPacketMngr->m_IsImgTickCam	= true;
+		p_stPacketMngr->m_Tick = HAL_GetTick();
+		printf("%d\tTick\r\n", p_stPacketMngr->m_Tick);
+
+//		printf("", p_stPa)
 	}
 #endif
 }
@@ -175,7 +170,7 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 	{
 		case eImgStates_start:
 		{
-			p_stImg->m_SysTick 			= 	HAL_GetTick();
+			p_stImg->m_SysTick 			= 	p_stPacketMngr->m_Tick;
 			p_stImg->m_eCurrImgStates	= eImgStates_sending;
 			PacketMngr_SetState(ePacketMngrState_Frame);
 		}
@@ -212,19 +207,17 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 		break;
 		case eImgStates_finished:
 		{
-			printf("F\r\n");
+			printf("F\t%d\r\n",HAL_GetTick());
 		}
 		break;
 		default:
 			break;
 	}
 
-	if(Result == SOCK_ERR_BUFFER_FULL)
+	if(Result != SOCK_ERR_NO_ERROR)
 	{
-
-		printf("Socket err frame: %d\r\n", Result);
+		printf("%d\tE%d\r\n",HAL_GetTick(),Result);
 	}
-
 
 	 return Img_jpg_UpdateImgState();
 }
@@ -263,7 +256,7 @@ void PacketMngr_SendImu(int8_t a_Socket)
 		printf("I\r\n");
 		if(Result == SOCK_ERR_BUFFER_FULL) //SO: SOCK_ERR_BUFFER_FULL is received whenever user clicks on wifi connections
 		{
-			printf("Socket err imu: %d\r\n", Result);
+			printf("I\t%d",HAL_GetTick());
 //			HAL_Delay(1);
 //			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stImuPacket , sizeof(stImuPacket), 0);
 		}
@@ -291,9 +284,17 @@ void PacketMngr_GetNewImg( void )
 /* ================
 bool PacketMngr_GetIsImgSendEvent( void )
 ================ */
-bool PacketMngr_GetIsImgSendEvent( void )
+bool PacketMngr_GetIsImgTickCam( void )
 {
-	return g_stPacketMngr.m_IsImgSendEvent;
+	bool RetVal = false;
+
+	if(g_stPacketMngr.m_IsImgTickCam == true)
+	{
+		RetVal = true;
+		g_stPacketMngr.m_IsImgTickCam = false;
+	}
+
+	return RetVal;
 }
 
 /* ================

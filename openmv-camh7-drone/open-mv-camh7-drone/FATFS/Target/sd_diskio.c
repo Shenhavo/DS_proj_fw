@@ -18,7 +18,8 @@
   */
 /* USER CODE END Header */
 
-/* Note: code generation based on sd_diskio_dma_template.c v2.0.2 as "Use dma template" is enabled. */
+/* Note: code generation based on sd_diskio_dma_template_bspv1.c v2.1.4
+   as "Use dma template" is enabled. */
 
 /* USER CODE BEGIN firstSection */
 /* can be used to modify / undefine following code or add new definitions */
@@ -29,6 +30,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "ff_gen_drv.h"
 #include "sd_diskio.h"
+
+#include <string.h>
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -45,14 +48,14 @@
 /*
  * Depending on the use case, the SD card initialization could be done at the
  * application level: if it is the case define the flag below to disable
- * the BSP_SD_Init() call in the SD_Initialize() and add a call to 
+ * the BSP_SD_Init() call in the SD_Initialize() and add a call to
  * BSP_SD_Init() elsewhere in the application.
  */
 /* USER CODE BEGIN disableSDInit */
 /* #define DISABLE_SD_INIT */
 /* USER CODE END disableSDInit */
 
-/* 
+/*
  * when using cachable memory region, it may be needed to maintain the cache
  * validity. Enable the define below to activate a cache maintenance at each
  * read and write operation.
@@ -60,9 +63,25 @@
  */
 /* USER CODE BEGIN enableSDDmaCacheMaintenance */
 /* #define ENABLE_SD_DMA_CACHE_MAINTENANCE  1 */
-/* USER CODE BEGIN enableSDDmaCacheMaintenance */
+/* USER CODE END enableSDDmaCacheMaintenance */
+
+/*
+* Some DMA requires 4-Byte aligned address buffer to correctly read/wite data,
+* in FatFs some accesses aren't thus we need a 4-byte aligned scratch buffer to correctly
+* transfer data
+*/
+/* USER CODE BEGIN enableScratchBuffer */
+/* #define ENABLE_SCRATCH_BUFFER */
+/* USER CODE END enableScratchBuffer */
 
 /* Private variables ---------------------------------------------------------*/
+#if defined(ENABLE_SCRATCH_BUFFER)
+#if defined (ENABLE_SD_DMA_CACHE_MAINTENANCE)
+ALIGN_32BYTES(static uint8_t scratch[BLOCKSIZE]); // 32-Byte aligned for cache maintenance
+#else
+__ALIGN_BEGIN static uint8_t scratch[BLOCKSIZE] __ALIGN_END;
+#endif
+#endif
 /* Disk status */
 static volatile DSTATUS Stat = STA_NOINIT;
 
@@ -73,10 +92,10 @@ DSTATUS SD_initialize (BYTE);
 DSTATUS SD_status (BYTE);
 DRESULT SD_read (BYTE, BYTE*, DWORD, UINT);
 #if _USE_WRITE == 1
-  DRESULT SD_write (BYTE, const BYTE*, DWORD, UINT);
+DRESULT SD_write (BYTE, const BYTE*, DWORD, UINT);
 #endif /* _USE_WRITE == 1 */
 #if _USE_IOCTL == 1
-  DRESULT SD_ioctl (BYTE, BYTE, void*);
+DRESULT SD_ioctl (BYTE, BYTE, void*);
 #endif  /* _USE_IOCTL == 1 */
 
 const Diskio_drvTypeDef  SD_Driver =
@@ -98,6 +117,22 @@ const Diskio_drvTypeDef  SD_Driver =
 /* USER CODE END beforeFunctionSection */
 
 /* Private functions ---------------------------------------------------------*/
+
+static int SD_CheckStatusWithTimeout(uint32_t timeout)
+{
+  uint32_t timer = HAL_GetTick();
+  /* block until SDIO IP is ready again or a timeout occur */
+  while(HAL_GetTick() - timer < timeout)
+  {
+    if (BSP_SD_GetCardState() == SD_TRANSFER_OK)
+    {
+      return 0;
+    }
+  }
+
+  return -1;
+}
+
 static DSTATUS SD_CheckStatus(BYTE lun)
 {
   Stat = STA_NOINIT;
@@ -117,7 +152,7 @@ static DSTATUS SD_CheckStatus(BYTE lun)
   */
 DSTATUS SD_initialize(BYTE lun)
 {
-  Stat = STA_NOINIT;
+
 #if !defined(DISABLE_SD_INIT)
 
   if(BSP_SD_Init() == MSD_OK)
@@ -128,6 +163,7 @@ DSTATUS SD_initialize(BYTE lun)
 #else
   Stat = SD_CheckStatus(lun);
 #endif
+
   return Stat;
 }
 
@@ -152,52 +188,112 @@ DSTATUS SD_status(BYTE lun)
   * @param  count: Number of sectors to read (1..128)
   * @retval DRESULT: Operation result
   */
+
 DRESULT SD_read(BYTE lun, BYTE *buff, DWORD sector, UINT count)
 {
   DRESULT res = RES_ERROR;
-  ReadStatus = 0;
   uint32_t timeout;
+#if defined(ENABLE_SCRATCH_BUFFER)
+  uint8_t ret;
+#endif
 #if (ENABLE_SD_DMA_CACHE_MAINTENANCE == 1)
   uint32_t alignedAddr;
 #endif
 
-  if(BSP_SD_ReadBlocks_DMA((uint32_t*)buff,
-                           (uint32_t) (sector),
-                           count) == MSD_OK)
+  /*
+  * ensure the SDCard is ready for a new operation
+  */
+
+  if (SD_CheckStatusWithTimeout(SD_TIMEOUT) < 0)
   {
-    /* Wait that the reading process is completed or a timeout occurs */
-    timeout = HAL_GetTick();
-    while((ReadStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT))
-    {
-    }
-    /* incase of a timeout return error */
-    if (ReadStatus == 0)
-    {
-      res = RES_ERROR;
-    }
-    else
+    return res;
+  }
+
+#if defined(ENABLE_SCRATCH_BUFFER)
+  if (!((uint32_t)buff & 0x3))
+  {
+#endif
+    if(BSP_SD_ReadBlocks_DMA((uint32_t*)buff,
+                             (uint32_t) (sector),
+                             count) == MSD_OK)
     {
       ReadStatus = 0;
+      /* Wait that the reading process is completed or a timeout occurs */
       timeout = HAL_GetTick();
-
-      while((HAL_GetTick() - timeout) < SD_TIMEOUT)
+      while((ReadStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT))
       {
-        if (BSP_SD_GetCardState() == SD_TRANSFER_OK)
+      }
+      /* incase of a timeout return error */
+      if (ReadStatus == 0)
+      {
+        res = RES_ERROR;
+      }
+      else
+      {
+        ReadStatus = 0;
+        timeout = HAL_GetTick();
+
+        while((HAL_GetTick() - timeout) < SD_TIMEOUT)
         {
-          res = RES_OK;
+          if (BSP_SD_GetCardState() == SD_TRANSFER_OK)
+          {
+            res = RES_OK;
 #if (ENABLE_SD_DMA_CACHE_MAINTENANCE == 1)
             /*
-               the SCB_InvalidateDCache_by_Addr() requires a 32-Byte aligned address,
-               adjust the address and the D-Cache size to invalidate accordingly.
-             */
+            the SCB_InvalidateDCache_by_Addr() requires a 32-Byte aligned address,
+            adjust the address and the D-Cache size to invalidate accordingly.
+            */
             alignedAddr = (uint32_t)buff & ~0x1F;
             SCB_InvalidateDCache_by_Addr((uint32_t*)alignedAddr, count*BLOCKSIZE + ((uint32_t)buff - alignedAddr));
 #endif
-           break;
+            break;
+          }
         }
       }
     }
+#if defined(ENABLE_SCRATCH_BUFFER)
   }
+    else
+    {
+      /* Slow path, fetch each sector a part and memcpy to destination buffer */
+      int i;
+
+      for (i = 0; i < count; i++) {
+        ret = BSP_SD_ReadBlocks_DMA((uint32_t*)scratch, (uint32_t)sector++, 1);
+        if (ret == MSD_OK) {
+          /* wait until the read is successful or a timeout occurs */
+
+          timeout = HAL_GetTick();
+          while((ReadStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT))
+          {
+          }
+          if (ReadStatus == 0)
+          {
+            res = RES_ERROR;
+            break;
+          }
+          ReadStatus = 0;
+
+#if (ENABLE_SD_DMA_CACHE_MAINTENANCE == 1)
+          /*
+          *
+          * invalidate the scratch buffer before the next read to get the actual data instead of the cached one
+          */
+          SCB_InvalidateDCache_by_Addr((uint32_t*)scratch, BLOCKSIZE);
+#endif
+          memcpy(buff, scratch, BLOCKSIZE);
+          buff += BLOCKSIZE;
+        }
+        else
+        {
+          break;
+        }
+      }
+
+      if ((i == count) && (ret == MSD_OK))
+        res = RES_OK;
+    }
+#endif
 
   return res;
 }
@@ -214,52 +310,111 @@ DRESULT SD_read(BYTE lun, BYTE *buff, DWORD sector, UINT count)
   * @retval DRESULT: Operation result
   */
 #if _USE_WRITE == 1
+
 DRESULT SD_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
 {
   DRESULT res = RES_ERROR;
-  WriteStatus = 0;
   uint32_t timeout;
-#if (ENABLE_SD_DMA_CACHE_MAINTENANCE == 1)
-  uint32_t alignedAddr;
-  /*
-   the SCB_CleanDCache_by_Addr() requires a 32-Byte aligned address
-   adjust the address and the D-Cache size to clean accordingly.
-   */
-  alignedAddr = (uint32_t)buff &  ~0x1F;
-  SCB_CleanDCache_by_Addr((uint32_t*)alignedAddr, count*BLOCKSIZE + ((uint32_t)buff - alignedAddr));
+#if defined(ENABLE_SCRATCH_BUFFER)
+  uint8_t ret;
+  int i;
 #endif
 
-  if(BSP_SD_WriteBlocks_DMA((uint32_t*)buff,
-                            (uint32_t) (sector),
-                            count) == MSD_OK)
+   WriteStatus = 0;
+#if (ENABLE_SD_DMA_CACHE_MAINTENANCE == 1)
+  uint32_t alignedAddr;
+#endif
+
+  if (SD_CheckStatusWithTimeout(SD_TIMEOUT) < 0)
   {
-    /* Wait that writing process is completed or a timeout occurs */
+    return res;
+  }
 
-    timeout = HAL_GetTick();
-    while((WriteStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT))
+#if defined(ENABLE_SCRATCH_BUFFER)
+  if (!((uint32_t)buff & 0x3))
+  {
+#endif
+#if (ENABLE_SD_DMA_CACHE_MAINTENANCE == 1)
+
+    /*
+    the SCB_CleanDCache_by_Addr() requires a 32-Byte aligned address
+    adjust the address and the D-Cache size to clean accordingly.
+    */
+    alignedAddr = (uint32_t)buff &  ~0x1F;
+    SCB_CleanDCache_by_Addr((uint32_t*)alignedAddr, count*BLOCKSIZE + ((uint32_t)buff - alignedAddr));
+#endif
+
+    if(BSP_SD_WriteBlocks_DMA((uint32_t*)buff,
+                              (uint32_t)(sector),
+                              count) == MSD_OK)
     {
-    }
-    /* incase of a timeout return error */
-    if (WriteStatus == 0)
-    {
-      res = RES_ERROR;
-    }
-    else
-    {
-      WriteStatus = 0;
+      /* Wait that writing process is completed or a timeout occurs */
+
       timeout = HAL_GetTick();
-
-      while((HAL_GetTick() - timeout) < SD_TIMEOUT)
+      while((WriteStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT))
       {
-        if (BSP_SD_GetCardState() == SD_TRANSFER_OK)
+      }
+      /* incase of a timeout return error */
+      if (WriteStatus == 0)
+      {
+        res = RES_ERROR;
+      }
+      else
+      {
+        WriteStatus = 0;
+        timeout = HAL_GetTick();
+
+        while((HAL_GetTick() - timeout) < SD_TIMEOUT)
         {
-          res = RES_OK;
-          break;
+          if (BSP_SD_GetCardState() == SD_TRANSFER_OK)
+          {
+            res = RES_OK;
+            break;
+          }
         }
       }
     }
+#if defined(ENABLE_SCRATCH_BUFFER)
   }
+    else
+    {
+      /* Slow path, fetch each sector a part and memcpy to destination buffer */
+#if (ENABLE_SD_DMA_CACHE_MAINTENANCE == 1)
+      /*
+      * invalidate the scratch buffer before the next write to get the actual data instead of the cached one
+      */
+      SCB_InvalidateDCache_by_Addr((uint32_t*)scratch, BLOCKSIZE);
+#endif
 
+      for (i = 0; i < count; i++)
+      {
+        WriteStatus = 0;
+
+        memcpy((void *)scratch, (void *)buff, BLOCKSIZE);
+        buff += BLOCKSIZE;
+
+        ret = BSP_SD_WriteBlocks_DMA((uint32_t*)scratch, (uint32_t)sector++, 1);
+        if (ret == MSD_OK) {
+          /* wait for a message from the queue or a timeout */
+          timeout = HAL_GetTick();
+          while((WriteStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT))
+          {
+          }
+          if (WriteStatus == 0)
+          {
+            break;
+          }
+
+        }
+        else
+        {
+          break;
+        }
+      }
+      if ((i == count) && (ret == MSD_OK))
+        res = RES_OK;
+    }
+#endif
   return res;
 }
 #endif /* _USE_WRITE == 1 */
@@ -322,7 +477,7 @@ DRESULT SD_ioctl(BYTE lun, BYTE cmd, void *buff)
 /* can be used to modify previous code / undefine following code / add new code */
 /* USER CODE END afterIoctlSection */
 
-/* USER CODE BEGIN callbackSection */ 
+/* USER CODE BEGIN callbackSection */
 /* can be used to modify / following code or add new code */
 /* USER CODE END callbackSection */
 /**
@@ -330,17 +485,9 @@ DRESULT SD_ioctl(BYTE lun, BYTE cmd, void *buff)
   * @param hsd: SD handle
   * @retval None
   */
-
- /*
-   ===============================================================================
-    Select the correct function signature depending on your platform.
-    please refer to the file "stm32xxxx_eval_sd.h" to verify the correct function
-    prototype
-   ===============================================================================
-  */
-//void BSP_SD_WriteCpltCallback(uint32_t SdCard)
 void BSP_SD_WriteCpltCallback(void)
 {
+
   WriteStatus = 1;
 }
 
@@ -349,21 +496,28 @@ void BSP_SD_WriteCpltCallback(void)
   * @param hsd: SD handle
   * @retval None
   */
-
-  /*
-   ===============================================================================
-    Select the correct function signature depending on your platform.
-    please refer to the file "stm32xxxx_eval_sd.h" to verify the correct function
-    prototype
-   ===============================================================================
-  */
-//void BSP_SD_ReadCpltCallback(uint32_t SdCard)
 void BSP_SD_ReadCpltCallback(void)
 {
   ReadStatus = 1;
 }
 
-/* USER CODE BEGIN lastSection */ 
+/* USER CODE BEGIN ErrorAbortCallbacks */
+/*
+==============================================================================================
+  depending on the SD_HAL_Driver version, either the HAL_SD_ErrorCallback() or HAL_SD_AbortCallback()
+  or both could be defined, activate the callbacks below when suitable and needed
+==============================================================================================
+void BSP_SD_AbortCallback(void)
+{
+}
+
+void BSP_SD_ErrorCallback(void)
+{
+}
+*/
+/* USER CODE END ErrorAbortCallbacks */
+
+/* USER CODE BEGIN lastSection */
 /* can be used to modify / undefine previous code or add new code */
 /* USER CODE END lastSection */
 
