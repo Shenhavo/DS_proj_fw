@@ -338,7 +338,7 @@ void CameraMngr_CompressBenchmark(void)
 	//printf("src size = %ld [b]\r\n", pThis->m_FrameBuffSize);
 //	printf("out size = %ld [b]\r\n", pThis->m_JpegFrameBuffConvSize);
 
-//	pThis->m_JpegConvDuration_msec = HAL_GetTick() - pThis->m_JpegConvStartTick;
+	pThis->m_JpegConvDuration_msec = HAL_GetTick() - pThis->m_JpegConvStartTick;
 	printf("%d\tjcmp %ld[msec]\r\n", HAL_GetTick(), pThis->m_JpegConvDuration_msec );
 //	printf("%d\r\n", HAL_GetTick());
 #endif // CAMERA_BENCHMARK

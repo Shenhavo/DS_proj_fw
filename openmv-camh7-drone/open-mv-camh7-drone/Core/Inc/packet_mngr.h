@@ -78,6 +78,7 @@ typedef struct stPacketMngr_name {
 	bool				m_IsImuPacketReady;
 
 	bool				m_IsImgTickCam;
+	bool				m_IsWifiTick;
 
 	uint32_t			m_Tick;
 
