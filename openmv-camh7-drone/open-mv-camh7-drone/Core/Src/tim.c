@@ -100,9 +100,9 @@ void MX_TIM2_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 50000;
+  htim2.Init.Prescaler = 239;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 3;
+  htim2.Init.Period = 999;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -221,19 +221,6 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 
 void TIM_StartTimer2(void)
 {
-	// TODO: SO: counts every 1msec = 1000Hz
-
-	htim2.Init.Period            = 3;
-	htim2.Init.Prescaler         = 50000;
-	htim2.Init.ClockDivision     = 0;
-	htim2.Init.CounterMode       = TIM_COUNTERMODE_UP;
-	htim2.Init.RepetitionCounter = 0;
-
-	if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-	{
-		Error_Handler();
-	}
-
 	if (HAL_TIM_Base_Start_IT(&htim2) != HAL_OK)
 	{
 		Error_Handler();
