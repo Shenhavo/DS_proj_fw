@@ -383,8 +383,8 @@ void CameraMngr_HandleEvents(void)
 			CameraMngr_CompressEnd();
 			CameraMngr_CompressBenchmark();
 
-			HAL_DCMI_DeInit(&hdcmi); // TODO: remove
-			HAL_DCMI_Init(&hdcmi); // TODO: remove
+			HAL_DCMI_ReInitDMA(&hdcmi);
+
 		}
 	}
 	break;

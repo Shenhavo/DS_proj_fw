@@ -227,8 +227,8 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 
 		if(Result != SOCK_ERR_NO_ERROR)
 		{
-			printf("%d\tEF%d\r\n",HAL_GetTick(),Result);
-			Error_Handler();
+			printf("%d\t***F***%d\r\n",HAL_GetTick(),Result);
+//			Error_Handler();
 		}
 	}
 	return Img_jpg_UpdateImgState();
@@ -272,8 +272,8 @@ void PacketMngr_SendImu(int8_t a_Socket)
 
 		if(Result == SOCK_ERR_BUFFER_FULL) //SO: SOCK_ERR_BUFFER_FULL is received whenever user clicks on wifi connections
 		{
-			printf("%d\tEI%d\r\n",HAL_GetTick(),Result);
-			Error_Handler();
+			printf("%d\t***I***%d\r\n",HAL_GetTick(),Result);
+//			Error_Handler();
 		}
 		PacketMngr_SetState(ePacketMngrState_off);
 	}
