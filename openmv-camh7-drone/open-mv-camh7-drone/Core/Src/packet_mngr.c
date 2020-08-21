@@ -103,8 +103,10 @@ void PacketMngr_TxRoutine(int8_t a_Socket)
 	break;
 	case ePacketMngrState_Frame:
 	{
-
-		PacketMngr_IterateImg( a_Socket);
+		if(p_stPacketMngr->m_IsImuPacketReady == true)
+		{
+			PacketMngr_IterateImg( a_Socket);
+		}
 	}
 	break;
 	case ePacketMngrState_IMU:
@@ -152,7 +154,7 @@ void PacketMngr_Update(void)
 		p_stPacketMngr->m_IsImgTickCam	= true;
 
 		p_stPacketMngr->m_Tick = HAL_GetTick();
-		printf("%d\tTick\r\n", p_stPacketMngr->m_Tick);
+//		printf("%d\tTick\r\n", p_stPacketMngr->m_Tick); // SO:  printf inside timer callback is not recommended at all!!!
 
 //		printf("", p_stPa)
 	}
@@ -225,7 +227,8 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 
 		if(Result != SOCK_ERR_NO_ERROR)
 		{
-			printf("%d\tE%d\r\n",HAL_GetTick(),Result);
+			printf("%d\tEF%d\r\n",HAL_GetTick(),Result);
+			Error_Handler();
 		}
 	}
 	return Img_jpg_UpdateImgState();
@@ -261,13 +264,16 @@ void PacketMngr_SendImu(int8_t a_Socket)
 	{
 		PacketMngr_SetState(ePacketMngrState_IMU);
 		p_stPacketMngr->m_IsImuPacketReady =	false;
+
+		printf("%d\tI\r\n",HAL_GetTick());
+
 		int8_t Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stImuPacket , sizeof(stImuPacket), 0);
-		printf("I\r\n");
+
+
 		if(Result == SOCK_ERR_BUFFER_FULL) //SO: SOCK_ERR_BUFFER_FULL is received whenever user clicks on wifi connections
 		{
-			printf("I\t%d",HAL_GetTick());
-//			HAL_Delay(1);
-//			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stImuPacket , sizeof(stImuPacket), 0);
+			printf("%d\tEI%d\r\n",HAL_GetTick(),Result);
+			Error_Handler();
 		}
 		PacketMngr_SetState(ePacketMngrState_off);
 	}

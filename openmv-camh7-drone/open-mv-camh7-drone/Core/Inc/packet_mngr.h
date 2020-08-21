@@ -13,11 +13,11 @@
 #include "img_jpg_file.h"
 #include "sd_hal_mpu6050.h"
 
-//#define USING_IMU
+#define USING_IMU
 #define USING_FRAME
 
 
-#define IMU_EVENT_CYCLE_MSEC	5
+#define IMU_EVENT_CYCLE_MSEC	10
 #define IMU_CALLS_PER_PACKET	10
 #define FRAME_EVENT_CYCLE_MSEC	100
 
