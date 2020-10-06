@@ -27,6 +27,7 @@ bool g_IsTim2TimeoutEvent = false;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim6;
 
 /* TIM1 init function */
 void MX_TIM1_Init(void)
@@ -128,6 +129,28 @@ void MX_TIM2_Init(void)
   }
 
 }
+/* TIM6 init function */
+void MX_TIM6_Init(void)
+{
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 59;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 999;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+}
 
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
 {
@@ -157,6 +180,17 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
   /* USER CODE BEGIN TIM2_MspInit 1 */
 
   /* USER CODE END TIM2_MspInit 1 */
+  }
+  else if(tim_baseHandle->Instance==TIM6)
+  {
+  /* USER CODE BEGIN TIM6_MspInit 0 */
+
+  /* USER CODE END TIM6_MspInit 0 */
+    /* TIM6 clock enable */
+    __HAL_RCC_TIM6_CLK_ENABLE();
+  /* USER CODE BEGIN TIM6_MspInit 1 */
+
+  /* USER CODE END TIM6_MspInit 1 */
   }
 }
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
@@ -215,6 +249,17 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 
   /* USER CODE END TIM2_MspDeInit 1 */
   }
+  else if(tim_baseHandle->Instance==TIM6)
+  {
+  /* USER CODE BEGIN TIM6_MspDeInit 0 */
+
+  /* USER CODE END TIM6_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_TIM6_CLK_DISABLE();
+  /* USER CODE BEGIN TIM6_MspDeInit 1 */
+
+  /* USER CODE END TIM6_MspDeInit 1 */
+  }
 }
 
 /* USER CODE BEGIN 1 */
@@ -243,7 +288,7 @@ void TIM_StopImuTick(void)
 /* ================
 int8_t WifiMngr_Init(void)
 ================ */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+void HAL_TIM2_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 //  g_IsTim2TimeoutEvent = true;
 	PacketMngr_Update();
@@ -266,6 +311,37 @@ bool TIM_IsImuTimeoutEvent(void)
 
   return ReturnVal;
 }
+
+
+void TIM_StartTimer6(void)
+{
+	if (HAL_TIM_Base_Start_IT(&htim6) != HAL_OK)
+	{
+		Error_Handler();
+	}
+}
+/* ================
+void TIM_StopImuTick6(void)
+================ */
+void TIM_StopImuTick6(void)
+{
+	HAL_TIM_Base_Stop_IT(&htim6);
+}
+
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @param  htim : TIM handle
+  * @retval None
+  */
+/* ================
+int8_t WifiMngr_Init(void)
+================ */
+void HAL_TIM6_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	PacketMngr_UpdateWifiTick();
+}
+
 
 /* USER CODE END 1 */
 

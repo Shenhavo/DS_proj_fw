@@ -32,6 +32,7 @@
 
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN Private defines */
 
@@ -39,14 +40,19 @@ extern TIM_HandleTypeDef htim2;
 
 void MX_TIM1_Init(void);
 void MX_TIM2_Init(void);
+void MX_TIM6_Init(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* USER CODE BEGIN Prototypes */
 void TIM_StartTimer2(void);
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
+void TIM_StartTimer6(void);
+void HAL_TIM2_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
+void HAL_TIM6_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
+
 bool TIM_IsImuTimeoutEvent(void);
 void TIM_StopImuTick(void);
+void TIM_StopImuTick6(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

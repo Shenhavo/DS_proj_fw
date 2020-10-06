@@ -54,6 +54,7 @@ void PacketMngr_Start(void)
 	p_stImg->m_eNextImgStates		= 	eImgStates_finished;
 
 	TIM_StartTimer2();
+	TIM_StartTimer6();
 }
 
 
@@ -162,12 +163,22 @@ void PacketMngr_Update(void)
 }
 
 /* ================
+void PacketMngr_UpdateWifiTick(void);
+================ */
+void PacketMngr_UpdateWifiTick(void)// each cycle is 250usec
+{
+	UPDATE_WIFI_TICK_CTR(g_stPacketMngr.m_IsWifiTick);
+}
+
+
+/* ================
 void PacketMngr_IterateImg(void);
 ================ */
 eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 {
 	if( PacketMngr_GetIsWifiSendEvent() == true)
 	{
+
 		stPacketMngr* 	p_stPacketMngr 	= 	&g_stPacketMngr;
 		stImg*			p_stImg			=	p_stPacketMngr->m_p_stImg;
 		stFrame* 		p_stFrame 		= (stFrame*)(p_stPacketMngr->m_PacketBytes);
@@ -227,6 +238,7 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 
 		if(Result != SOCK_ERR_NO_ERROR)
 		{
+
 			printf("%d\t***F***%d\r\n",HAL_GetTick(),Result);
 //			Error_Handler();
 		}
@@ -317,15 +329,15 @@ bool PacketMngr_GetIsWifiSendEvent( void )
 ================ */
 bool PacketMngr_GetIsWifiSendEvent( void )
 {
-	bool RetVal = false;
+//	bool RetVal = false;
+//
+//	if(g_stPacketMngr.m_IsWifiTick == true)
+//	{
+//		RetVal = true;
+//		g_stPacketMngr.m_IsWifiTick = false;
+//	}
 
-	if(g_stPacketMngr.m_IsWifiTick == true)
-	{
-		RetVal = true;
-		g_stPacketMngr.m_IsWifiTick = false;
-	}
-
-	return RetVal;
+	return (g_stPacketMngr.m_IsWifiTick == COUNTING_ENDED_VAL);
 }
 
 

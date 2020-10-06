@@ -154,8 +154,6 @@ int8_t WifiMngr_ReInit(void)
 	stWifiMngr* p_stWifiMngr 		= &g_stWifiMngr;
 	WifiMngr_InitStruct(p_stWifiMngr);
 
-
-	// TODO: SO: remove later
 	PacketMngr_GetNewImg();
 
 	return ret;

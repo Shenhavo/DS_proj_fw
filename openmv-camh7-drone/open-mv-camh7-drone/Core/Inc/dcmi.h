@@ -37,7 +37,7 @@ extern DCMI_HandleTypeDef hdcmi;
 /* USER CODE END Private defines */
 
 void MX_DCMI_Init(void);
-extern void HAL_DCMI_ReInitDMA(DCMI_HandleTypeDef* dcmiHandle);
+
 /* USER CODE BEGIN Prototypes */
 
 /* USER CODE END Prototypes */

@@ -19,7 +19,8 @@
 
 #define IMU_EVENT_CYCLE_MSEC	10
 #define IMU_CALLS_PER_PACKET	10
-#define FRAME_EVENT_CYCLE_MSEC	100
+#define FRAME_EVENT_CYCLE_MSEC	65
+#define WIFI_TICK_CYCLE			7 // each cycle is 250usec
 
 #define UPDATE_IMU_EVENT_CTR(x)			(x)++;\
 										(x)=((x)%IMU_EVENT_CYCLE_MSEC)
@@ -27,6 +28,8 @@
 										(x)=((x)%IMU_CALLS_PER_PACKET)
 #define UPDATE_FRAME_EVENT_CTR(x)		(x)++;\
 										(x)=((x)%FRAME_EVENT_CYCLE_MSEC)
+#define UPDATE_WIFI_TICK_CTR(x)			(x)++;\
+										(x)=((x)%WIFI_TICK_CYCLE)
 #define COUNTING_ENDED_VAL				0
 
 #define FRAME_SOF	'!'
@@ -78,7 +81,7 @@ typedef struct stPacketMngr_name {
 	bool				m_IsImuPacketReady;
 
 	bool				m_IsImgTickCam;
-	bool				m_IsWifiTick;
+	uint32_t			m_IsWifiTick;
 
 	uint32_t			m_Tick;
 
@@ -91,7 +94,7 @@ void PacketMngr_TxRoutine(int8_t a_Socket);
 void PacketMngr_Update(void);
 void PacketMngr_GetNewImg( void );
 bool PacketMngr_GetIsImgTickCam( void );
-
+void PacketMngr_UpdateWifiTick(void);
 
 #ifdef __cplusplus
 }
