@@ -47,8 +47,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 /* USER CODE BEGIN Prototypes */
 void TIM_StartTimer2(void);
 void TIM_StartTimer6(void);
-void HAL_TIM2_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
-void HAL_TIM6_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 
 bool TIM_IsImuTimeoutEvent(void);
 void TIM_StopImuTick(void);

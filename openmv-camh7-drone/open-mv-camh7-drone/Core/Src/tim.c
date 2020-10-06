@@ -288,10 +288,20 @@ void TIM_StopImuTick(void)
 /* ================
 int8_t WifiMngr_Init(void)
 ================ */
-void HAL_TIM2_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-//  g_IsTim2TimeoutEvent = true;
-	PacketMngr_Update();
+	if(htim == &htim2)
+	{
+		PacketMngr_Update();
+	}
+	else
+	{
+		if( htim == &htim6)
+		{
+			PacketMngr_UpdateWifiTick();
+		}
+	}
+
 }
 
 /**
@@ -328,19 +338,6 @@ void TIM_StopImuTick6(void)
 	HAL_TIM_Base_Stop_IT(&htim6);
 }
 
-
-/**
-  * @brief  Period elapsed callback in non blocking mode
-  * @param  htim : TIM handle
-  * @retval None
-  */
-/* ================
-int8_t WifiMngr_Init(void)
-================ */
-void HAL_TIM6_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	PacketMngr_UpdateWifiTick();
-}
 
 
 /* USER CODE END 1 */

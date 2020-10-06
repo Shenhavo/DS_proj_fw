@@ -148,7 +148,7 @@ void PacketMngr_Update(void)
 #endif
 #ifdef USING_FRAME
 
-	p_stPacketMngr->m_IsWifiTick	= true;
+
 	UPDATE_FRAME_EVENT_CTR(p_stPacketMngr->m_FrameEventCtr);
 	if(p_stPacketMngr->m_FrameEventCtr == COUNTING_ENDED_VAL)	// SO: new frame packet
 	{
