@@ -17,10 +17,10 @@
 #define USING_FRAME
 
 
-#define IMU_EVENT_CYCLE_MSEC	10
+#define IMU_EVENT_CYCLE_MSEC	7
 #define IMU_CALLS_PER_PACKET	10
-#define FRAME_EVENT_CYCLE_MSEC	100
-#define WIFI_TICK_CYCLE			4 // each cycle is 250usec
+#define FRAME_EVENT_CYCLE_MSEC	70
+#define WIFI_TICK_CYCLE			6 // each cycle is 250usec
 
 #define UPDATE_IMU_EVENT_CTR(x)			(x)++;\
 										(x)=((x)%IMU_EVENT_CYCLE_MSEC)
