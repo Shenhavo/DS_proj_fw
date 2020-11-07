@@ -11,7 +11,7 @@
 #endif
 
 #include <stdio.h>
-#define DISABLE_UART
+//#define DISABLE_UART
 #ifdef USE_UART_DEBUG
 #include "usart.h"
 #endif //USE_UART_DEBUG
