@@ -34,6 +34,7 @@ void BMP_GetInfo(FIL * Filename, JPEG_ConfTypeDef *pInfo);
 
 uint32_t JpegEncodeDMA_FromSdToSd(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *jpgfile);
 uint32_t JpegEncodeDMA_FromRamToSd(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, FIL *jpgfile);
+uint32_t JpegEncodeDMA_FromRamToRam(JPEG_HandleTypeDef *hjpeg, uint8_t* InFrameBuff, uint8_t* OutFrameBuff);
 
 uint32_t JpegEncodeDMA_GetOutBuffSize(void);
 

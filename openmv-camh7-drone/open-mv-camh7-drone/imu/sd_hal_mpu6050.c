@@ -329,7 +329,7 @@ SD_MPU6050_Result SD_MPU6050_ReadAll(void)
 		Result = SD_MPU6050_Result_DeviceInvalid;
 	}
 
-	if (HAL_I2C_Master_Receive(pThis->m_pI2Cx,(uint16_t)pThis->Address, data, 14, MPU6050_I2C_TIMEOUT_MSEC) != HAL_OK)
+	else if (HAL_I2C_Master_Receive(pThis->m_pI2Cx,(uint16_t)pThis->Address, data, 14, MPU6050_I2C_TIMEOUT_MSEC) != HAL_OK)
 	{
 		Result = SD_MPU6050_Result_DeviceInvalid;
 	}
@@ -406,7 +406,7 @@ stImuCall* SD_MPU6050_GetImuCall(void)
 {
 	if(SD_MPU6050_ReadAll() != SD_MPU6050_Result_Ok)
 	{
-		printf("Error taking Imu Call\r\n");
+		printf("imu err\r\n");
 
 		g_mpu1.m_stImuCall.Gyroscope_X = 0;
 		g_mpu1.m_stImuCall.Gyroscope_Y = 0;

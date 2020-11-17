@@ -6,6 +6,7 @@
 #define INC_CAMERA_MNGR_H_
 
 #define CAMERA_BENCHMARK
+//#define SAVE_OUTPUT_IMG_ON_SD
 
 //#define JPEG_444_GS_MCU_SIZE        (64)
 // 640 * 480 = 307200

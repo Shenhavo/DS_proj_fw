@@ -336,7 +336,7 @@ void CameraMngr_CompressBenchmark(void)
 	stCameraMngr* pThis = &g_CameraMngr;
 
 	//printf("src size = %ld [b]\r\n", pThis->m_FrameBuffSize);
-//	printf("out size = %ld [b]\r\n", pThis->m_JpegFrameBuffConvSize);
+	printf("out size = %ld [b]\r\n", pThis->m_JpegFrameBuffConvSize);
 
 	pThis->m_JpegConvDuration_msec = HAL_GetTick() - pThis->m_JpegConvStartTick;
 	printf("%d\tjcmp %ld[msec]\r\n", HAL_GetTick(), pThis->m_JpegConvDuration_msec );
@@ -369,6 +369,13 @@ void CameraMngr_HandleEvents(void)
 		{
 			CameraMngr_SetCamImgState( eCamImgState_AcqCmplt );
 			CameraMngr_DcmiAcqBenchmark();
+
+#ifdef SAVE_OUTPUT_IMG_ON_SD
+			char FileNameOnSd[10];
+			sprintf(FileNameOnSd, "%d.bmp", g_CameraMngr.m_DcmiFrameAcqStartTick);
+			FS_SaveBuffOnSdCard(CameraFrameBuff, FRAME_BUFF_SIZE, FileNameOnSd);
+#endif // SAVE_OUTPUT_IMG_ON_SD
+
 			CameraMngr_CompressStart();
 		}
 	}
@@ -383,6 +390,12 @@ void CameraMngr_HandleEvents(void)
 			CameraMngr_CompressEnd();
 			CameraMngr_CompressBenchmark();
 
+			// TODO: remove
+#ifdef SAVE_OUTPUT_IMG_ON_SD
+			char FileNameOnSd[10];
+			sprintf(FileNameOnSd, "%d.jpg", g_CameraMngr.m_DcmiFrameAcqStartTick);
+			FS_SaveBuffOnSdCard(JpegFrameBuff, g_CameraMngr.m_JpegFrameBuffConvSize, FileNameOnSd);
+#endif // SAVE_OUTPUT_IMG_ON_SD
 			HAL_DCMI_ReInitDMA(&hdcmi);
 
 		}
