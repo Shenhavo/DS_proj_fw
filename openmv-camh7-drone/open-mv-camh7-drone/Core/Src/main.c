@@ -90,7 +90,8 @@ static void MPU_Config(void);
 int main(void)
 {
 	/* USER CODE BEGIN 1 */
-
+	uint32_t ImuInitRes = SD_MPU6050_Result_Ok;
+	int8_t WifiInitRes = M2M_SUCCESS;
 	/* USER CODE END 1 */
 
 	/* MPU Configuration--------------------------------------------------------*/
@@ -136,9 +137,28 @@ int main(void)
 	LED_Init();
 	CameraMngr_Init();
 	PacketMngr_Init();
-	WifiMngr_Init();
 
-	SD_MPU6050_Init(SD_MPU6050_Device_0,SD_MPU6050_Accelerometer_2G,SD_MPU6050_Gyroscope_250s );
+	WifiInitRes = WifiMngr_Init();
+	ImuInitRes = SD_MPU6050_Init(SD_MPU6050_Device_0, SD_MPU6050_Accelerometer_2G, SD_MPU6050_Gyroscope_250s );
+
+	if (WifiInitRes != M2M_SUCCESS)
+	{
+		printf("wifi init err\r\n");
+	}
+	else
+	{
+		printf("wif init ok\r\n");
+	}
+
+	if (ImuInitRes != SD_MPU6050_Result_Ok)
+	{
+		printf("imu init err\r\n");
+	}
+	else
+	{
+		printf("imu init ok\r\n");
+	}
+
 	printf("~~ init finished ~~\r\n");
 	printf("GIT REV SHA: %s\r\n", PROJ_SHA);
 

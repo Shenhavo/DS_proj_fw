@@ -68,6 +68,8 @@ typedef struct stCameraMngr_name {
 
 	eCamImgState		m_eCamImgState;
 
+	uint32_t			m_JpegFrameBuffChecksum;
+
 #ifdef CAMERA_BENCHMARK
 	uint32_t			m_JpegConvStartTick;
 	uint32_t			m_JpegConvDuration_msec;
@@ -101,6 +103,8 @@ void CameraMngr_CompressStart(void);
 void CameraMngr_CompressProc(void);
 void CameraMngr_CompressEnd(void);
 void CameraMngr_CompressBenchmark(void);
+
+uint32_t CameraMngr_GetCompressedImgChecksum(void);
 
 void CameraMngr_HandleEvents(void);
 

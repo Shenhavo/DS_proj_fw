@@ -264,19 +264,28 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 
 /* USER CODE BEGIN 1 */
 
-void TIM_StartTimer2(void)
+void TIM_StartImuTick(void)
 {
 	if (HAL_TIM_Base_Start_IT(&htim2) != HAL_OK)
 	{
 		Error_Handler();
 	}
 }
+
 /* ================
-int8_t WifiMngr_Init(void)
+void TIM_StopImuTick(void)
 ================ */
 void TIM_StopImuTick(void)
 {
 	HAL_TIM_Base_Stop_IT(&htim2);
+}
+
+/* ================
+void TIM_StopWifiTick(void)
+================ */
+void TIM_StopWifiTick(void)
+{
+	HAL_TIM_Base_Stop_IT(&htim6);
 }
 
 
@@ -323,20 +332,20 @@ bool TIM_IsImuTimeoutEvent(void)
 }
 
 
-void TIM_StartTimer6(void)
+void TIM_StartWifiTick(void)
 {
 	if (HAL_TIM_Base_Start_IT(&htim6) != HAL_OK)
 	{
 		Error_Handler();
 	}
 }
-/* ================
-void TIM_StopImuTick6(void)
-================ */
-void TIM_StopImuTick6(void)
-{
-	HAL_TIM_Base_Stop_IT(&htim6);
-}
+///* ================
+//void TIM_StopImuTick6(void)
+//================ */
+//void TIM_StopImuTick6(void)
+//{
+//	HAL_TIM_Base_Stop_IT(&htim6);
+//}
 
 
 

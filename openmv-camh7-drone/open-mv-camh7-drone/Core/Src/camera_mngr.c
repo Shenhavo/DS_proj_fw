@@ -14,6 +14,7 @@
 static stCameraMngr g_CameraMngr = {0x00};
 
 void CameraMngr_DcmiAcqBenchmark(void);
+uint32_t CamperMngr_CalcCompressedImgChecksum(void);
 
 
 /**
@@ -58,18 +59,20 @@ void CameraMngr_Init(void)
 
 	pThis->m_DcmiFrameAcqStartTick		= 0;
 
+	pThis->m_JpegFrameBuffChecksum 		= 0;
+
 #ifdef CAMERA_BENCHMARK
 	pThis->m_JpegConvStartTick			= 0;
 	pThis->m_JpegConvDuration_msec		= 0;
 	pThis->m_DcmiFrameAcqDuration_msec 	= 0;
 
-	printf( "CameraFrameBuff\t@ 0x%x  aligned with = %ld to uint32_t\r\n",
-			(uint32_t) CameraFrameBuff,
-			((uint32_t) CameraFrameBuff - D1_AXISRAM_BASE) % 32);
-
-	printf( "JpegFrameBuff\t@ 0x%x aligned with = %ld to uint32_t\r\n",
-			(uint32_t) JpegFrameBuff,
-			((uint32_t) JpegFrameBuff - D1_AXISRAM_BASE) % 32);
+//	printf( "CameraFrameBuff\t@ 0x%x  aligned with = %ld to uint32_t\r\n",
+//			(uint32_t) CameraFrameBuff,
+//			((uint32_t) CameraFrameBuff - D1_AXISRAM_BASE) % 32);
+//
+//	printf( "JpegFrameBuff\t@ 0x%x aligned with = %ld to uint32_t\r\n",
+//			(uint32_t) JpegFrameBuff,
+//			((uint32_t) JpegFrameBuff - D1_AXISRAM_BASE) % 32);
 
 
 	printf("img dim = W=%d\tH=%d\r\n", IMG_W, IMG_H);
@@ -283,14 +286,10 @@ void CameraMngr_CompressProc(void)
 	stCameraMngr* pThis = &g_CameraMngr;
 	uint32_t JpegEncodeProcessingEnd = 0;
 
-//	do
-//	{
-		JPEG_EncodeInputHandler(&hjpeg);
-		JpegEncodeProcessingEnd = JPEG_EncodeOutputHandler(&hjpeg);
+	JPEG_EncodeInputHandler(&hjpeg);
+	JpegEncodeProcessingEnd = JPEG_EncodeOutputHandler(&hjpeg);
 
-//	} while(JpegEncodeProcessingEnd == 0);
-
-// TODO: impl a timeout system
+	// TODO: impl a timeout system
 	if ( JpegEncodeProcessingEnd != 0 )
 	{
 		pThis->m_eCamImgState = eCamImgState_CompressCmplt;
@@ -310,12 +309,14 @@ void CameraMngr_CompressEnd(void)
 	pThis->m_JpegFrameBuffConvSize = JpegEncodeDMA_GetOutBuffSize();
 
 //	pThis->m_eCamImgState	= eCamImgState_CompressCmplt;
+	pThis->m_JpegFrameBuffChecksum = CamperMngr_CalcCompressedImgChecksum();
 
 	if ( pThis->m_eCompressedImgState == eCompressedImgState_SendStart )
 	{
 		printf("img OVR"); // overrun
-		// TODO: decide what to do, youd miss this frame here
-		Error_Handler();
+
+//		// TODO: decide what to do, youd miss this frame here
+//		Error_Handler();
 	}
 	else
 	{
@@ -343,6 +344,15 @@ void CameraMngr_CompressBenchmark(void)
 //	printf("%d\r\n", HAL_GetTick());
 #endif // CAMERA_BENCHMARK
 
+}
+
+/**
+ * @brief  CameraMngr_GetCompressedImgChecksum
+ * @retval CompressedImgChecksum
+ */
+uint32_t CameraMngr_GetCompressedImgChecksum(void)
+{
+	return g_CameraMngr.m_JpegFrameBuffChecksum;
 }
 
 /**
@@ -423,3 +433,22 @@ void CameraMngr_DcmiAcqBenchmark(void)
 #endif // CAMERA_BENCHMARK
 }
 
+/**
+ * @brief  CamperMngr_CalcCompressedImgChecksum
+ * @retval None
+ */
+uint32_t CamperMngr_CalcCompressedImgChecksum(void)
+{
+	stCameraMngr* pThis = &g_CameraMngr;
+
+	uint32_t idx = 0;
+	unsigned char *p = (unsigned char *)pThis->m_pCompressedImg;
+	uint32_t Checksum = 0;
+
+	for(idx=0; idx < pThis->m_CompressedImgSize; idx++)
+	{
+		Checksum += p[idx];
+	}
+
+	return Checksum;
+}

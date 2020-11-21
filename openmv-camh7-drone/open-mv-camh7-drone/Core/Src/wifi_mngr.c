@@ -239,6 +239,9 @@ static void WifiMngr_WifiCB(uint8_t u8MsgType, void *pvMsg)
 			printf("wifi_cb: DISCONNECTED\r\n");
 			p_stWifiMngr->m_eIsWifiConnected = M2M_WIFI_DISCONNECTED;
 			p_stWifiMngr->m_IsHardFault		= true;
+
+			p_stWifiMngr->m_IsTxPhase = false;
+			PacketMngr_Stop();
 		}
 	}
 	break;

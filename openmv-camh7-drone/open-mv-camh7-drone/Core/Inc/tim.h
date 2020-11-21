@@ -36,6 +36,10 @@ extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN Private defines */
 
+// TIM1 - cam clk
+// TIM2 - imu tick
+// TIM6 - wifi tick
+
 /* USER CODE END Private defines */
 
 void MX_TIM1_Init(void);
@@ -45,13 +49,14 @@ void MX_TIM6_Init(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* USER CODE BEGIN Prototypes */
-void TIM_StartTimer2(void);
-void TIM_StartTimer6(void);
+void TIM_StartImuTick(void);
+void TIM_StartWifiTick(void);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 
 bool TIM_IsImuTimeoutEvent(void);
 void TIM_StopImuTick(void);
-void TIM_StopImuTick6(void);
+void TIM_StopWifiTick(void);
+//void TIM_StopImuTick6(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

@@ -53,8 +53,26 @@ void PacketMngr_Start(void)
 	p_stImg->m_eCurrImgStates		= 	eImgStates_finished;
 	p_stImg->m_eNextImgStates		= 	eImgStates_finished;
 
-	TIM_StartTimer2();
-	TIM_StartTimer6();
+	TIM_StartImuTick();
+	TIM_StartWifiTick();
+
+	printf("pm start\r\n");
+}
+
+/* ================
+void PacketMngr_Start(void)
+================ */
+void PacketMngr_Stop(void)
+{
+	stPacketMngr* 	p_stPacketMngr 	= 	&g_stPacketMngr;
+	stImg*			p_stImg			=	p_stPacketMngr->m_p_stImg;
+	p_stImg->m_eCurrImgStates		= 	eImgStates_finished;
+	p_stImg->m_eNextImgStates		= 	eImgStates_finished;
+
+	TIM_StopImuTick();
+	TIM_StopWifiTick();
+
+	printf("pm stop\r\n");
 }
 
 
