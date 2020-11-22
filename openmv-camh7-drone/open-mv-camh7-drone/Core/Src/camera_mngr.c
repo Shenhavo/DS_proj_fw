@@ -57,11 +57,12 @@ void CameraMngr_Init(void)
 	pThis->m_eCamImgState			= eCamImgState_Init;
 	pThis->m_eCompressedImgState	= eCompressedImgState_Init;
 
-	pThis->m_DcmiFrameAcqStartTick		= 0;
-
 	pThis->m_JpegFrameBuffChecksum 		= 0;
 
+	pThis->m_DcmiFrameAcqStartTick		= 0;
+
 #ifdef CAMERA_BENCHMARK
+
 	pThis->m_JpegConvStartTick			= 0;
 	pThis->m_JpegConvDuration_msec		= 0;
 	pThis->m_DcmiFrameAcqDuration_msec 	= 0;
@@ -204,16 +205,20 @@ bool CameraMngr_isDcmiAcqEndded( void )
 	bool AcqRunning = ( (DCMI->CR & DCMI_CR_CAPTURE) != 0 );
 	bool AcqStarted = ( pThis->m_eCamImgState == eCamImgState_AcqStart );
 
+
 	uint32_t CurrAcqTime_msec = HAL_GetTick() - pThis->m_DcmiFrameAcqStartTick;
+
 
 	if ( CurrAcqTime_msec >= DCMI_ACQ_TIMEOUT_MSEC )
 	{
+#ifdef CAMERA_BENCHMARK
 		printf("dcmi timeout, took=%d[msec]!\r\n", CurrAcqTime_msec);
-
+#endif // CAMERA_BENCHMARK
 		HAL_DCMI_Stop(&hdcmi);
 
 		AcqRunning = false;
 	}
+
 
 	return ( (!AcqRunning) && AcqStarted );
 }

@@ -5,7 +5,7 @@
 #ifndef INC_CAMERA_MNGR_H_
 #define INC_CAMERA_MNGR_H_
 
-#define CAMERA_BENCHMARK
+//#define CAMERA_BENCHMARK
 //#define SAVE_OUTPUT_IMG_ON_SD
 
 //#define JPEG_444_GS_MCU_SIZE        (64)
@@ -70,11 +70,13 @@ typedef struct stCameraMngr_name {
 
 	uint32_t			m_JpegFrameBuffChecksum;
 
+	uint32_t			m_DcmiFrameAcqStartTick;
+
 #ifdef CAMERA_BENCHMARK
 	uint32_t			m_JpegConvStartTick;
 	uint32_t			m_JpegConvDuration_msec;
 
-	uint32_t			m_DcmiFrameAcqStartTick;
+
 	uint32_t			m_DcmiFrameAcqDuration_msec;
 #endif // CAMERA_BENCHMARK
 } stCameraMngr;

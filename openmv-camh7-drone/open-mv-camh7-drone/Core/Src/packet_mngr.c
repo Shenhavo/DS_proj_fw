@@ -240,9 +240,9 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 			}
 
 			memcpy(p_stFrame->m_Data, pData, packet_data_size_b);
-			printf("%d\tbs\r\n",HAL_GetTick());
+			printf("%d\ts=%d\r\n",p_stFrame->m_SysTick, packet_data_size_b);
 			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stFrame , NEW_FRAME_HEADER_SIZE_B + packet_data_size_b, 0);
-			printf("%d\tas\r\n",HAL_GetTick());
+//			printf("%d\tas\r\n",HAL_GetTick());
 		}
 		break;
 		case eImgStates_finished:
