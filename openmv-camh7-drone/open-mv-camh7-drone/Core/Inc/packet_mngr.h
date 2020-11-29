@@ -13,13 +13,20 @@
 #include "img_jpg_file.h"
 #include "sd_hal_mpu6050.h"
 
-//#define USING_IMU
+#define USING_IMU
 #define USING_FRAME
 
+//#define IMU_EVENT_CYCLE_MSEC	10
+//#define IMU_CALLS_PER_PACKET	10
+//#define FRAME_EVENT_CYCLE_MSEC	100
+//#define WIFI_TICK_CYCLE			4 // each cycle is 250usec
 
-#define IMU_EVENT_CYCLE_MSEC	5
+
+ /// SO: so far the optimal configuration
+#define IMU_EVENT_CYCLE_MSEC	6
 #define IMU_CALLS_PER_PACKET	10
-#define FRAME_EVENT_CYCLE_MSEC	100
+#define FRAME_EVENT_CYCLE_MSEC	60
+#define WIFI_TICK_CYCLE			4 // each cycle is 250usec
 
 #define UPDATE_IMU_EVENT_CTR(x)			(x)++;\
 										(x)=((x)%IMU_EVENT_CYCLE_MSEC)
@@ -27,6 +34,8 @@
 										(x)=((x)%IMU_CALLS_PER_PACKET)
 #define UPDATE_FRAME_EVENT_CTR(x)		(x)++;\
 										(x)=((x)%FRAME_EVENT_CYCLE_MSEC)
+#define UPDATE_WIFI_TICK_CTR(x)			(x)++;\
+										(x)=((x)%WIFI_TICK_CYCLE)
 #define COUNTING_ENDED_VAL				0
 
 #define FRAME_SOF	'!'
@@ -57,7 +66,7 @@ typedef struct stImuPacket_name {
 
 
 
-typedef enum eFrameState_name
+typedef enum ePacketMngrState
 {
 	ePacketMngrState_off = 0,
 	ePacketMngrState_Frame,
@@ -78,6 +87,7 @@ typedef struct stPacketMngr_name {
 	bool				m_IsImuPacketReady;
 
 	bool				m_IsImgTickCam;
+	uint32_t			m_IsWifiTick;
 
 	uint32_t			m_Tick;
 
@@ -90,8 +100,7 @@ void PacketMngr_TxRoutine(int8_t a_Socket);
 void PacketMngr_Update(void);
 void PacketMngr_GetNewImg( void );
 bool PacketMngr_GetIsImgTickCam( void );
-
-
+void PacketMngr_UpdateWifiTick(void);
 #ifdef __cplusplus
 }
 #endif

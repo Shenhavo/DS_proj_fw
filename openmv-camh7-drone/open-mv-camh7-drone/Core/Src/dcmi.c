@@ -187,7 +187,16 @@ void HAL_DCMI_MspDeInit(DCMI_HandleTypeDef* dcmiHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void HAL_DCMI_ReInitDMA(DCMI_HandleTypeDef* dcmiHandle)
+{
+	HAL_DMA_DeInit(dcmiHandle->DMA_Handle);
+    if (HAL_DMA_Init(&hdma_dcmi) != HAL_OK)
+    {
+      Error_Handler();
+    }
 
+    __HAL_LINKDMA(dcmiHandle,DMA_Handle,hdma_dcmi);
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

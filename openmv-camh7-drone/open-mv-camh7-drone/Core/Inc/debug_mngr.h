@@ -11,13 +11,14 @@
 #endif
 
 #include <stdio.h>
-
+//#define DISABLE_UART
 #ifdef USE_UART_DEBUG
 #include "usart.h"
 #endif //USE_UART_DEBUG
 
  int _write(int file, char *ptr, int len)
  {
+#ifndef DISABLE_UART
    int i=0;
 
    for(i=0 ; i<len ; i++)
@@ -34,6 +35,7 @@
    }
 
    return len;
+#endif
  }
 
 #ifdef __cplusplus

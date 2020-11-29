@@ -22,6 +22,8 @@ static void PacketMngr_IterateImu();
 static void PacketMngr_SendImu(int8_t a_Socket);
 static void PacketMngr_SetState(ePacketMngrState a_ePacketMngrState);
 
+static bool PacketMngr_GetIsWifiSendEvent( void );
+
 /* ================
 void PacketMngr_Init(void);
 ================ */
@@ -36,6 +38,7 @@ void PacketMngr_Init(void)
 	p_stPacketMngr->m_IsImuCallReady		= false;
 	p_stPacketMngr->m_IsImuPacketReady		= false;
 	p_stPacketMngr->m_IsImgTickCam			= false;
+	p_stPacketMngr->m_IsWifiTick			= false;
 	p_stPacketMngr->m_Tick					= 0;
 	memset((&p_stPacketMngr->m_stImuPacket),0,sizeof(stImuPacket));
 }
@@ -50,7 +53,26 @@ void PacketMngr_Start(void)
 	p_stImg->m_eCurrImgStates		= 	eImgStates_finished;
 	p_stImg->m_eNextImgStates		= 	eImgStates_finished;
 
-	TIM_StartTimer2();
+	TIM_StartImuTick();
+	TIM_StartWifiTick();
+
+	printf("pm start\r\n");
+}
+
+/* ================
+void PacketMngr_Start(void)
+================ */
+void PacketMngr_Stop(void)
+{
+	stPacketMngr* 	p_stPacketMngr 	= 	&g_stPacketMngr;
+	stImg*			p_stImg			=	p_stPacketMngr->m_p_stImg;
+	p_stImg->m_eCurrImgStates		= 	eImgStates_finished;
+	p_stImg->m_eNextImgStates		= 	eImgStates_finished;
+
+	TIM_StopImuTick();
+	TIM_StopWifiTick();
+
+	printf("pm stop\r\n");
 }
 
 
@@ -100,7 +122,10 @@ void PacketMngr_TxRoutine(int8_t a_Socket)
 	break;
 	case ePacketMngrState_Frame:
 	{
-		PacketMngr_IterateImg( a_Socket);
+		if(p_stPacketMngr->m_IsImuPacketReady == true)
+		{
+			PacketMngr_IterateImg( a_Socket);
+		}
 	}
 	break;
 	case ePacketMngrState_IMU:
@@ -140,12 +165,15 @@ void PacketMngr_Update(void)
 	}
 #endif
 #ifdef USING_FRAME
+
+
 	UPDATE_FRAME_EVENT_CTR(p_stPacketMngr->m_FrameEventCtr);
 	if(p_stPacketMngr->m_FrameEventCtr == COUNTING_ENDED_VAL)	// SO: new frame packet
 	{
 		p_stPacketMngr->m_IsImgTickCam	= true;
+
 		p_stPacketMngr->m_Tick = HAL_GetTick();
-		printf("%d\tTick\r\n", p_stPacketMngr->m_Tick);
+//		printf("%d\tTick\r\n", p_stPacketMngr->m_Tick); // SO:  printf inside timer callback is not recommended at all!!!
 
 //		printf("", p_stPa)
 	}
@@ -153,21 +181,32 @@ void PacketMngr_Update(void)
 }
 
 /* ================
+void PacketMngr_UpdateWifiTick(void);
+================ */
+void PacketMngr_UpdateWifiTick(void)// each cycle is 250usec
+{
+	UPDATE_WIFI_TICK_CTR(g_stPacketMngr.m_IsWifiTick);
+}
+
+
+/* ================
 void PacketMngr_IterateImg(void);
 ================ */
 eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 {
-
-	stPacketMngr* 	p_stPacketMngr 	= 	&g_stPacketMngr;
-	stImg*			p_stImg			=	p_stPacketMngr->m_p_stImg;
-	stFrame* 		p_stFrame 		= (stFrame*)(p_stPacketMngr->m_PacketBytes);
-	uint16_t 	packet_data_size_b 	= 	0;
-	uint8_t*	pData				=	p_stImg->m_pImg;
-
-	int8_t Result = SOCK_ERR_NO_ERROR;
-
-	switch (p_stImg->m_eCurrImgStates)
+	if( PacketMngr_GetIsWifiSendEvent() == true)
 	{
+
+		stPacketMngr* 	p_stPacketMngr 	= 	&g_stPacketMngr;
+		stImg*			p_stImg			=	p_stPacketMngr->m_p_stImg;
+		stFrame* 		p_stFrame 		= (stFrame*)(p_stPacketMngr->m_PacketBytes);
+		uint16_t 	packet_data_size_b 	= 	0;
+		uint8_t*	pData				=	p_stImg->m_pImg;
+
+		int8_t Result = SOCK_ERR_NO_ERROR;
+
+		switch (p_stImg->m_eCurrImgStates)
+		{
 		case eImgStates_start:
 		{
 			p_stImg->m_SysTick 			= 	p_stPacketMngr->m_Tick;
@@ -179,7 +218,7 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 			p_stFrame->m_FrameSOF	=	FRAME_SOF;
 			p_stFrame->m_SysTick	=	p_stImg->m_SysTick;
 			p_stFrame->m_FrameSize	=	p_stImg->m_SizeB;
-//			p_stFrame->m_PacketIdx	=	(p_stFrame->m_FrameSize)%FRAME_DATA_SIZE_B? (p_stFrame->m_FrameSize)/FRAME_DATA_SIZE_B: ((p_stFrame->m_FrameSize)/FRAME_DATA_SIZE_B)+1;
+			//			p_stFrame->m_PacketIdx	=	(p_stFrame->m_FrameSize)%FRAME_DATA_SIZE_B? (p_stFrame->m_FrameSize)/FRAME_DATA_SIZE_B: ((p_stFrame->m_FrameSize)/FRAME_DATA_SIZE_B)+1;
 
 
 			if( p_stImg->m_SizeB > FRAME_DATA_SIZE_B)
@@ -201,8 +240,9 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 			}
 
 			memcpy(p_stFrame->m_Data, pData, packet_data_size_b);
-
+			printf("%d\ts=%d\r\n",p_stFrame->m_SysTick, packet_data_size_b);
 			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stFrame , NEW_FRAME_HEADER_SIZE_B + packet_data_size_b, 0);
+//			printf("%d\tas\r\n",HAL_GetTick());
 		}
 		break;
 		case eImgStates_finished:
@@ -212,14 +252,16 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 		break;
 		default:
 			break;
-	}
+		}
 
-	if(Result != SOCK_ERR_NO_ERROR)
-	{
-		printf("%d\tE%d\r\n",HAL_GetTick(),Result);
-	}
+		if(Result != SOCK_ERR_NO_ERROR)
+		{
 
-	 return Img_jpg_UpdateImgState();
+			printf("%d\t***F***%d\r\n",HAL_GetTick(),Result);
+//			Error_Handler();
+		}
+	}
+	return Img_jpg_UpdateImgState();
 }
 
 /* ================
@@ -252,13 +294,16 @@ void PacketMngr_SendImu(int8_t a_Socket)
 	{
 		PacketMngr_SetState(ePacketMngrState_IMU);
 		p_stPacketMngr->m_IsImuPacketReady =	false;
+
+		printf("%d\tI\r\n",HAL_GetTick());
+
 		int8_t Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stImuPacket , sizeof(stImuPacket), 0);
-		printf("I\r\n");
+
+
 		if(Result == SOCK_ERR_BUFFER_FULL) //SO: SOCK_ERR_BUFFER_FULL is received whenever user clicks on wifi connections
 		{
-			printf("I\t%d",HAL_GetTick());
-//			HAL_Delay(1);
-//			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stImuPacket , sizeof(stImuPacket), 0);
+			printf("%d\t***I***%d\r\n",HAL_GetTick(),Result);
+//			Error_Handler();
 		}
 		PacketMngr_SetState(ePacketMngrState_off);
 	}
@@ -282,7 +327,7 @@ void PacketMngr_GetNewImg( void )
 }
 
 /* ================
-bool PacketMngr_GetIsImgSendEvent( void )
+bool PacketMngr_GetIsImgTickCam( void )
 ================ */
 bool PacketMngr_GetIsImgTickCam( void )
 {
@@ -296,6 +341,23 @@ bool PacketMngr_GetIsImgTickCam( void )
 
 	return RetVal;
 }
+
+/* ================
+bool PacketMngr_GetIsWifiSendEvent( void )
+================ */
+bool PacketMngr_GetIsWifiSendEvent( void )
+{
+//	bool RetVal = false;
+//
+//	if(g_stPacketMngr.m_IsWifiTick == true)
+//	{
+//		RetVal = true;
+//		g_stPacketMngr.m_IsWifiTick = false;
+//	}
+
+	return (g_stPacketMngr.m_IsWifiTick == COUNTING_ENDED_VAL);
+}
+
 
 /* ================
 void PacketMngr_GetNewImuCall(void)

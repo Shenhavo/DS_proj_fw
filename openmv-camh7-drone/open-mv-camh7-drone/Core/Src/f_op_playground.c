@@ -144,6 +144,49 @@ void FS_FileOperationsBmpCompressDma(void)
 
 
 /**
+ * @brief  saves given buff to sd card
+ * @retval None
+ */
+void FS_SaveBuffOnSdCard(uint32_t a_Buff, uint32_t a_BuffSize, char* a_FileName)
+{
+	FRESULT res;					/* FatFs function common result code */
+	FIL FileDst;     /* File object */
+//	char FileName[20];
+
+	if(f_mount(&SDFatFS, (TCHAR const*)SDPath, 0) == FR_OK)
+	{
+		printf("FR_OK\r\n");
+
+		if((res = f_open(&FileDst, a_FileName, FA_WRITE | FA_CREATE_ALWAYS)) == FR_OK)
+		{
+			printf("saving %d[b] on SD\r\n", a_BuffSize);
+
+			uint32_t BytesWritten = 0;
+
+			uint32_t WriteChunks = a_BuffSize / sizeof(workBuffer);
+			uint32_t WriteChunksModulu = a_BuffSize % sizeof(workBuffer);
+
+			for (uint32_t Idx = 0; Idx < WriteChunks; Idx++ )
+			{
+				memcpy(workBuffer, a_Buff, sizeof(workBuffer));
+				a_Buff = a_Buff + sizeof(workBuffer);
+				f_write(&FileDst, workBuffer, sizeof(workBuffer), (void *)&BytesWritten);
+			}
+
+			if (WriteChunksModulu > 0)
+			{
+				memcpy(workBuffer, a_Buff, WriteChunksModulu);
+				f_write(&FileDst, workBuffer, WriteChunksModulu, (void *)&BytesWritten);
+			}
+
+			f_close(&FileDst);
+			printf("save cmplt\r\n");
+		}
+	}
+
+}
+
+/**
  * @brief  compress from dcmi ram to jpeg
  * please read the file documentation
  * @retval None

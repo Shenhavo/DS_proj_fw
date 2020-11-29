@@ -27,6 +27,7 @@ bool g_IsTim2TimeoutEvent = false;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim6;
 
 /* TIM1 init function */
 void MX_TIM1_Init(void)
@@ -100,9 +101,9 @@ void MX_TIM2_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 50000;
+  htim2.Init.Prescaler = 239;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 3;
+  htim2.Init.Period = 999;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -123,6 +124,28 @@ void MX_TIM2_Init(void)
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+}
+/* TIM6 init function */
+void MX_TIM6_Init(void)
+{
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 59;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 999;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
@@ -157,6 +180,17 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
   /* USER CODE BEGIN TIM2_MspInit 1 */
 
   /* USER CODE END TIM2_MspInit 1 */
+  }
+  else if(tim_baseHandle->Instance==TIM6)
+  {
+  /* USER CODE BEGIN TIM6_MspInit 0 */
+
+  /* USER CODE END TIM6_MspInit 0 */
+    /* TIM6 clock enable */
+    __HAL_RCC_TIM6_CLK_ENABLE();
+  /* USER CODE BEGIN TIM6_MspInit 1 */
+
+  /* USER CODE END TIM6_MspInit 1 */
   }
 }
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
@@ -215,36 +249,43 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 
   /* USER CODE END TIM2_MspDeInit 1 */
   }
+  else if(tim_baseHandle->Instance==TIM6)
+  {
+  /* USER CODE BEGIN TIM6_MspDeInit 0 */
+
+  /* USER CODE END TIM6_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_TIM6_CLK_DISABLE();
+  /* USER CODE BEGIN TIM6_MspDeInit 1 */
+
+  /* USER CODE END TIM6_MspDeInit 1 */
+  }
 }
 
 /* USER CODE BEGIN 1 */
 
-void TIM_StartTimer2(void)
+void TIM_StartImuTick(void)
 {
-	// TODO: SO: counts every 1msec = 1000Hz
-
-	htim2.Init.Period            = 3;
-	htim2.Init.Prescaler         = 50000;
-	htim2.Init.ClockDivision     = 0;
-	htim2.Init.CounterMode       = TIM_COUNTERMODE_UP;
-	htim2.Init.RepetitionCounter = 0;
-
-	if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-	{
-		Error_Handler();
-	}
-
 	if (HAL_TIM_Base_Start_IT(&htim2) != HAL_OK)
 	{
 		Error_Handler();
 	}
 }
+
 /* ================
-int8_t WifiMngr_Init(void)
+void TIM_StopImuTick(void)
 ================ */
 void TIM_StopImuTick(void)
 {
 	HAL_TIM_Base_Stop_IT(&htim2);
+}
+
+/* ================
+void TIM_StopWifiTick(void)
+================ */
+void TIM_StopWifiTick(void)
+{
+	HAL_TIM_Base_Stop_IT(&htim6);
 }
 
 
@@ -258,8 +299,18 @@ int8_t WifiMngr_Init(void)
 ================ */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-//  g_IsTim2TimeoutEvent = true;
-	PacketMngr_Update();
+	if(htim == &htim2)
+	{
+		PacketMngr_Update();
+	}
+	else
+	{
+		if( htim == &htim6)
+		{
+			PacketMngr_UpdateWifiTick();
+		}
+	}
+
 }
 
 /**
@@ -279,6 +330,24 @@ bool TIM_IsImuTimeoutEvent(void)
 
   return ReturnVal;
 }
+
+
+void TIM_StartWifiTick(void)
+{
+	if (HAL_TIM_Base_Start_IT(&htim6) != HAL_OK)
+	{
+		Error_Handler();
+	}
+}
+///* ================
+//void TIM_StopImuTick6(void)
+//================ */
+//void TIM_StopImuTick6(void)
+//{
+//	HAL_TIM_Base_Stop_IT(&htim6);
+//}
+
+
 
 /* USER CODE END 1 */
 

@@ -91,7 +91,7 @@ uint32_t CurrentLine                = 1;
 
 uint32_t OutBuffSize				= 0;
 
-JPEG_ConfTypeDef Conf;
+JPEG_ConfTypeDef Conf = {JPEG_COLOR_SPACE, JPEG_CHROMA_SAMPLING, IMG_H, IMG_W, JPEG_IMAGE_QUALITY};
 FIL *pBmpFile;
 FIL *pJpegFile;
 
@@ -165,7 +165,6 @@ uint32_t JpegEncodeDMA_FromSdToSd(JPEG_HandleTypeDef *hjpeg, FIL *bmpfile, FIL *
  */
 uint32_t JpegEncodeDMA_FromRamToSd(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff, FIL *jpgfile)
 {
-//	pBmpFile = bmpfile;
 	pFrameBuffOnSram = FrameBuff;
 	pJpegFile = jpgfile;
 	uint32_t dataBufferSize = 0;
@@ -197,12 +196,13 @@ uint32_t JpegEncodeDMA_FromRamToSd(JPEG_HandleTypeDef *hjpeg, uint8_t* FrameBuff
 	/* Read and reorder MAX_INPUT_LINES lines from BMP file and fill data buffer */
 //	ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
 //	ReadBayerLines(pBmpFile, Conf, FrameBuff /*Input_Data_Buffer */, Conf.ImageHeight*Conf.ImageWidth/*&dataBufferSize*/);
-	JpegEncodeDma_ReadRamGrayLines(FrameBuff, Conf, Input_Data_Buffer ,&dataBufferSize);
+
+	//JpegEncodeDma_ReadRamGrayLines(pFrameBuffOnSram, Conf, Input_Data_Buffer ,&dataBufferSize);
 
 
 
 	/* RGB to YCbCr Pre-Processing */
-	MCU_BlockIndex += pRGBToYCbCr_Convert_Function(FrameBuff , Jpeg_IN_BufferTab.DataBuffer, 0, dataBufferSize,(uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
+	MCU_BlockIndex += pRGBToYCbCr_Convert_Function(pFrameBuffOnSram , Jpeg_IN_BufferTab.DataBuffer, 0, dataBufferSize,(uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
 	Jpeg_IN_BufferTab.State = JPEG_BUFFER_FULL;
 
 	/* Fill Encoding Params */
@@ -237,17 +237,7 @@ uint32_t JpegEncodeDMA_FromRamToRam(JPEG_HandleTypeDef *hjpeg, uint8_t* InFrameB
 	CurrentLine                = 1;
 	OutBuffSize				   = 0;
 
-	/* BMP Header Parsing */
-	// TODO: make this static
-	Conf.ImageHeight 		= IMG_H;
-	Conf.ImageWidth 		= IMG_W;
-	Conf.ColorSpace 		= JPEG_COLOR_SPACE;
-	Conf.ChromaSubsampling  = JPEG_CHROMA_SAMPLING;
-	Conf.ImageQuality       = JPEG_IMAGE_QUALITY;
-
 	JPEG_GetEncodeColorConvertFunc(&Conf, &pRGBToYCbCr_Convert_Function, &MCU_TotalNb);
-
-	//printf("MCU_TotalNb\t%ld\r\n", MCU_TotalNb);
 
 	/* Clear Output Buffer */
 	Jpeg_OUT_BufferTab.DataBufferSize = 0;
@@ -257,7 +247,6 @@ uint32_t JpegEncodeDMA_FromRamToRam(JPEG_HandleTypeDef *hjpeg, uint8_t* InFrameB
 	/* Fill input Buffer */
 	/* Read and reorder MAX_INPUT_LINES lines from BMP file and fill data buffer */
 	JpegEncodeDma_ReadRamGrayLines(InFrameBuff, Conf, Input_Data_Buffer ,&dataBufferSize);
-
 
 
 	/* RGB to YCbCr Pre-Processing */
@@ -289,7 +278,7 @@ uint32_t JPEG_EncodeOutputHandler(JPEG_HandleTypeDef *hjpeg)
 
 	if(Jpeg_OUT_BufferTab.State == JPEG_BUFFER_FULL)
 	{
-		// if saving tp fatfs
+		// if saving to fatfs
 		//f_write (pJpegFile, Jpeg_OUT_BufferTab.DataBuffer ,Jpeg_OUT_BufferTab.DataBufferSize, (UINT*)(&bytesWritefile)) ;
 
 		// if saving to ram
@@ -326,18 +315,21 @@ void JPEG_EncodeInputHandler(JPEG_HandleTypeDef *hjpeg)
 
   if((Jpeg_IN_BufferTab.State == JPEG_BUFFER_EMPTY) && (MCU_BlockIndex <= MCU_TotalNb))  
   {
-	  // TODO: this function is hard coded. make this flixble
-    /* Read and reorder 16 lines from BMP file and fill data buffer */
-//    ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
-	  //ReadBmpGrayLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
-	  JpegEncodeDma_ReadRamGrayLines(pFrameBuffOnSram, Conf, Input_Data_Buffer, &dataBufferSize);
+		  // TODO: this function is hard coded. make this flixble
+		/* Read and reorder 16 lines from BMP file and fill data buffer */
+	  	  //    ReadBmpRgbLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
+		  //ReadBmpGrayLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
+		  JpegEncodeDma_ReadRamGrayLines(pFrameBuffOnSram, Conf, Input_Data_Buffer, &dataBufferSize);
 
-    if(dataBufferSize != 0)
-    {
-      /* Pre-Processing */
-      MCU_BlockIndex += pRGBToYCbCr_Convert_Function(Input_Data_Buffer, Jpeg_IN_BufferTab.DataBuffer, 0, dataBufferSize, (uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
-      //MCU_BlockIndex += pRGBToYCbCr_Convert_Function(Input_Data_Buffer /*Input_Data_Buffer */, Jpeg_IN_BufferTab.DataBuffer, 0, MAX_INPUT_LINES*Conf.ImageWidth/*dataBufferSize*/,(uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
-      Jpeg_IN_BufferTab.State = JPEG_BUFFER_FULL;
+
+	//	  JpegEncodeDma_ReadBmpGrayLines(pBmpFile, Conf, Input_Data_Buffer ,&dataBufferSize);
+
+		if(dataBufferSize != 0)
+		{
+			/* Pre-Processing */
+			MCU_BlockIndex += pRGBToYCbCr_Convert_Function(Input_Data_Buffer, Jpeg_IN_BufferTab.DataBuffer, 0, dataBufferSize, (uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
+			//MCU_BlockIndex += pRGBToYCbCr_Convert_Function(Input_Data_Buffer /*Input_Data_Buffer */, Jpeg_IN_BufferTab.DataBuffer, 0, MAX_INPUT_LINES*Conf.ImageWidth/*dataBufferSize*/,(uint32_t*)(&Jpeg_IN_BufferTab.DataBufferSize));
+			Jpeg_IN_BufferTab.State = JPEG_BUFFER_FULL;
 
 			if(Input_Is_Paused == 1)
 			{
@@ -491,11 +483,12 @@ static void JpegEncodeDma_ReadRamGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef
 	*BufferSize = 0;
 	uint8_t TmpBuff[MAX_INPUT_WIDTH];
     int ColIdx;
-
-	while((CurrentLine <= Conf.ImageHeight) && (CurrentBlockLine <= MAX_INPUT_LINES))
+	
+	// TODO: this condition is `+1` not mandatory. review this
+	while ((CurrentLine <= (Conf.ImageHeight+1)) && (CurrentBlockLine <= MAX_INPUT_LINES))
 	{
 		bytesReadfile = Conf.ImageWidth; // TODO: this is a const ?! what happens if more/less than frame size?
-		uint32_t CurrHop = (Conf.ImageWidth *(Conf.ImageHeight - CurrentLine)*1);
+		uint32_t CurrHop = (Conf.ImageWidth * (Conf.ImageHeight - CurrentLine) * 1);
 		memcpy(TmpBuff, pSrcBuffer + CurrHop, bytesReadfile);
 
 		//pSrcBuffer	+= bytesReadfile;
@@ -507,6 +500,7 @@ static void JpegEncodeDma_ReadRamGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef
 		   *pDataBuffer++ = TmpBuff[ColIdx]; // R
 		   *pDataBuffer++ = TmpBuff[ColIdx]; // G
 		   *pDataBuffer++ = TmpBuff[ColIdx]; // B
+
 		}
 
 		*BufferSize += bytesReadfile * 3;
