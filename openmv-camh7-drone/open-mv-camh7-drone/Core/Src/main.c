@@ -163,10 +163,6 @@ int main(void)
 	printf("GIT REV SHA: %s\r\n", PROJ_SHA);
 
 	/* USER CODE END 2 */
-	//	FS_FileOperationsBmpCompressDma();
-	/* Infinite loop */
-	/* USER CODE BEGIN WHILE */
-
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */

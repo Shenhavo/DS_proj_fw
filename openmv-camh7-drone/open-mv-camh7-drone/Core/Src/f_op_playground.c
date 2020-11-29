@@ -155,11 +155,11 @@ void FS_SaveBuffOnSdCard(uint32_t a_Buff, uint32_t a_BuffSize, char* a_FileName)
 
 	if(f_mount(&SDFatFS, (TCHAR const*)SDPath, 0) == FR_OK)
 	{
-		printf("FR_OK\r\n");
+		//printf("FR_OK\r\n");
 
 		if((res = f_open(&FileDst, a_FileName, FA_WRITE | FA_CREATE_ALWAYS)) == FR_OK)
 		{
-			printf("saving %d[b] on SD\r\n", a_BuffSize);
+			printf("%d\tsaving %d[b] on SD\r\n", HAL_GetTick(), a_BuffSize);
 
 			uint32_t BytesWritten = 0;
 
@@ -180,7 +180,7 @@ void FS_SaveBuffOnSdCard(uint32_t a_Buff, uint32_t a_BuffSize, char* a_FileName)
 			}
 
 			f_close(&FileDst);
-			printf("save cmplt\r\n");
+			printf("%d\tsave cmplt\r\n", HAL_GetTick());
 		}
 	}
 

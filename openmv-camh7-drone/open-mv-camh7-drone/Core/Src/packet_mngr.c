@@ -60,7 +60,7 @@ void PacketMngr_Start(void)
 }
 
 /* ================
-void PacketMngr_Start(void)
+void PacketMngr_Stop(void)
 ================ */
 void PacketMngr_Stop(void)
 {
@@ -68,6 +68,8 @@ void PacketMngr_Stop(void)
 	stImg*			p_stImg			=	p_stPacketMngr->m_p_stImg;
 	p_stImg->m_eCurrImgStates		= 	eImgStates_finished;
 	p_stImg->m_eNextImgStates		= 	eImgStates_finished;
+
+	p_stPacketMngr->m_IsImuPacketReady = false;
 
 	TIM_StopImuTick();
 	TIM_StopWifiTick();
@@ -97,7 +99,7 @@ void PacketMngr_TxRoutine(int8_t a_Socket)
 
 			if(Img_jpg_GetCurrImgState() == eImgStates_finished)
 			{
-				printf("%d\tSOF\r\n",HAL_GetTick());
+				printf("%d\tSOF\r\n", HAL_GetTick());
 				PacketMngr_SetState(ePacketMngrState_Frame);
 				PacketMngr_GetNewImg();
 				PacketMngr_IterateImg(a_Socket);
@@ -240,7 +242,7 @@ eImgStates PacketMngr_IterateImg(int8_t a_Socket)
 			}
 
 			memcpy(p_stFrame->m_Data, pData, packet_data_size_b);
-			printf("%d\ts=%d\r\n",p_stFrame->m_SysTick, packet_data_size_b);
+//			printf("%d\ts=%d\r\n", HAL_GetTick(), packet_data_size_b);
 			Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stFrame , NEW_FRAME_HEADER_SIZE_B + packet_data_size_b, 0);
 //			printf("%d\tas\r\n",HAL_GetTick());
 		}
@@ -295,7 +297,7 @@ void PacketMngr_SendImu(int8_t a_Socket)
 		PacketMngr_SetState(ePacketMngrState_IMU);
 		p_stPacketMngr->m_IsImuPacketReady =	false;
 
-		printf("%d\tI\r\n",HAL_GetTick());
+		printf("%d\timu\r\n",HAL_GetTick());
 
 		int8_t Result = send((socketIdx_t) a_Socket, (uint8_t*)p_stImuPacket , sizeof(stImuPacket), 0);
 

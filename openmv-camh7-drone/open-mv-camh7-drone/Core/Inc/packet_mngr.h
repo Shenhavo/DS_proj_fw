@@ -96,6 +96,7 @@ typedef struct stPacketMngr_name {
 
 void PacketMngr_Init(void);
 void PacketMngr_Start(void);
+void PacketMngr_Stop(void);
 void PacketMngr_TxRoutine(int8_t a_Socket);
 void PacketMngr_Update(void);
 void PacketMngr_GetNewImg( void );

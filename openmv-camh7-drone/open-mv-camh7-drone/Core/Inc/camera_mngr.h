@@ -5,8 +5,10 @@
 #ifndef INC_CAMERA_MNGR_H_
 #define INC_CAMERA_MNGR_H_
 
-//#define CAMERA_BENCHMARK
+#define CAMERA_BENCHMARK
+//#define SAVE_INPUT_IMG_ON_SD
 //#define SAVE_OUTPUT_IMG_ON_SD
+
 
 //#define JPEG_444_GS_MCU_SIZE        (64)
 // 640 * 480 = 307200
@@ -24,7 +26,9 @@
 //#define IMG_W			(160)
 //#define IMG_H			(120)
 
-#define FRAME_BUFF_SIZE  ( IMG_H * IMG_W )
+#define DCMI_ACQ_TIMEOUT_MSEC				40
+
+#define FRAME_BUFF_SIZE  ( (IMG_H+16) * IMG_W )
 ALIGN_32BYTES( uint8_t CameraFrameBuff[FRAME_BUFF_SIZE] );
 
 #define JPEG_BUFF_MAX_SIZE	15000
@@ -53,16 +57,16 @@ typedef enum CompressedImgState
 
 typedef struct stCameraMngr_name {
 
-	uint8_t*			m_pFrameBuff;
+	uint8_t*			m_pFrameBuff;	// camera work buffer
 	uint32_t			m_FrameWidth;
 	uint32_t			m_FrameHeight;
 	uint32_t			m_FrameBuffSize;
 
-	uint8_t*			m_pJpegFrameBuff;
+	uint8_t*			m_pJpegFrameBuff;	// work buffer for jpeg compression
 	uint32_t			m_JpegFrameBuffSize;
 	uint32_t			m_JpegFrameBuffConvSize;
 
-	uint8_t*			m_pCompressedImg;
+	uint8_t*			m_pCompressedImg; //  holds the buffer to ground station
 	uint32_t			m_CompressedImgSize;
 	eCompressedImgState	m_eCompressedImgState;
 

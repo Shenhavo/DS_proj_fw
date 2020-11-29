@@ -90,8 +90,8 @@ __IO uint32_t Input_Is_Paused       = 0;
 uint32_t CurrentLine                = 1;
 
 uint32_t OutBuffSize				= 0;
-
-JPEG_ConfTypeDef Conf = {JPEG_COLOR_SPACE, JPEG_CHROMA_SAMPLING, IMG_H, IMG_W, JPEG_IMAGE_QUALITY};
+// TODO: this is a twick. fix it!
+JPEG_ConfTypeDef Conf = {JPEG_COLOR_SPACE, JPEG_CHROMA_SAMPLING, IMG_H + 16, IMG_W, JPEG_IMAGE_QUALITY};
 FIL *pBmpFile;
 FIL *pJpegFile;
 
@@ -478,32 +478,42 @@ static void JpegEncodeDma_ReadBmpGrayLines(FIL *file, JPEG_ConfTypeDef Conf, uin
  */
 static void JpegEncodeDma_ReadRamGrayLines(uint8_t* pSrcBuffer, JPEG_ConfTypeDef Conf, uint8_t * pDataBuffer, uint32_t *BufferSize)
 {
-	uint32_t bytesReadfile    = 1;
+	uint32_t BytesReadfile    = 1;
 	uint32_t CurrentBlockLine = 1;
 	*BufferSize = 0;
 	uint8_t TmpBuff[MAX_INPUT_WIDTH];
-    int ColIdx;
+    uint32_t ColIdx;
+    uint32_t CurrHop = 0;
+    uint8_t Pixel = 0;
 	
-	// TODO: this condition is `+1` not mandatory. review this
-	while ((CurrentLine <= (Conf.ImageHeight+1)) && (CurrentBlockLine <= MAX_INPUT_LINES))
+	while ((CurrentLine <= (Conf.ImageHeight)) && (CurrentBlockLine <= MAX_INPUT_LINES))
 	{
-		bytesReadfile = Conf.ImageWidth; // TODO: this is a const ?! what happens if more/less than frame size?
-		uint32_t CurrHop = (Conf.ImageWidth * (Conf.ImageHeight - CurrentLine) * 1);
-		memcpy(TmpBuff, pSrcBuffer + CurrHop, bytesReadfile);
+		BytesReadfile = Conf.ImageWidth;
+		CurrHop = (Conf.ImageWidth * (Conf.ImageHeight - CurrentLine) * 1);
+		memcpy(TmpBuff, pSrcBuffer + CurrHop, BytesReadfile);
 
 		//pSrcBuffer	+= bytesReadfile;
 
 		// TODO: optimize!!
 		// triple for RGB
-		for (ColIdx = 0; ColIdx < bytesReadfile; ColIdx++)
+		for (ColIdx = 0; ColIdx < BytesReadfile; ColIdx++)
 		{
-		   *pDataBuffer++ = TmpBuff[ColIdx]; // R
-		   *pDataBuffer++ = TmpBuff[ColIdx]; // G
-		   *pDataBuffer++ = TmpBuff[ColIdx]; // B
+			Pixel = TmpBuff[ColIdx];
+			memset(pDataBuffer, Pixel, 3);
+			pDataBuffer = pDataBuffer + 3;
+//			Pixel = TmpBuff[ColIdx];
+//		   *pDataBuffer++ = Pixel; // R
+//		   *pDataBuffer++ = Pixel; // G
+//		   *pDataBuffer++ = Pixel; // B
+
+
+//		   *pDataBuffer++ = TmpBuff[ColIdx]; // R
+//		   *pDataBuffer++ = TmpBuff[ColIdx]; // G
+//		   *pDataBuffer++ = TmpBuff[ColIdx]; // B
 
 		}
 
-		*BufferSize += bytesReadfile * 3;
+		*BufferSize += BytesReadfile * 3;
 		CurrentLine +=1 ;
 		CurrentBlockLine += 1;
 	}

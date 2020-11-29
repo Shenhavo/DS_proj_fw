@@ -302,6 +302,9 @@ static void WifiMngr_SocketCB(socketIdx_t sock, uint8_t u8Msg, void *pvMsg)
 			accept(p_stWifiMngr->m_tcp_server_socket, NULL, NULL);
 			p_stWifiMngr->m_tcp_client_socket = pstrAccept->sock;
 			recv(p_stWifiMngr->m_tcp_client_socket, g_WifiRxBuff, sizeof(g_WifiRxBuff), 0);
+
+			//p_stWifiMngr->m_IsTxPhase = false;
+			//PacketMngr_Stop();
 		} else {
 			printf("socket_cb: accept error!\r\n");
 		}
