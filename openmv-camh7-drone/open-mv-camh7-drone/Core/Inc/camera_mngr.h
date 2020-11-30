@@ -28,7 +28,9 @@
 
 #define DCMI_ACQ_TIMEOUT_MSEC				40
 
-#define FRAME_BUFF_SIZE  ( (IMG_H+16) * IMG_W )
+#define IMG_H_MARGIN	32
+
+#define FRAME_BUFF_SIZE  ( (IMG_H + IMG_H_MARGIN) * IMG_W )
 ALIGN_32BYTES( uint8_t CameraFrameBuff[FRAME_BUFF_SIZE] );
 
 #define JPEG_BUFF_MAX_SIZE	15000
